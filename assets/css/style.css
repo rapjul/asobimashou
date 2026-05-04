@@ -52,7 +52,7 @@ body {
 #game-dakuten:before {
   position: absolute;
   font-size: 2em;
-  content: "\309B";
+  content: "\309B \309C";
 }
 
 #question {
@@ -127,4 +127,8 @@ th, td {
 
 #result.slide-in {
   top: 0;
+}
+
+#review:disabled {
+  cursor: not-allowed;
 }

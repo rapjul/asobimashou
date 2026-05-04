@@ -10,12 +10,8 @@ if ("serviceWorker" in navigator) {
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
-/* Game initialization */
-const DEFAULT = {
-  total: 0,
-  timer: 0,
-  answered: 0,
-  skipped: 0,
+/* Persistent settings — saved to localStorage */
+const SETTINGS_DEFAULT = {
   type: "game-hiragana",
   theme: "light",
   font: "inherit",
@@ -23,33 +19,53 @@ const DEFAULT = {
   card: "Random",
   kanji: false,
 };
-const LOCAL = JSON.parse(localStorage.getItem("GAME")) || {};
-const GAME = Object.assign({}, DEFAULT, LOCAL);
+
+/* One-time migration from old "GAME" key */
+if (localStorage.getItem("GAME") && !localStorage.getItem("SETTINGS")) {
+  const old = JSON.parse(localStorage.getItem("GAME"));
+  const migrated = {};
+  for (const key of Object.keys(SETTINGS_DEFAULT)) {
+    if (old[key] !== undefined) migrated[key] = old[key];
+  }
+  localStorage.setItem("SETTINGS", JSON.stringify(migrated));
+  localStorage.removeItem("GAME");
+}
+
+const SETTINGS_SAVED = JSON.parse(localStorage.getItem("SETTINGS")) || {};
+const SETTINGS = Object.assign({}, SETTINGS_DEFAULT, SETTINGS_SAVED);
+
+/* Runtime state — never persisted, always fresh */
+const GAME = {
+  total: 0,
+  timer: 0,
+  answered: 0,
+  skipped: 0,
+};
 let started = false;
 
 /* Apply saved game settings */
-if (GAME.font !== DEFAULT.font) changeFont();
-if (GAME.theme !== DEFAULT.theme) {
+if (SETTINGS.font !== SETTINGS_DEFAULT.font) changeFont();
+if (SETTINGS.theme !== SETTINGS_DEFAULT.theme) {
   $$(".game-theme").forEach((el) => el.classList.toggle("active"));
   toggleTheme();
 }
 
-$(`#${GAME.type}`).classList.add("active");
-$("#game-dakuten").classList.toggle("active", GAME.dakuten);
-document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through", !GAME.dakuten);
+$(`#${SETTINGS.type}`).classList.add("active");
+$("#game-dakuten").classList.toggle("active", SETTINGS.dakuten);
+document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
 
-if (GAME.card !== DEFAULT.card) {
+if (SETTINGS.card !== SETTINGS_DEFAULT.card) {
   $$(".game-card").forEach((el) => el.classList.toggle("active"));
 }
 
 const kanjiBtn = $("#game-kanji");
-kanjiBtn.classList.toggle("active", GAME.kanji);
-kanjiBtn.classList.toggle("text-decoration-line-through", !GAME.kanji);
+kanjiBtn.classList.toggle("active", SETTINGS.kanji);
+kanjiBtn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
 
 /* Game setting functions */
 function changeFont() {
-  $("#game-font").value = GAME.font;
-  $$(".game-font-change").forEach((el) => (el.style.fontFamily = GAME.font));
+  $("#game-font").value = SETTINGS.font;
+  $$(".game-font-change").forEach((el) => (el.style.fontFamily = SETTINGS.font));
 }
 
 function toggleTheme() {
@@ -101,15 +117,20 @@ function nextQuestion() {
     "ぺ",
     "ぽ",
   ];
-  let id = Math.floor(Math.random() * cards[GAME.card].length);
+  let id = Math.floor(Math.random() * cards[SETTINGS.card].length);
 
-  if (!GAME.dakuten) {
+  if (!SETTINGS.dakuten) {
     do {
-      id = Math.floor(Math.random() * cards[GAME.card].length);
-    } while (dakuten.some((e) => cards[GAME.card][id].hiragana.includes(e)));
+      id = Math.floor(Math.random() * cards[SETTINGS.card].length);
+    } while (
+      dakuten.some((e) => {
+        const h = cards[SETTINGS.card][id].hiragana;
+        return (Array.isArray(h) ? h.join("") : h).includes(e);
+      })
+    );
   }
 
-  const card = cards[GAME.card][id];
+  const card = cards[SETTINGS.card][id];
   const hiragana =
     card.hiragana.constructor === Array
       ? card.hiragana[Math.floor(Math.random() * card.hiragana.length)]
@@ -118,16 +139,16 @@ function nextQuestion() {
   let kanji = card.kanji;
   let question = hiragana;
 
-  if (GAME.type === "game-mixed") {
+  if (SETTINGS.type === "game-mixed") {
     const random = Math.random() < 0.5;
     question = random ? hiragana : wanakana.toKatakana(question);
     kanji = random ? kanji : wanakana.toKatakana(kanji);
-  } else if (GAME.type === "game-katakana") {
+  } else if (SETTINGS.type === "game-katakana") {
     question = katakana;
     kanji = wanakana.toKatakana(kanji);
   }
 
-  $("#question").innerHTML = `${question}<rt>${GAME.kanji ? kanji : ""}</rt>`;
+  $("#question").innerHTML = `${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
   $("#question-id").value = id;
   $("#answer").value = "";
   $("#score").innerHTML = '<i class="bi-check-circle"></i> ' + `${GAME.answered}/${GAME.answered + GAME.skipped}`;
@@ -137,13 +158,13 @@ function nextQuestion() {
 document.querySelectorAll("#option-wrapper button, #game-font").forEach((el) => {
   el.addEventListener("click", () => {
     setTimeout(() => {
-      localStorage.setItem("GAME", JSON.stringify(GAME));
+      localStorage.setItem("SETTINGS", JSON.stringify(SETTINGS));
     }, 100);
   });
 });
 
 $("#game-font").addEventListener("change", () => {
-  GAME.font = $("#game-font").value;
+  SETTINGS.font = $("#game-font").value;
   changeFont();
 });
 
@@ -151,16 +172,16 @@ $$(".game-theme").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
     $$(".game-theme").forEach((btn) => btn.classList.toggle("active"));
-    GAME.theme = evt.currentTarget.value;
+    SETTINGS.theme = evt.currentTarget.value;
     toggleTheme();
   });
 });
 
 $("#game-kanji").addEventListener("click", () => {
-  GAME.kanji = !GAME.kanji;
+  SETTINGS.kanji = !SETTINGS.kanji;
   const btn = $("#game-kanji");
-  btn.classList.toggle("active", GAME.kanji);
-  btn.classList.toggle("text-decoration-line-through", !GAME.kanji);
+  btn.classList.toggle("active", SETTINGS.kanji);
+  btn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
 });
 
 $$(".game-type").forEach((el) => {
@@ -168,21 +189,21 @@ $$(".game-type").forEach((el) => {
     if (evt.currentTarget.matches(".active")) return;
     $$(".game-type").forEach((btn) => btn.classList.remove("active"));
     evt.currentTarget.classList.add("active");
-    GAME.type = evt.currentTarget.id;
+    SETTINGS.type = evt.currentTarget.id;
   });
 });
 
 $("#game-dakuten").addEventListener("click", () => {
   $("#game-dakuten").classList.toggle("active");
   document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through");
-  GAME.dakuten = !GAME.dakuten;
+  SETTINGS.dakuten = !SETTINGS.dakuten;
 });
 
 $$(".game-card").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
     $$(".game-card").forEach((btn) => btn.classList.toggle("active"));
-    GAME.card = evt.currentTarget.value;
+    SETTINGS.card = evt.currentTarget.value;
   });
 });
 
@@ -219,6 +240,7 @@ $("#stop").addEventListener("click", () => {
 
   $("#result").classList.remove("d-none");
   $("#result").classList.add("slide-in");
+  $("#game").classList.add("d-none");
   $("#stats-answered").textContent = GAME.answered;
   $("#stats-skipped").textContent = GAME.skipped;
   $("#stats-timer").textContent = GAME.timer + "s";
@@ -255,9 +277,9 @@ $("#restart").addEventListener("click", () => {
     { once: true },
   );
 
-  GAME.timer = DEFAULT.timer;
-  GAME.answered = DEFAULT.answered;
-  GAME.skipped = DEFAULT.skipped;
+  GAME.timer = 0;
+  GAME.answered = 0;
+  GAME.skipped = 0;
 });
 
 $("#copy").addEventListener("click", async () => {
@@ -280,12 +302,14 @@ $("#share").addEventListener("click", async () => {
   const average = GAME.timer / (GAME.answered + GAME.skipped);
   const activeType = $(".game-type.active");
   const type = activeType ? activeType.textContent.trim() : "";
-  const text =
-    "Asobimashou! 遊びましょう！\n" +
-    `${location.href}\n` +
-    `Card: ${GAME.card} | Type: ${type} | Dakuten: ${GAME.dakuten}\n` +
-    `Answered: ${GAME.answered} | Skipped: ${GAME.skipped}\n` +
-    `Time: ${GAME.timer}s | Average: ${average.toFixed(2)}s`;
+  const text = `
+Asobimashou! 遊びましょう！ (Let's Play!)
+Card: ${SETTINGS.card} | Type: ${type} | Dakuten: ${SETTINGS.dakuten}
+Answered: ${GAME.answered} | Skipped: ${GAME.skipped}
+Time: ${GAME.timer}s | Average: ${average.toFixed(2)}s
+
+Check it out at: ${location.href}
+  `.trim();
   try {
     await navigator.clipboard.writeText(text);
   } catch {
@@ -302,7 +326,7 @@ $("#share").addEventListener("click", async () => {
 /* Answer input handling */
 $("#answer").addEventListener("keyup", () => {
   const id = $("#question-id").value;
-  const card = cards[GAME.card][id];
+  const card = cards[SETTINGS.card][id];
   const jisho = "https://jisho.org/word/" + card.kanji;
   const means = card.meaning.split(", ")[0].trim();
   const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
