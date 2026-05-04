@@ -1,9 +1,14 @@
 /* Offline support */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log('Ready for offline-use'))
-    .catch((error) => console.error('Error while preparing: ', error));
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("./serviceWorker.js")
+    .then(() => console.log("Ready for offline use."))
+    .catch((error) => console.error("Error while preparing: ", error));
 }
+
+/* DOM helpers */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
 
 /* Game initialization */
 const DEFAULT = {
@@ -11,244 +16,309 @@ const DEFAULT = {
   timer: 0,
   answered: 0,
   skipped: 0,
-  type: 'game-hiragana',
-  theme: 'light',
-  font: 'inherit',
+  type: "game-hiragana",
+  theme: "light",
+  font: "inherit",
   dakuten: true,
-  card: 'Random',
-  kanji: false
+  card: "Random",
+  kanji: false,
 };
-const LOCAL = JSON.parse(localStorage.getItem('GAME')) || {};
+const LOCAL = JSON.parse(localStorage.getItem("GAME")) || {};
 const GAME = Object.assign({}, DEFAULT, LOCAL);
 let started = false;
 
 /* Apply saved game settings */
 if (GAME.font !== DEFAULT.font) changeFont();
 if (GAME.theme !== DEFAULT.theme) {
-  $('.game-theme').toggleClass('active');
+  $$(".game-theme").forEach((el) => el.classList.toggle("active"));
   toggleTheme();
 }
 
-$(`#${GAME.type}`).addClass('active');
-$('#game-dakuten').toggleClass('active', GAME.dakuten);
-$('#game-dakuten > span').toggleClass(
-  'text-decoration-line-through', !GAME.dakuten
-);
+$(`#${GAME.type}`).classList.add("active");
+$("#game-dakuten").classList.toggle("active", GAME.dakuten);
+document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through", !GAME.dakuten);
 
-if (GAME.card !== DEFAULT.card) $('.game-card').toggleClass('active');
+if (GAME.card !== DEFAULT.card) {
+  $$(".game-card").forEach((el) => el.classList.toggle("active"));
+}
 
-$('#game-kanji').toggleClass('active', GAME.kanji)
-  .toggleClass('text-decoration-line-through', !GAME.kanji);
+const kanjiBtn = $("#game-kanji");
+kanjiBtn.classList.toggle("active", GAME.kanji);
+kanjiBtn.classList.toggle("text-decoration-line-through", !GAME.kanji);
 
 /* Game setting functions */
 function changeFont() {
-  $('#game-font').val(GAME.font);
-  $('.game-font-change').css('font-family', GAME.font);
+  $("#game-font").value = GAME.font;
+  $$(".game-font-change").forEach((el) => (el.style.fontFamily = GAME.font));
 }
 
 function toggleTheme() {
-  $('body, #menu, #result').toggleClass('bg-dark text-white');
-  $('#answer').toggleClass('text-white');
-  $('kbd').toggleClass('bg-light text-black');
-  $('.table').toggleClass('table-hover text-white');
-  $('.btn').toggleClass('btn-outline-dark btn-outline-light');
-};
+  document.querySelectorAll("body, #menu, #result").forEach((el) => {
+    el.classList.toggle("bg-dark");
+    el.classList.toggle("text-white");
+  });
+  $("#answer").classList.toggle("text-white");
+  $$("kbd").forEach((el) => {
+    el.classList.toggle("bg-light");
+    el.classList.toggle("text-black");
+  });
+  $$(".table").forEach((el) => {
+    el.classList.toggle("table-hover");
+    el.classList.toggle("text-white");
+  });
+  $$(".btn").forEach((el) => {
+    el.classList.toggle("btn-outline-dark");
+    el.classList.toggle("btn-outline-light");
+  });
+}
 
 /* Game functions */
 function nextQuestion() {
   const dakuten = [
-    'ば','ぶ','び','べ','ぼ','が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ',
-    'だ','ぢ','づ','で','ど','ぱ','ぴ','ぷ','ぺ','ぽ'
+    "ば",
+    "ぶ",
+    "び",
+    "べ",
+    "ぼ",
+    "が",
+    "ぎ",
+    "ぐ",
+    "げ",
+    "ご",
+    "ざ",
+    "じ",
+    "ず",
+    "ぜ",
+    "ぞ",
+    "だ",
+    "ぢ",
+    "づ",
+    "で",
+    "ど",
+    "ぱ",
+    "ぴ",
+    "ぷ",
+    "ぺ",
+    "ぽ",
   ];
-  let id = Math.floor(Math.random()*cards[GAME.card].length);
+  let id = Math.floor(Math.random() * cards[GAME.card].length);
 
-  if (!(GAME.dakuten)) {
+  if (!GAME.dakuten) {
     do {
-      id = Math.floor(Math.random()*cards[GAME.card].length);
-    } while (dakuten.some(e => cards[GAME.card][id].hiragana.includes(e)));
+      id = Math.floor(Math.random() * cards[GAME.card].length);
+    } while (dakuten.some((e) => cards[GAME.card][id].hiragana.includes(e)));
   }
 
   const card = cards[GAME.card][id];
-  const hiragana = card.hiragana.constructor === Array
-    ? card.hiragana[Math.floor(Math.random()*card.hiragana.length)]
-    : card.hiragana;
+  const hiragana =
+    card.hiragana.constructor === Array
+      ? card.hiragana[Math.floor(Math.random() * card.hiragana.length)]
+      : card.hiragana;
   const katakana = wanakana.toKatakana(hiragana);
   let kanji = card.kanji;
   let question = hiragana;
 
-  if (GAME.type === 'game-mixed') {
+  if (GAME.type === "game-mixed") {
     const random = Math.random() < 0.5;
     question = random ? hiragana : wanakana.toKatakana(question);
     kanji = random ? kanji : wanakana.toKatakana(kanji);
-  } else if (GAME.type === 'game-katakana') {
+  } else if (GAME.type === "game-katakana") {
     question = katakana;
     kanji = wanakana.toKatakana(kanji);
   }
 
-  $('#question').html(`${question}<rt>${GAME.kanji ? kanji : ''}</rt>`);
-  $('#question-id').val(id);
-  $('#answer').val('');
-  $('#score').html(
-    '<i class="bi-check-circle"></i> ' +
-    `${GAME.answered}/${GAME.answered + GAME.skipped}`
-  );
+  $("#question").innerHTML = `${question}<rt>${GAME.kanji ? kanji : ""}</rt>`;
+  $("#question-id").value = id;
+  $("#answer").value = "";
+  $("#score").innerHTML = '<i class="bi-check-circle"></i> ' + `${GAME.answered}/${GAME.answered + GAME.skipped}`;
 }
 
 /* Game settings */
-$('#option-wrapper button, #game-font').click(() => {
-  setTimeout(() => {
-    localStorage.setItem('GAME', JSON.stringify(GAME));
-  }, 100);
+document.querySelectorAll("#option-wrapper button, #game-font").forEach((el) => {
+  el.addEventListener("click", () => {
+    setTimeout(() => {
+      localStorage.setItem("GAME", JSON.stringify(GAME));
+    }, 100);
+  });
 });
 
-$('#game-font').change(() => {
-  GAME.font = $('#game-font').val();
+$("#game-font").addEventListener("change", () => {
+  GAME.font = $("#game-font").value;
   changeFont();
 });
 
-$('.game-theme').click((evt) => {
-  if ($(evt.target).hasClass('active')) return;
-  $('.game-theme').toggleClass('active');
-  GAME.theme = $(evt.target).val();
-  toggleTheme();
+$$(".game-theme").forEach((el) => {
+  el.addEventListener("click", (evt) => {
+    if (evt.currentTarget.matches(".active")) return;
+    $$(".game-theme").forEach((btn) => btn.classList.toggle("active"));
+    GAME.theme = evt.currentTarget.value;
+    toggleTheme();
+  });
 });
 
-$('#game-kanji').click(() => {
+$("#game-kanji").addEventListener("click", () => {
   GAME.kanji = !GAME.kanji;
-  $('#game-kanji').toggleClass('active', GAME.kanji)
-    .toggleClass('text-decoration-line-through', !GAME.kanji);
+  const btn = $("#game-kanji");
+  btn.classList.toggle("active", GAME.kanji);
+  btn.classList.toggle("text-decoration-line-through", !GAME.kanji);
 });
 
-$('.game-type').click((evt) => {
-  if ($(evt.target).hasClass('active')) return;
-  $('.game-type').removeClass('active');
-  $(evt.target).addClass('active');
-  GAME.type = $(evt.target).prop('id');
+$$(".game-type").forEach((el) => {
+  el.addEventListener("click", (evt) => {
+    if (evt.currentTarget.matches(".active")) return;
+    $$(".game-type").forEach((btn) => btn.classList.remove("active"));
+    evt.currentTarget.classList.add("active");
+    GAME.type = evt.currentTarget.id;
+  });
 });
 
-$('#game-dakuten').click(() => {
-  $('#game-dakuten').toggleClass('active');
-  $('#game-dakuten > span').toggleClass('text-decoration-line-through');
+$("#game-dakuten").addEventListener("click", () => {
+  $("#game-dakuten").classList.toggle("active");
+  document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through");
   GAME.dakuten = !GAME.dakuten;
 });
 
-$('.game-card').click((evt) => {
-  if ($(evt.target).hasClass('active')) return;
-  $('.game-card').toggleClass('active');
-  GAME.card = $(evt.target).val();
+$$(".game-card").forEach((el) => {
+  el.addEventListener("click", (evt) => {
+    if (evt.currentTarget.matches(".active")) return;
+    $$(".game-card").forEach((btn) => btn.classList.toggle("active"));
+    GAME.card = evt.currentTarget.value;
+  });
 });
 
 /* Buttons event listener */
-$('#option').click(() => {
-  $('#option').toggleClass('active');
-  $('#option-wrapper').toggleClass('collapsed p-3');
+$("#option").addEventListener("click", () => {
+  $("#option").classList.toggle("active");
+  $("#option-wrapper").classList.toggle("collapsed");
+  $("#option-wrapper").classList.toggle("p-3");
 });
 
-$('#start').click(() => {
-  const element = $('#time');
+$("#start").addEventListener("click", () => {
+  const timeEl = $("#time");
   const interval = setInterval(() => {
     if (!started) return clearInterval(interval);
-    element.html(`${++GAME.timer} <i class="bi-clock"></i>`);
+    timeEl.innerHTML = `${++GAME.timer} <i class="bi-clock"></i>`;
   }, 1000);
 
-  $('#review-table').html('');
-  $('#start').prop('disabled', true);
-  $('#game').removeClass('d-none');
-  $('#menu').slideUp(500);
-  $('#answer').focus();
+  $("#review-table").innerHTML = "";
+  $("#start").disabled = true;
+  $("#game").classList.remove("d-none");
+  $("#menu").classList.add("slide-up");
+  $("#answer").focus();
   started = true;
   nextQuestion();
 });
 
-$('#review').click(() => {
-  $('#result').removeClass('d-none').animate({ top: '0' }, 'slow');
+$("#review").addEventListener("click", () => {
+  $("#result").classList.remove("d-none");
+  $("#result").classList.add("slide-in");
 });
 
-$('#stop').click(() => {
-  const average = (GAME.timer / (GAME.answered + GAME.skipped));
+$("#stop").addEventListener("click", () => {
+  const average = GAME.timer / (GAME.answered + GAME.skipped);
 
-  $('#result').removeClass('d-none').animate({ top: '0' }, 'slow');
-  $('#stats-answered').text(GAME.answered);
-  $('#stats-skipped').text(GAME.skipped);
-  $('#stats-timer').text(GAME.timer + 's');
-  $('#stats-average').text(average.toFixed(2) + 's');
-  $('#review').prop('disabled', false);
-  $('#restart').focus();
+  $("#result").classList.remove("d-none");
+  $("#result").classList.add("slide-in");
+  $("#stats-answered").textContent = GAME.answered;
+  $("#stats-skipped").textContent = GAME.skipped;
+  $("#stats-timer").textContent = GAME.timer + "s";
+  $("#stats-average").textContent = average.toFixed(2) + "s";
+  $("#review").disabled = false;
+  $("#restart").focus();
   started = false;
 
   if (!GAME.answered && !GAME.skipped) {
-    $('#review-wrapper').prepend('<b>Be serious.</b>');
+    $("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
   } else if (!GAME.answered && GAME.skipped) {
-    $('#review-wrapper').prepend('<b>Practice more!</b>');
+    $("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Practice more!</b>");
   }
 });
 
-$('#restart').click(() => {
-  $('#menu').slideDown(750);
-  $('#result').animate({ top: '100vh' }, 800, () => {
-    $('#result').addClass('d-none');
-    $('#game').addClass('d-none');
-    $('#time').html('0 <i class="bi-clock"></i>');
-    $('#score').html('<i class="bi-check-circle"></i> 0');
-    $('#review-wrapper b').remove();
-    $('#copy').html('<i class="bi-table"></i> Copy Table');
-    $('#share').html('<i class="bi-share"></i> Share');
-    $('#start').prop('disabled', false);
-    $('#start').focus();
-  });
+$("#restart").addEventListener("click", () => {
+  $("#menu").classList.remove("slide-up");
+  const result = $("#result");
+  result.classList.remove("slide-in");
+  result.addEventListener(
+    "transitionend",
+    () => {
+      result.classList.add("d-none");
+      $("#game").classList.add("d-none");
+      $("#time").innerHTML = '0 <i class="bi-clock"></i>';
+      $("#score").innerHTML = '<i class="bi-check-circle"></i> 0';
+      const bold = document.querySelector("#review-wrapper b");
+      if (bold) bold.remove();
+      $("#copy").innerHTML = '<i class="bi-table"></i> Copy Table';
+      $("#share").innerHTML = '<i class="bi-share"></i> Share';
+      $("#start").disabled = false;
+      $("#start").focus();
+    },
+    { once: true },
+  );
 
   GAME.timer = DEFAULT.timer;
   GAME.answered = DEFAULT.answered;
   GAME.skipped = DEFAULT.skipped;
 });
 
-$('#copy').click(() => {
-  const text = $('#review-table').text()
-    .replaceAll('‎‎', '\n')
-    .replaceAll('‎', ' ー ')
-    .trim()
-    || 'Why did I copy this?';
-  const element = $(`<textarea>${text}</textarea>`).appendTo('#result')
-    .select();
-  document.execCommand('copy');
-  element.remove();
-  $('#copy').html('<i class="bi-table"></i> Copied!');
+$("#copy").addEventListener("click", async () => {
+  const text =
+    $("#review-table").textContent.replaceAll("‎‎", "\n").replaceAll("‎", " ー ").trim() || "Why did I copy this?";
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    $("#result").appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  $("#copy").innerHTML = '<i class="bi-table"></i> Copied!';
 });
 
-$('#share').click(() => {
-  const average = (GAME.timer / (GAME.answered + GAME.skipped));
-  const type = $('.game-type.active').text().trim();
-  const text = 'Asobimashou! 遊びましょう！\n' +
+$("#share").addEventListener("click", async () => {
+  const average = GAME.timer / (GAME.answered + GAME.skipped);
+  const activeType = $(".game-type.active");
+  const type = activeType ? activeType.textContent.trim() : "";
+  const text =
+    "Asobimashou! 遊びましょう！\n" +
     `${location.href}\n` +
     `Card: ${GAME.card} | Type: ${type} | Dakuten: ${GAME.dakuten}\n` +
     `Answered: ${GAME.answered} | Skipped: ${GAME.skipped}\n` +
     `Time: ${GAME.timer}s | Average: ${average.toFixed(2)}s`;
-  const element = $(`<textarea>${text}</textarea>`).appendTo('#result')
-    .select();
-  document.execCommand('copy');
-  $(element).remove();
-  $('#share').html('<i class="bi-share"></i> Copied!');
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    $("#result").appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  $("#share").innerHTML = '<i class="bi-share"></i> Copied!';
 });
 
 /* Answer input handling */
-$('#answer').keyup(() => {
-  const id = $('#question-id').val();
+$("#answer").addEventListener("keyup", () => {
+  const id = $("#question-id").value;
   const card = cards[GAME.card][id];
-  const jisho = 'https://jisho.org/word/' + card.kanji;
-  const means = card.meaning.split(', ')[0].trim();
-  const meaning = means.match(/\(((?!\)).)*$/) ? means + ')' : means;
-  const question = $('#question')[0].childNodes[0].nodeValue.trim();
+  const jisho = "https://jisho.org/word/" + card.kanji;
+  const means = card.meaning.split(", ")[0].trim();
+  const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
+  const question = $("#question").childNodes[0].nodeValue.trim();
   const romaji = wanakana.toRomaji(question);
-  const options = { customKanaMapping: {'dzu':'づ'}};
+  const options = { customKanaMapping: { dzu: "づ" } };
   const q = wanakana.toHiragana(question, options);
-  const answer = $('#answer').val();
+  const answer = $("#answer").value;
   const a = wanakana.toHiragana(answer, options);
 
-  if (answer.indexOf(' ') > -1) {
-    $('#review-table').append(
-      `<tr><th><i class="d-none">❌（${card.kanji}）</i>`+
-      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-      `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`
+  if (answer.indexOf(" ") > -1) {
+    $("#review-table").insertAdjacentHTML(
+      "beforeend",
+      `<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
+        `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+        `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
     );
     GAME.skipped++;
     return nextQuestion();
@@ -256,15 +326,19 @@ $('#answer').keyup(() => {
 
   if (q !== a) return;
 
-  $('#review-table').append(
-    `<tr><th><i class="d-none">（${card.kanji}）</i>`+
-    `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-    `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`
+  $("#review-table").insertAdjacentHTML(
+    "beforeend",
+    `<tr><th><i class="d-none">（${card.kanji}）</i>` +
+      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+      `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
   );
   GAME.answered++;
   nextQuestion();
 });
 
-$('#answer').keydown((e) => {
-  if (e.key === 'Tab') $('#stop').click();
+$("#answer").addEventListener("keydown", (e) => {
+  if (e.key === "Tab") {
+    e.preventDefault();
+    $("#stop").click();
+  }
 });

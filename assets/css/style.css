@@ -103,9 +103,28 @@ body {
 }
 
 #review-table td {
-  font-family: var(--bs-body-font-family);
+  font-family: 'Klee One', 'Noto Serif JP', 'Yuji Syuku', sans-serif;
 }
 
 th, td {
   padding: 0.5em;
+}
+
+/* Slide animations — replacing jQuery slideUp/slideDown/animate */
+#menu {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+#menu.slide-up {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#result {
+  transition: top 0.8s ease;
+}
+
+#result.slide-in {
+  top: 0;
 }
