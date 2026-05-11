@@ -1,0 +1,19 @@
+{
+  "name": "Asobimashou! あそびましょう！",
+  "short_name": "Asobimashou!",
+  "description": "A minimal website to practice reading Japanese katakana and hiragana!",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F8F9FA",
+  "theme_color": "#F8F9FA",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "thumbnail.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
