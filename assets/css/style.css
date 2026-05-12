@@ -2,6 +2,8 @@ body {
   overflow-y: hidden;
   /* dvh tracks the visible viewport, shrinking when the mobile keyboard opens */
   height: 100dvh;
+  /* Very light gray base instead of pure white for all non-dark modes */
+  background-color: #f2f2f2;
 }
 
 #menu, #game, #result {
@@ -25,6 +27,47 @@ body {
   transition: background-color .5s ease, color .1s ease;
 }
 
+/*
+ * Light-mode hover overrides.
+ * Bootstrap's btn-outline-dark hover fills with near-black, which is
+ * too harsh against the #f2f2f2 base.  Override to a slightly darker
+ * gray so the hover is clearly visible but tonally consistent.
+ * The :not(.bg-dark) guard keeps dark-mode buttons untouched.
+ */
+body:not(.bg-dark) .btn-dark:hover:not(:disabled):not(.active) {
+  background-color: #343a40;
+  border-color: #343a40;
+}
+
+/*
+ * table-hover in light mode: default Bootstrap overlay is barely
+ * visible on #f2f2f2.  Push it to a slightly darker gray.
+ */
+body:not(.bg-dark) .table-hover > tbody > tr:hover > * {
+  --bs-table-bg-state: #d6d6d6;
+}
+
+/*
+ * Dark-mode hover overrides.
+ * Bootstrap's btn-outline-light hover and .active both fill near-white,
+ * making a hovered button look identical to a selected one.
+ * Override hover to a mid-gray so the two states are clearly distinct.
+ * :not(.active) ensures the selected button keeps its bright fill.
+ */
+body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
+  background-color: #e2e6ea;
+  border-color: #dae0e5;
+}
+
+/*
+ * table-hover in dark mode: Bootstrap's overlay is too subtle against
+ * the #212529 dark background.
+ * Use a slightly lighter dark swatch.
+ */
+body.bg-dark .table-hover > tbody > tr:hover > * {
+  --bs-table-bg-state: #3a3a3a;
+}
+
 #option-wrapper {
   overflow: hidden;
   opacity: 0;
@@ -45,6 +88,65 @@ body {
 .form-select:focus {
   border-color: #ced4da !important;
   box-shadow: none !important;
+}
+
+/*
+ * Option Wrapper Border System
+ * Uses variables to ensure consistent border colors across all groups.
+ */
+#option-wrapper {
+  --opt-border-1: #6c757d; /* Group 1 */
+  --opt-border-2: #adb5bd; /* Group 2 */
+  --opt-border-3: #495057; /* Group 3 */
+}
+
+body.bg-dark #option-wrapper {
+  --opt-border-1: #adb5bd;
+  --opt-border-2: #6c757d;
+  --opt-border-3: #dee2e6;
+}
+
+/* Apply group borders */
+#option-wrapper .row:first-child > .col-auto:first-child [role="group"],
+#option-wrapper .row:first-child > .col-auto:first-child .form-select,
+#option-wrapper .row:first-child > .col-auto:first-child #game-kanji {
+  border-color: var(--opt-border-1) !important;
+}
+
+#option-wrapper .row:first-child > .col-auto:last-child [role="group"],
+#option-wrapper .row:first-child > .col-auto:last-child .btn {
+  border-color: var(--opt-border-2) !important;
+}
+
+#option-wrapper .row:last-child .btn,
+#option-wrapper .row:last-child [role="group"] {
+  border-color: var(--opt-border-3) !important;
+}
+
+/*
+ * Theme Row (System/Light/Dark) Specific Fixes
+ */
+#option-wrapper .game-theme {
+  position: relative;
+  /* Ensure a base border exists */
+  border: 1px solid var(--opt-border-1) !important;
+}
+
+/* Ensure borders don't collapse into invisibility */
+#option-wrapper .btn-group > .btn + .btn {
+  margin-left: 0 !important; /* Remove Bootstrap's overlap */
+  border-left: none !important; /* Prevent double borders */
+}
+
+
+/* Constrain theme row width */
+#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group {
+  width: 100%;
+}
+
+#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group .btn {
+  flex: 1;
+  min-width: 0;
 }
 
 #game-dakuten {
@@ -74,7 +176,8 @@ body {
 }
 
 #result {
-  background-color: #ffffffef;
+  /* Very light gray overlay instead of pure white */
+  background-color: #f2f2f2ef;
   top: 100dvh;
   height: 100dvh;
 }
@@ -134,8 +237,19 @@ th, td {
   top: 0;
 }
 
-#review:disabled {
-  cursor: not-allowed;
+/*
+ * Bootstrap sets pointer-events:none on .btn:disabled, which prevents the
+ * cursor property from being evaluated by the browser.
+ * Re-enable pointer events so cursor:not-allowed is actually visible to the user,
+ * while the native `disabled` attribute already blocks all click interactions.
+ */
+#review:disabled, #start:disabled {
+  pointer-events: auto !important;
+  cursor: not-allowed !important;
+}
+
+.btn {
+  transition: background-color 0.3s ease, color 0.1s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 /* Compact layout for short viewports (e.g. mobile keyboard open) */
@@ -150,34 +264,32 @@ th, td {
   #question {
     font-size: clamp(38px, 8vw, 60px);
   }
+}
 
-  /*
-  /* Move the action buttons (Check/Next/Skip) up when the keyboard opens */
-  #actions {
-    margin-top: auto;
-    margin-bottom: 1.5rem;
-  }
+/*
+ * Keyboard keys (kbd) styling.
+ * Inverted themes are applied via JS (bg-white/bg-dark).
+ * We add transitions and a subtle shadow for a premium feel.
+ */
+kbd {
+  transition: background-color 0.5s ease, color 0.1s ease, box-shadow 0.5s ease;
+  padding: .2rem .4rem;
+  border-radius: .25rem;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+}
 
-  /* Make the "Check" button take full width to be easier to hit */
-  #actions button[onclick^="checkAnswer"] {
-    width: 100%;
-  }
+body.bg-dark kbd {
+  box-shadow: 0 2px 0 rgba(255,255,255,0.1);
+}
 
-  /* Reduce padding on the whole game screen to save vertical space */
-  #game .container {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
+/*
+ * Hide the "Press Tab to end" hint on touch-only devices (phones/tablets).
+ * pointer: coarse = no fine pointer (no mouse), hover: none = no hover
+ * capability — together these reliably exclude devices with a physical or
+ * USB/Bluetooth keyboard while keeping the hint visible on desktop.
+ */
+@media (pointer: coarse) and (hover: none) {
+  .hint-keyboard {
+    display: none;
   }
-
-  /* Make the score and timer text smaller on small screens */
-  #game .text-muted, #score {
-    font-size: 0.85rem;
-  }
-
-  /* Make the answer input field and its focus outline slightly smaller/tighter */
-  #answer {
-    font-size: 1.8rem;
-    padding-bottom: 0.25rem;
-  }
-  */
 }

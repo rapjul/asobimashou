@@ -39,11 +39,11 @@
         (Let's Play!)
       </div>
       <div class="mb-3 btn-group-vertical" role="group">
-        <button id="start" class="btn btn-outline-dark py-2" disabled>
+        <button id="start" class="btn py-2" disabled>
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
           <span>Loading Game...</span>
         </button>
-        <button id="option" class="btn btn-outline-dark py-2 border-top-0 border-bottom-0">
+        <button id="option" class="btn py-2 border-top-0 border-bottom-0">
           <i class="bi-gear-fill"></i>
           Options
         </button>
@@ -61,30 +61,31 @@
                 <option value="Yuji Syuku">Yuji Syuku</option>
               </select>
               <div class="btn-group" role="group">
-                <button class="btn btn-outline-dark game-theme active" value="light">Light</button>
-                <button class="btn btn-outline-dark game-theme ms-0" value="dark">Dark</button>
+                <button class="btn game-theme active" value="system">System</button>
+                <button class="btn game-theme ms-0" value="light">Light</button>
+                <button class="btn game-theme ms-0" value="dark">Dark</button>
               </div>
-              <button id="game-kanji" class="btn btn-outline-dark rounded-0 rounded-bottom">Show Kanji</button>
+              <button id="game-kanji" class="btn rounded-0 rounded-bottom">Show Kanji</button>
             </div>
             <div class="col-auto btn-group-vertical" role="group">
-              <button id="game-hiragana" class="btn btn-outline-dark game-type">ひらがな</button>
-              <button id="game-mixed" class="btn btn-outline-dark game-type">Mixed</button>
-              <button id="game-katakana" class="btn btn-outline-dark game-type">カタカナ</button>
+              <button id="game-hiragana" class="btn game-type">ひらがな</button>
+              <button id="game-mixed" class="btn game-type">Mixed</button>
+              <button id="game-katakana" class="btn game-type">カタカナ</button>
             </div>
           </div>
           <div class="row justify-content-center">
             <div class="col-auto btn-group-vertical" role="group">
-              <button id="game-dakuten" class="btn btn-outline-dark active">
+              <button id="game-dakuten" class="btn active">
                 <span>Dakuten</span>
               </button>
               <div class="btn-group">
-                <button class="btn btn-outline-dark game-card active" value="Random">Random</button>
-                <button class="btn btn-outline-dark game-card" value="JLPT">JLPT N5-N4</button>
+                <button class="btn game-card active" value="Random">Random</button>
+                <button class="btn game-card" value="JLPT">JLPT N5-N4</button>
               </div>
             </div>
           </div>
         </div>
-        <button id="review" class="btn btn-outline-dark py-2" disabled>
+        <button id="review" class="btn py-2" disabled>
           <i class="bi-arrow-counterclockwise"></i>
           Review
         </button>
@@ -108,7 +109,7 @@
           <i class="bi-check-circle"></i>
           0/0
         </h2>
-        <button id="stop" class="col-auto btn btn-outline-dark">
+        <button id="stop" class="col-auto btn">
           <i class="bi-stop-fill"></i>
           End
         </button>
@@ -136,9 +137,13 @@
             aria-label="Answer" />
         </div>
       </div>
-      <div class="row justify-content-center text-center">
+      <div class="row justify-content-center align-items-center text-center gap-2">
         <div class="col-auto">Press <kbd>Space</kbd> to skip.</div>
-        <div class="col-auto">Press <kbd>Tab</kbd> to end.</div>
+        <button id="skip" class="col-auto btn btn-sm">
+          <i class="bi-skip-forward-fill"></i>
+          Skip
+        </button>
+        <div class="col-auto hint-keyboard">Press <kbd>Tab</kbd> to end.</div>
       </div>
     </main>
 
@@ -169,15 +174,15 @@
         </table>
       </div>
       <div class="d-flex">
-        <button id="copy" class="btn btn-outline-dark me-3">
+        <button id="copy" class="btn me-3">
           <i class="bi-table"></i>
           Copy Table
         </button>
-        <button id="share" class="btn btn-outline-dark me-3">
+        <button id="share" class="btn me-3">
           <i class="bi-share-fill"></i>
           Share
         </button>
-        <button id="restart" class="btn btn-outline-dark">
+        <button id="restart" class="btn">
           <i class="bi-house-fill"></i>
           Home
         </button>

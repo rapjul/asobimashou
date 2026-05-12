@@ -13,7 +13,7 @@ const $$ = (s) => document.querySelectorAll(s);
 /* Persistent settings — saved to localStorage */
 const SETTINGS_DEFAULT = {
   type: "game-hiragana",
-  theme: "light",
+  theme: "system",
   font: "inherit",
   dakuten: true,
   card: "Random",
@@ -45,18 +45,79 @@ let started = false;
 
 /* Apply saved game settings */
 if (SETTINGS.font !== SETTINGS_DEFAULT.font) changeFont();
-if (SETTINGS.theme !== SETTINGS_DEFAULT.theme) {
-  $$(".game-theme").forEach((el) => el.classList.toggle("active"));
-  toggleTheme();
+
+/** MediaQueryList for the OS dark-mode preference. */
+const systemDarkMQ = window.matchMedia("(prefers-color-scheme: dark)");
+
+/**
+ * Apply dark or light Bootstrap classes to all themed elements.
+ * Uses absolute assignment (not toggle) so the state never drifts.
+ * @param {boolean} isDark - True to enable dark mode, false for light.
+ */
+function applyTheme(isDark) {
+  document.querySelectorAll("body, #menu, #result").forEach((el) => {
+    el.classList.toggle("bg-dark", isDark);
+    el.classList.toggle("text-white", isDark);
+  });
+  $("#answer").classList.toggle("text-white", isDark);
+  $$("kbd").forEach((el) => {
+    // Keyboard keys (kbd) should have inverted themes:
+    // Dark mode -> White background, dark text
+    // Light mode -> Dark background, white text
+    el.classList.toggle("bg-white", isDark);
+    el.classList.toggle("text-dark", isDark);
+    el.classList.toggle("bg-dark", !isDark);
+    el.classList.toggle("text-white", !isDark);
+  });
+  $$(".table").forEach((el) => {
+    el.classList.toggle("table-hover", !isDark);
+    el.classList.toggle("text-white", isDark);
+  });
+  $$(".btn").forEach((el) => {
+    // Buttons use outline variants so the Bootstrap .active class renders as a
+    // visually distinct filled state (solid bg + contrasting text).
+    // Light mode -> dark outline (active = filled dark)
+    // Dark mode  -> light outline (active = filled light/white)
+    // Strip all four possible Bootstrap button-variant classes first so they
+    // never accumulate and create conflicts across multiple applyTheme calls.
+    el.classList.remove("btn-dark", "btn-light", "btn-outline-dark", "btn-outline-light");
+    el.classList.toggle("btn-outline-dark", !isDark);
+    el.classList.toggle("btn-outline-light", isDark);
+  });
 }
+
+/**
+ * Resolve whether dark mode should be active for a given theme value.
+ * @param {"system"|"light"|"dark"} theme - The selected theme.
+ * @returns {boolean} True if dark mode should be applied.
+ */
+function resolveIsDark(theme) {
+  if (theme === "dark") return true;
+  if (theme === "light") return false;
+  return systemDarkMQ.matches; // "system"
+}
+
+/* Apply theme on load */
+applyTheme(resolveIsDark(SETTINGS.theme));
+
+/* Keep active button in sync with the loaded setting */
+$$(".game-theme").forEach((btn) => {
+  btn.classList.toggle("active", btn.value === SETTINGS.theme);
+});
+
+/* React to OS-level theme changes when in "system" mode */
+systemDarkMQ.addEventListener("change", () => {
+  if (SETTINGS.theme === "system") applyTheme(systemDarkMQ.matches);
+});
 
 $(`#${SETTINGS.type}`).classList.add("active");
 $("#game-dakuten").classList.toggle("active", SETTINGS.dakuten);
 document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
 
-if (SETTINGS.card !== SETTINGS_DEFAULT.card) {
-  $$(".game-card").forEach((el) => el.classList.toggle("active"));
-}
+/* Set the active card button based on the saved setting. */
+$$(".game-card").forEach((el) => {
+  el.classList.toggle("active", el.value === SETTINGS.card);
+});
 
 const kanjiBtn = $("#game-kanji");
 kanjiBtn.classList.toggle("active", SETTINGS.kanji);
@@ -68,27 +129,12 @@ function changeFont() {
   $$(".game-font-change").forEach((el) => (el.style.fontFamily = SETTINGS.font));
 }
 
-function toggleTheme() {
-  document.querySelectorAll("body, #menu, #result").forEach((el) => {
-    el.classList.toggle("bg-dark");
-    el.classList.toggle("text-white");
-  });
-  $("#answer").classList.toggle("text-white");
-  $$("kbd").forEach((el) => {
-    el.classList.toggle("bg-light");
-    el.classList.toggle("text-black");
-  });
-  $$(".table").forEach((el) => {
-    el.classList.toggle("table-hover");
-    el.classList.toggle("text-white");
-  });
-  $$(".btn").forEach((el) => {
-    el.classList.toggle("btn-outline-dark");
-    el.classList.toggle("btn-outline-light");
-  });
-}
-
 /* Game functions */
+/**
+ * Generate the next question by selecting a random card from the selected deck.
+ * The question will be displayed in either Hiragana or Katakana depending on the selected type.
+ * @returns {void}
+ */
 function nextQuestion() {
   const dakuten = [
     "ば",
@@ -171,9 +217,10 @@ $("#game-font").addEventListener("change", () => {
 $$(".game-theme").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
-    $$(".game-theme").forEach((btn) => btn.classList.toggle("active"));
+    $$(".game-theme").forEach((btn) => btn.classList.remove("active"));
+    evt.currentTarget.classList.add("active");
     SETTINGS.theme = evt.currentTarget.value;
-    toggleTheme();
+    applyTheme(resolveIsDark(SETTINGS.theme));
   });
 });
 
@@ -272,7 +319,6 @@ $("#restart").addEventListener("click", () => {
       $("#copy").innerHTML = '<i class="bi-table"></i> Copy Table';
       $("#share").innerHTML = '<i class="bi-share"></i> Share';
       $("#start").disabled = false;
-      $("#start").focus();
     },
     { once: true },
   );
@@ -324,7 +370,14 @@ Check it out at: ${location.href}
 });
 
 /* Answer input handling */
-$("#answer").addEventListener("keyup", () => {
+
+/**
+ * Record the current question as skipped, log it to the review table,
+ * and advance to the next question.
+ * Called by both the Space key handler and the #skip button.
+ * @returns {void}
+ */
+function skipQuestion() {
   const id = $("#question-id").value;
   const card = cards[SETTINGS.card][id];
   const jisho = "https://jisho.org/word/" + card.kanji;
@@ -332,23 +385,36 @@ $("#answer").addEventListener("keyup", () => {
   const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
   const question = $("#question").childNodes[0].nodeValue.trim();
   const romaji = wanakana.toRomaji(question);
+
+  $("#review-table").insertAdjacentHTML(
+    "beforeend",
+    `<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
+      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+      `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
+  );
+  GAME.skipped++;
+  $("#answer").value = "";
+  nextQuestion();
+}
+
+$("#answer").addEventListener("keyup", () => {
+  const id = $("#question-id").value;
+  const card = cards[SETTINGS.card][id];
   const options = { customKanaMapping: { dzu: "づ" } };
+  const question = $("#question").childNodes[0].nodeValue.trim();
   const q = wanakana.toHiragana(question, options);
   const answer = $("#answer").value;
   const a = wanakana.toHiragana(answer, options);
 
-  if (answer.indexOf(" ") > -1) {
-    $("#review-table").insertAdjacentHTML(
-      "beforeend",
-      `<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
-        `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-        `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
-    );
-    GAME.skipped++;
-    return nextQuestion();
-  }
+  /* Space key: skip the current question */
+  if (answer.indexOf(" ") > -1) return skipQuestion();
 
   if (q !== a) return;
+
+  const jisho = "https://jisho.org/word/" + card.kanji;
+  const means = card.meaning.split(", ")[0].trim();
+  const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
+  const romaji = wanakana.toRomaji(question);
 
   $("#review-table").insertAdjacentHTML(
     "beforeend",
@@ -358,6 +424,12 @@ $("#answer").addEventListener("keyup", () => {
   );
   GAME.answered++;
   nextQuestion();
+});
+
+/* Skip button: same action as pressing Space */
+$("#skip").addEventListener("click", () => {
+  skipQuestion();
+  $("#answer").focus();
 });
 
 $("#answer").addEventListener("keydown", (e) => {
