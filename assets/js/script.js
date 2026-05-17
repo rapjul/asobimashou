@@ -73,8 +73,12 @@ applyTheme(resolveIsDark(SETTINGS.theme));
 
 /* Viewport height adjustment for mobile keyboards */
 const updateViewportHeight = () => {
-  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const vv = window.visualViewport;
+  const vh = vv ? vv.height : window.innerHeight;
+  const offsetTop = vv ? vv.offsetTop : 0;
+  
   document.documentElement.style.setProperty("--visual-viewport-height", `${vh}px`);
+  document.documentElement.style.setProperty("--visual-viewport-offset-y", `${offsetTop}px`);
 
   // If visual viewport is significantly smaller than layout height, the keyboard is likely open.
   // We also check if the answer input is focused as a secondary hint.
@@ -84,12 +88,6 @@ const updateViewportHeight = () => {
   const isKeyboardOpen = isShort || isInputFocused;
 
   document.body.classList.toggle("keyboard-open", isKeyboardOpen);
-
-  // Force scroll to top when keyboard is open to prevent Safari from pushing the page up
-  if (isKeyboardOpen) {
-    window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
-  }
 };
 
 if (window.visualViewport) {
