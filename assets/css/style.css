@@ -1,29 +1,129 @@
-body {
-  overflow-y: hidden;
-  /* dvh tracks the visible viewport, shrinking when the mobile keyboard opens */
-  height: 100dvh;
-  /* Very light gray base instead of pure white for all non-dark modes */
-  background-color: #f2f2f2;
+:root {
+  --app-bg: #f2f2f2;
 }
 
-#menu, #game, #result {
+html {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.preload,
+.preload * {
+  transition: none !important;
+}
+
+body.bg-dark {
+  --app-bg: #212529;
+}
+
+body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  width: 100vw;
-  /* dvh tracks the visible viewport, shrinking when the mobile keyboard opens */
-  height: 100dvh;
+  overflow: hidden;
+  width: 100%;
+  height: var(--visual-viewport-height, 100%);
+
+  /* Very light gray base instead of pure white for all non-dark modes */
+  background-color: var(--app-bg);
+
+  transition: background-color 0.5s ease;
+
+  /*
+   * Ensure a minimum gap from the top on all devices,
+   * while respecting larger safe areas (like notches).
+   */
+  padding-top: max(30px, env(safe-area-inset-top));
+  padding-bottom: env(safe-area-inset-bottom);
+
+  overscroll-behavior: none;
 }
 
-#menu, #result {
+#menu,
+#game,
+#result {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Center the main content vertically using auto-margins (for menu/result) */
+.centering-wrapper {
+  width: 100%;
+  padding: 1rem 0;
+
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* Game-specific centering using transitionable flex-spacers */
+.game-spacer {
+  flex-grow: 1;
+  transition: flex-grow 0.7s cubic-bezier(0.3, 1, 0.3, 1);
+}
+
+.game-content-wrapper {
+  width: 100%;
+  padding: 1rem 0;
+}
+
+/* On mobile/small screens, add back the optical shift */
+@media (max-width: 768px),
+(max-height: 600px) {
+  .centering-wrapper {
+    padding-bottom: 6vh;
+  }
+
+  #game {
+    overflow-y: hidden;
+  }
+}
+
+/* On desktop, keep everything locked and perfectly centered */
+@media (min-width: 769px) and (min-height: 601px) {
+
+  #menu,
+  #game,
+  #result {
+    overflow-y: hidden;
+  }
+}
+
+#stats-row {
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background-color: var(--app-bg);
+  transition: background-color 0.5s ease;
+}
+
+#result {
   align-items: center;
   position: fixed;
   top: 0;
   left: 0;
+  height: 100dvh;
+  z-index: 1050;
+  /* Ensure it stays above game */
 }
 
-#menu, #option-wrapper * {
+#menu,
+#option-wrapper * {
   transition: background-color .5s ease, color .1s ease;
 }
 
@@ -43,7 +143,7 @@ body:not(.bg-dark) .btn-dark:hover:not(:disabled):not(.active) {
  * table-hover in light mode: default Bootstrap overlay is barely
  * visible on #f2f2f2.  Push it to a slightly darker gray.
  */
-body:not(.bg-dark) .table-hover > tbody > tr:hover > * {
+body:not(.bg-dark) .table-hover>tbody>tr:hover>* {
   --bs-table-bg-state: #d6d6d6;
 }
 
@@ -64,7 +164,7 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
  * the #212529 dark background.
  * Use a slightly lighter dark swatch.
  */
-body.bg-dark .table-hover > tbody > tr:hover > * {
+body.bg-dark .table-hover>tbody>tr:hover>* {
   --bs-table-bg-state: #3a3a3a;
 }
 
@@ -95,9 +195,12 @@ body.bg-dark .table-hover > tbody > tr:hover > * {
  * Uses variables to ensure consistent border colors across all groups.
  */
 #option-wrapper {
-  --opt-border-1: #6c757d; /* Group 1 */
-  --opt-border-2: #adb5bd; /* Group 2 */
-  --opt-border-3: #495057; /* Group 3 */
+  --opt-border-1: #6c757d;
+  /* Group 1 */
+  --opt-border-2: #adb5bd;
+  /* Group 2 */
+  --opt-border-3: #495057;
+  /* Group 3 */
 }
 
 body.bg-dark #option-wrapper {
@@ -107,14 +210,14 @@ body.bg-dark #option-wrapper {
 }
 
 /* Apply group borders */
-#option-wrapper .row:first-child > .col-auto:first-child [role="group"],
-#option-wrapper .row:first-child > .col-auto:first-child .form-select,
-#option-wrapper .row:first-child > .col-auto:first-child #game-kanji {
+#option-wrapper .row:first-child>.col-auto:first-child [role="group"],
+#option-wrapper .row:first-child>.col-auto:first-child .form-select,
+#option-wrapper .row:first-child>.col-auto:first-child #game-kanji {
   border-color: var(--opt-border-1) !important;
 }
 
-#option-wrapper .row:first-child > .col-auto:last-child [role="group"],
-#option-wrapper .row:first-child > .col-auto:last-child .btn {
+#option-wrapper .row:first-child>.col-auto:last-child [role="group"],
+#option-wrapper .row:first-child>.col-auto:last-child .btn {
   border-color: var(--opt-border-2) !important;
 }
 
@@ -133,18 +236,20 @@ body.bg-dark #option-wrapper {
 }
 
 /* Ensure borders don't collapse into invisibility */
-#option-wrapper .btn-group > .btn + .btn {
-  margin-left: 0 !important; /* Remove Bootstrap's overlap */
-  border-left: none !important; /* Prevent double borders */
+#option-wrapper .btn-group>.btn+.btn {
+  margin-left: 0 !important;
+  /* Remove Bootstrap's overlap */
+  border-left: none !important;
+  /* Prevent double borders */
 }
 
 
 /* Constrain theme row width */
-#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group {
+#option-wrapper .row:first-child>.col-auto:first-child>[role="group"]>.btn-group {
   width: 100%;
 }
 
-#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group .btn {
+#option-wrapper .row:first-child>.col-auto:first-child>[role="group"]>.btn-group .btn {
   flex: 1;
   min-width: 0;
 }
@@ -166,7 +271,8 @@ body.bg-dark #option-wrapper {
   font-size: clamp(60px, 10vw, 100px);
 }
 
-#answer, #answer:focus {
+#answer,
+#answer:focus {
   background: none;
   border: none;
   outline: none;
@@ -178,8 +284,8 @@ body.bg-dark #option-wrapper {
 #result {
   /* Very light gray overlay instead of pure white */
   background-color: #f2f2f2ef;
-  top: 100dvh;
-  height: 100dvh;
+  top: 100%;
+  height: 100%;
 }
 
 #result.bg-dark {
@@ -214,7 +320,8 @@ body.bg-dark #option-wrapper {
   font-family: 'Klee One', 'Noto Serif JP', 'Yuji Syuku', sans-serif;
 }
 
-th, td {
+th,
+td {
   padding: 0.5em;
 }
 
@@ -223,10 +330,12 @@ th, td {
   transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-#menu.slide-up {
+#menu.slide-up,
+#game.slide-up {
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
+  display: none;
 }
 
 #result {
@@ -243,7 +352,8 @@ th, td {
  * Re-enable pointer events so cursor:not-allowed is actually visible to the user,
  * while the native `disabled` attribute already blocks all click interactions.
  */
-#review:disabled, #start:disabled {
+#review:disabled,
+#start:disabled {
   pointer-events: auto !important;
   cursor: not-allowed !important;
 }
@@ -252,17 +362,117 @@ th, td {
   transition: background-color 0.3s ease, color 0.1s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
-/* Compact layout for short viewports (e.g. mobile keyboard open) */
-@media (max-height: 600px) {
-  /* Shrink the large vertical padding around the question character */
-  #game .py-5 {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
+/*
+ * Compact layout padding and margins for mobile and short viewports.
+ * We use transitions here to ensure that when the keyboard opens/closes,
+ * or when the viewport resizes, the elements "slide" into their new positions.
+ */
+#game #stats-row,
+#game #question-wrapper,
+#game #answer-wrapper,
+#game #hints-wrapper {
+  transition: padding 0.7s cubic-bezier(0.3, 1, 0.3, 1),
+    margin 0.7s cubic-bezier(0.3, 1, 0.3, 1),
+    gap 0.7s cubic-bezier(0.3, 1, 0.3, 1);
+}
+
+@media (max-height: 600px),
+(max-width: 768px) {
+
+  body.keyboard-open {
+    /* 
+     * Lock the body to the visual viewport when the keyboard is open.
+     * This prevents Safari from creating extra scrollable "blank space"
+     * below the content.
+     */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: var(--visual-viewport-height, 100%) !important;
+    overflow: hidden !important;
   }
 
-  /* Reduce question font size so it stays visible without scrolling */
+  body.keyboard-open .centering-wrapper {
+    margin-top: 1vh !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  #game #stats-row {
+    margin-bottom: 0.5rem !important;
+  }
+
+  #game #question-wrapper {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  #game #answer-wrapper {
+    margin-bottom: 1.5rem !important;
+  }
+
+  #game #hints-wrapper {
+    gap: 0.75rem !important;
+  }
+
+  body.keyboard-open #game #stats-row {
+    margin-bottom: 0 !important;
+  }
+
+  body.keyboard-open #game #question-wrapper {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  body.keyboard-open #game #answer-wrapper {
+    margin-bottom: 1rem !important;
+  }
+
+  body.keyboard-open #game #hints-wrapper {
+    gap: 0.5rem !important;
+  }
+}
+
+/* Font size reductions only when the display is *really* small (width-based).
+   This ensures the font size is consistent whether the keyboard is visible or not. */
+@media (max-width: 400px) {
+  #game .stat-item {
+    font-size: 1rem;
+  }
+
   #question {
-    font-size: clamp(38px, 8vw, 60px);
+    font-size: clamp(20px, 15vh, 60px);
+  }
+
+  #game #hints-wrapper {
+    font-size: 0.75rem;
+    gap: 0.2rem !important;
+  }
+}
+
+/* Allow hints to wrap on very small screens */
+@media (max-width: 330px) {
+  #question {
+    font-size: clamp(12px, 15vw, 40px);
+  }
+
+  #game #hints-wrapper {
+    display: flex;
+    flex-direction: column;
+    /* Required to allow items to move to new lines */
+    flex-wrap: wrap;
+  }
+
+  #game #stats-row>* {
+    flex-basis: 100%;
+    flex-shrink: 0;
+    flex-grow: 0;
+  }
+
+  #game #stop {
+    order: 1;
   }
 }
 
@@ -275,11 +485,11 @@ kbd {
   transition: background-color 0.5s ease, color 0.1s ease, box-shadow 0.5s ease;
   padding: .2rem .4rem;
   border-radius: .25rem;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 body.bg-dark kbd {
-  box-shadow: 0 2px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 2px 0 rgba(255, 255, 255, 0.1);
 }
 
 /*

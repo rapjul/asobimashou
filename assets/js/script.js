@@ -1,15 +1,3 @@
-/* Offline support */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("./serviceWorker.js")
-    .then(() => console.log("Ready for offline use."))
-    .catch((error) => console.error("Error while preparing: ", error));
-}
-
-/* DOM helpers */
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => document.querySelectorAll(s);
-
 /* Persistent settings — saved to localStorage */
 const SETTINGS_DEFAULT = {
   type: "game-hiragana",
@@ -20,31 +8,8 @@ const SETTINGS_DEFAULT = {
   kanji: false,
 };
 
-/* One-time migration from old "GAME" key */
-if (localStorage.getItem("GAME") && !localStorage.getItem("SETTINGS")) {
-  const old = JSON.parse(localStorage.getItem("GAME"));
-  const migrated = {};
-  for (const key of Object.keys(SETTINGS_DEFAULT)) {
-    if (old[key] !== undefined) migrated[key] = old[key];
-  }
-  localStorage.setItem("SETTINGS", JSON.stringify(migrated));
-  localStorage.removeItem("GAME");
-}
-
 const SETTINGS_SAVED = JSON.parse(localStorage.getItem("SETTINGS")) || {};
 const SETTINGS = Object.assign({}, SETTINGS_DEFAULT, SETTINGS_SAVED);
-
-/* Runtime state — never persisted, always fresh */
-const GAME = {
-  total: 0,
-  timer: 0,
-  answered: 0,
-  skipped: 0,
-};
-let started = false;
-
-/* Apply saved game settings */
-if (SETTINGS.font !== SETTINGS_DEFAULT.font) changeFont();
 
 /** MediaQueryList for the OS dark-mode preference. */
 const systemDarkMQ = window.matchMedia("(prefers-color-scheme: dark)");
@@ -55,12 +20,18 @@ const systemDarkMQ = window.matchMedia("(prefers-color-scheme: dark)");
  * @param {boolean} isDark - True to enable dark mode, false for light.
  */
 function applyTheme(isDark) {
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute("content", isDark ? "#212529" : "#F8F9FA");
+  }
+
   document.querySelectorAll("body, #menu, #result").forEach((el) => {
     el.classList.toggle("bg-dark", isDark);
+    el.classList.toggle("bg-light", !isDark);
     el.classList.toggle("text-white", isDark);
   });
-  $("#answer").classList.toggle("text-white", isDark);
-  $$("kbd").forEach((el) => {
+  document.querySelector("#answer").classList.toggle("text-white", isDark);
+  document.querySelectorAll("kbd").forEach((el) => {
     // Keyboard keys (kbd) should have inverted themes:
     // Dark mode -> White background, dark text
     // Light mode -> Dark background, white text
@@ -69,11 +40,11 @@ function applyTheme(isDark) {
     el.classList.toggle("bg-dark", !isDark);
     el.classList.toggle("text-white", !isDark);
   });
-  $$(".table").forEach((el) => {
+  document.querySelectorAll(".table").forEach((el) => {
     el.classList.toggle("table-hover", !isDark);
     el.classList.toggle("text-white", isDark);
   });
-  $$(".btn").forEach((el) => {
+  document.querySelectorAll(".btn").forEach((el) => {
     // Buttons use outline variants so the Bootstrap .active class renders as a
     // visually distinct filled state (solid bg + contrasting text).
     // Light mode -> dark outline (active = filled dark)
@@ -100,8 +71,79 @@ function resolveIsDark(theme) {
 /* Apply theme on load */
 applyTheme(resolveIsDark(SETTINGS.theme));
 
+/* Viewport height adjustment for mobile keyboards */
+const updateViewportHeight = () => {
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty("--visual-viewport-height", `${vh}px`);
+
+  // If visual viewport is significantly smaller than layout height, the keyboard is likely open.
+  // We also check if the answer input is focused as a secondary hint.
+  const isInputFocused = document.activeElement && document.activeElement.id === "answer";
+  const isShort = vh < window.innerHeight * 0.85;
+
+  const isKeyboardOpen = isShort || isInputFocused;
+
+  document.body.classList.toggle("keyboard-open", isKeyboardOpen);
+
+  // Force scroll to top when keyboard is open to prevent Safari from pushing the page up
+  if (isKeyboardOpen) {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+  }
+};
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", updateViewportHeight);
+  window.visualViewport.addEventListener("scroll", updateViewportHeight);
+}
+window.addEventListener("resize", updateViewportHeight);
+
+/*
+ * Prevent the "blank space" scroll on iOS.
+ * When the keyboard is open, we block touch-based scrolling on the body
+ * unless the user is touching an element that actually needs to scroll
+ * (like the result review table).
+ */
+document.body.addEventListener(
+  "touchmove",
+  (e) => {
+    if (document.body.classList.contains("keyboard-open")) {
+      // Allow scrolling only if the target is inside a scrollable container
+      const isScrollable = e.target.closest("#review-wrapper");
+      if (!isScrollable) {
+        e.preventDefault();
+      }
+    }
+  },
+  { passive: false },
+);
+
+// Ensure the class updates immediately when focusing/blurring the input
+document.querySelector("#answer").addEventListener("focus", () => setTimeout(updateViewportHeight, 100));
+document.querySelector("#answer").addEventListener("blur", () => setTimeout(updateViewportHeight, 100));
+
+updateViewportHeight();
+
+/* Runtime state — never persisted, always fresh */
+const GAME = {
+  total: 0,
+  timer: 0,
+  answered: 0,
+  skipped: 0,
+};
+let started = false;
+
+/* Apply saved game settings */
+if (SETTINGS.font !== SETTINGS_DEFAULT.font) changeFont();
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.body.classList.remove("preload");
+  }, 100);
+});
+
 /* Keep active button in sync with the loaded setting */
-$$(".game-theme").forEach((btn) => {
+document.querySelectorAll(".game-theme").forEach((btn) => {
   btn.classList.toggle("active", btn.value === SETTINGS.theme);
 });
 
@@ -110,23 +152,23 @@ systemDarkMQ.addEventListener("change", () => {
   if (SETTINGS.theme === "system") applyTheme(systemDarkMQ.matches);
 });
 
-$(`#${SETTINGS.type}`).classList.add("active");
-$("#game-dakuten").classList.toggle("active", SETTINGS.dakuten);
+document.querySelector(`#${SETTINGS.type}`).classList.add("active");
+document.querySelector("#game-dakuten").classList.toggle("active", SETTINGS.dakuten);
 document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
 
 /* Set the active card button based on the saved setting. */
-$$(".game-card").forEach((el) => {
+document.querySelectorAll(".game-card").forEach((el) => {
   el.classList.toggle("active", el.value === SETTINGS.card);
 });
 
-const kanjiBtn = $("#game-kanji");
+const kanjiBtn = document.querySelector("#game-kanji");
 kanjiBtn.classList.toggle("active", SETTINGS.kanji);
 kanjiBtn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
 
 /* Game setting functions */
 function changeFont() {
-  $("#game-font").value = SETTINGS.font;
-  $$(".game-font-change").forEach((el) => (el.style.fontFamily = SETTINGS.font));
+  document.querySelector("#game-font").value = SETTINGS.font;
+  document.querySelectorAll(".game-font-change").forEach((el) => (el.style.fontFamily = SETTINGS.font));
 }
 
 /* Game functions */
@@ -194,10 +236,11 @@ function nextQuestion() {
     kanji = wanakana.toKatakana(kanji);
   }
 
-  $("#question").innerHTML = `${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
-  $("#question-id").value = id;
-  $("#answer").value = "";
-  $("#score").innerHTML = '<i class="bi-check-circle"></i> ' + `${GAME.answered}/${GAME.answered + GAME.skipped}`;
+  document.querySelector("#question").innerHTML = `${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
+  document.querySelector("#question-id").value = id;
+  document.querySelector("#answer").value = "";
+  document.querySelector("#score").innerHTML =
+    '<i class="bi-check-circle"></i> ' + `${GAME.answered}/${GAME.answered + GAME.skipped}`;
 }
 
 /* Game settings */
@@ -209,116 +252,116 @@ document.querySelectorAll("#option-wrapper button, #game-font").forEach((el) => 
   });
 });
 
-$("#game-font").addEventListener("change", () => {
-  SETTINGS.font = $("#game-font").value;
+document.querySelector("#game-font").addEventListener("change", () => {
+  SETTINGS.font = document.querySelector("#game-font").value;
   changeFont();
 });
 
-$$(".game-theme").forEach((el) => {
+document.querySelectorAll(".game-theme").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
-    $$(".game-theme").forEach((btn) => btn.classList.remove("active"));
+    document.querySelectorAll(".game-theme").forEach((btn) => btn.classList.remove("active"));
     evt.currentTarget.classList.add("active");
     SETTINGS.theme = evt.currentTarget.value;
     applyTheme(resolveIsDark(SETTINGS.theme));
   });
 });
 
-$("#game-kanji").addEventListener("click", () => {
+document.querySelector("#game-kanji").addEventListener("click", () => {
   SETTINGS.kanji = !SETTINGS.kanji;
-  const btn = $("#game-kanji");
+  const btn = document.querySelector("#game-kanji");
   btn.classList.toggle("active", SETTINGS.kanji);
   btn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
 });
 
-$$(".game-type").forEach((el) => {
+document.querySelectorAll(".game-type").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
-    $$(".game-type").forEach((btn) => btn.classList.remove("active"));
+    document.querySelectorAll(".game-type").forEach((btn) => btn.classList.remove("active"));
     evt.currentTarget.classList.add("active");
     SETTINGS.type = evt.currentTarget.id;
   });
 });
 
-$("#game-dakuten").addEventListener("click", () => {
-  $("#game-dakuten").classList.toggle("active");
+document.querySelector("#game-dakuten").addEventListener("click", () => {
+  document.querySelector("#game-dakuten").classList.toggle("active");
   document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through");
   SETTINGS.dakuten = !SETTINGS.dakuten;
 });
 
-$$(".game-card").forEach((el) => {
+document.querySelectorAll(".game-card").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
-    $$(".game-card").forEach((btn) => btn.classList.toggle("active"));
+    document.querySelectorAll(".game-card").forEach((btn) => btn.classList.toggle("active"));
     SETTINGS.card = evt.currentTarget.value;
   });
 });
 
 /* Buttons event listener */
-$("#option").addEventListener("click", () => {
-  $("#option").classList.toggle("active");
-  $("#option-wrapper").classList.toggle("collapsed");
-  $("#option-wrapper").classList.toggle("p-3");
+document.querySelector("#option").addEventListener("click", () => {
+  document.querySelector("#option").classList.toggle("active");
+  document.querySelector("#option-wrapper").classList.toggle("collapsed");
+  document.querySelector("#option-wrapper").classList.toggle("p-3");
 });
 
-$("#start").addEventListener("click", () => {
-  const timeEl = $("#time");
+document.querySelector("#start").addEventListener("click", () => {
+  const timeEl = document.querySelector("#time");
   const interval = setInterval(() => {
     if (!started) return clearInterval(interval);
     timeEl.innerHTML = `${++GAME.timer} <i class="bi-clock"></i>`;
   }, 1000);
 
-  $("#review-table").innerHTML = "";
-  $("#start").disabled = true;
-  $("#game").classList.remove("d-none");
-  $("#menu").classList.add("slide-up");
-  $("#answer").focus();
+  document.querySelector("#review-table").innerHTML = "";
+  document.querySelector("#start").disabled = true;
+  document.querySelector("#game").classList.remove("d-none");
+  document.querySelector("#menu").classList.add("slide-up");
+  document.querySelector("#answer").focus();
   started = true;
   nextQuestion();
 });
 
-$("#review").addEventListener("click", () => {
-  $("#result").classList.remove("d-none");
-  $("#result").classList.add("slide-in");
+document.querySelector("#review").addEventListener("click", () => {
+  document.querySelector("#result").classList.remove("d-none");
+  document.querySelector("#result").classList.add("slide-in");
 });
 
-$("#stop").addEventListener("click", () => {
+document.querySelector("#stop").addEventListener("click", () => {
   const average = GAME.timer / (GAME.answered + GAME.skipped);
 
-  $("#result").classList.remove("d-none");
-  $("#result").classList.add("slide-in");
-  $("#game").classList.add("d-none");
-  $("#stats-answered").textContent = GAME.answered;
-  $("#stats-skipped").textContent = GAME.skipped;
-  $("#stats-timer").textContent = GAME.timer + "s";
-  $("#stats-average").textContent = average.toFixed(2) + "s";
-  $("#review").disabled = false;
-  $("#restart").focus();
+  document.querySelector("#result").classList.remove("d-none");
+  document.querySelector("#result").classList.add("slide-in");
+  document.querySelector("#game").classList.add("d-none");
+  document.querySelector("#stats-answered").textContent = GAME.answered;
+  document.querySelector("#stats-skipped").textContent = GAME.skipped;
+  document.querySelector("#stats-timer").textContent = GAME.timer + "s";
+  document.querySelector("#stats-average").textContent = average.toFixed(2) + "s";
+  document.querySelector("#review").disabled = false;
+  document.querySelector("#restart").focus();
   started = false;
 
   if (!GAME.answered && !GAME.skipped) {
-    $("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
+    document.querySelector("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
   } else if (!GAME.answered && GAME.skipped) {
-    $("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Practice more!</b>");
+    document.querySelector("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Practice more!</b>");
   }
 });
 
-$("#restart").addEventListener("click", () => {
-  $("#menu").classList.remove("slide-up");
-  const result = $("#result");
+document.querySelector("#restart").addEventListener("click", () => {
+  document.querySelector("#menu").classList.remove("slide-up");
+  const result = document.querySelector("#result");
   result.classList.remove("slide-in");
   result.addEventListener(
     "transitionend",
     () => {
       result.classList.add("d-none");
-      $("#game").classList.add("d-none");
-      $("#time").innerHTML = '0 <i class="bi-clock"></i>';
-      $("#score").innerHTML = '<i class="bi-check-circle"></i> 0';
+      document.querySelector("#game").classList.add("d-none");
+      document.querySelector("#time").innerHTML = '0 <i class="bi-clock"></i>';
+      document.querySelector("#score").innerHTML = '<i class="bi-check-circle"></i> 0';
       const bold = document.querySelector("#review-wrapper b");
       if (bold) bold.remove();
-      $("#copy").innerHTML = '<i class="bi-table"></i> Copy Table';
-      $("#share").innerHTML = '<i class="bi-share"></i> Share';
-      $("#start").disabled = false;
+      document.querySelector("#copy").innerHTML = '<i class="bi-table"></i> Copy Table';
+      document.querySelector("#share").innerHTML = '<i class="bi-share"></i> Share';
+      document.querySelector("#start").disabled = false;
     },
     { once: true },
   );
@@ -328,25 +371,26 @@ $("#restart").addEventListener("click", () => {
   GAME.skipped = 0;
 });
 
-$("#copy").addEventListener("click", async () => {
+document.querySelector("#copy").addEventListener("click", async () => {
   const text =
-    $("#review-table").textContent.replaceAll("‎‎", "\n").replaceAll("‎", " ー ").trim() || "Why did I copy this?";
+    document.querySelector("#review-table").textContent.replaceAll("‎‎", "\n").replaceAll("‎", " ー ").trim() ||
+    "Why did I copy this?";
   try {
     await navigator.clipboard.writeText(text);
   } catch {
     const ta = document.createElement("textarea");
     ta.value = text;
-    $("#result").appendChild(ta);
+    document.querySelector("#result").appendChild(ta);
     ta.select();
     document.execCommand("copy");
     ta.remove();
   }
-  $("#copy").innerHTML = '<i class="bi-table"></i> Copied!';
+  document.querySelector("#copy").innerHTML = '<i class="bi-table"></i> Copied!';
 });
 
-$("#share").addEventListener("click", async () => {
+document.querySelector("#share").addEventListener("click", async () => {
   const average = GAME.timer / (GAME.answered + GAME.skipped);
-  const activeType = $(".game-type.active");
+  const activeType = document.querySelector(".game-type.active");
   const type = activeType ? activeType.textContent.trim() : "";
   const text = `
 Asobimashou! 遊びましょう！ (Let's Play!)
@@ -361,12 +405,12 @@ Check it out at: ${location.href}
   } catch {
     const ta = document.createElement("textarea");
     ta.value = text;
-    $("#result").appendChild(ta);
+    document.querySelector("#result").appendChild(ta);
     ta.select();
     document.execCommand("copy");
     ta.remove();
   }
-  $("#share").innerHTML = '<i class="bi-share"></i> Copied!';
+  document.querySelector("#share").innerHTML = '<i class="bi-share"></i> Copied!';
 });
 
 /* Answer input handling */
@@ -378,32 +422,34 @@ Check it out at: ${location.href}
  * @returns {void}
  */
 function skipQuestion() {
-  const id = $("#question-id").value;
+  const id = document.querySelector("#question-id").value;
   const card = cards[SETTINGS.card][id];
   const jisho = "https://jisho.org/word/" + card.kanji;
   const means = card.meaning.split(", ")[0].trim();
   const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
-  const question = $("#question").childNodes[0].nodeValue.trim();
+  const question = document.querySelector("#question").childNodes[0].nodeValue.trim();
   const romaji = wanakana.toRomaji(question);
 
-  $("#review-table").insertAdjacentHTML(
-    "beforeend",
-    `<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
-      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-      `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
-  );
+  document
+    .querySelector("#review-table")
+    .insertAdjacentHTML(
+      "beforeend",
+      `<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
+        `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+        `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
+    );
   GAME.skipped++;
-  $("#answer").value = "";
+  document.querySelector("#answer").value = "";
   nextQuestion();
 }
 
-$("#answer").addEventListener("keyup", () => {
-  const id = $("#question-id").value;
+document.querySelector("#answer").addEventListener("keyup", () => {
+  const id = document.querySelector("#question-id").value;
   const card = cards[SETTINGS.card][id];
   const options = { customKanaMapping: { dzu: "づ" } };
-  const question = $("#question").childNodes[0].nodeValue.trim();
+  const question = document.querySelector("#question").childNodes[0].nodeValue.trim();
   const q = wanakana.toHiragana(question, options);
-  const answer = $("#answer").value;
+  const answer = document.querySelector("#answer").value;
   const a = wanakana.toHiragana(answer, options);
 
   /* Space key: skip the current question */
@@ -416,25 +462,27 @@ $("#answer").addEventListener("keyup", () => {
   const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
   const romaji = wanakana.toRomaji(question);
 
-  $("#review-table").insertAdjacentHTML(
-    "beforeend",
-    `<tr><th><i class="d-none">（${card.kanji}）</i>` +
-      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-      `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
-  );
+  document
+    .querySelector("#review-table")
+    .insertAdjacentHTML(
+      "beforeend",
+      `<tr><th><i class="d-none">（${card.kanji}）</i>` +
+        `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+        `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
+    );
   GAME.answered++;
   nextQuestion();
 });
 
 /* Skip button: same action as pressing Space */
-$("#skip").addEventListener("click", () => {
+document.querySelector("#skip").addEventListener("click", () => {
   skipQuestion();
-  $("#answer").focus();
+  document.querySelector("#answer").focus();
 });
 
-$("#answer").addEventListener("keydown", (e) => {
+document.querySelector("#answer").addEventListener("keydown", (e) => {
   if (e.key === "Tab") {
     e.preventDefault();
-    $("#stop").click();
+    document.querySelector("#stop").click();
   }
 });
