@@ -1,38 +1,40 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Asobimashou!</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#F8F9FA" />
-    <meta property="title" content="Asobimashou!" />
-    <meta http-equiv="content-language" content="en" />
-    <meta property="description" content="A minimal website to practice reading Japanese katakana and hiragana!" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Asobimashou!" />
-    <meta property="og:site_name" content="あそびましょう！" />
-    <meta property="og:description" content="A minimal website to practice reading Japanese katakana and hiragana!" />
-    <meta property="og:image" content="https://sglkc.github.io/asobimashou/thumbnail.png" />
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://sglkc.github.io/asobimashou/" />
-    <meta property="twitter:title" content="Asobimashou!" />
-    <meta
-      property="twitter:description"
-      content="A minimal website to practice reading Japanese katakana and hiragana!" />
-    <meta property="twitter:image" content="https://sglkc.github.io/asobimashou/thumbnail.png" />
-    <link href="favicon.ico" rel="icon" />
-    <link href="manifest.json" rel="manifest" />
-    <link href="thumbnail.png" rel="apple-touch-icon" />
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="assets/css/style.css" rel="stylesheet" />
-    <link href="assets/css/icons.css" rel="stylesheet" />
-    <link href="assets/css/fonts.css" rel="stylesheet" />
-    <script src="assets/js/wanakana.min.js"></script>
-  </head>
 
-  <body>
-    <!-- Main Menu -->
-    <section id="menu" class="bg-light">
+<head>
+  <title>Asobimashou!</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=0" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#F8F9FA" />
+  <meta property="title" content="Asobimashou!" />
+  <meta http-equiv="content-language" content="en" />
+  <meta property="description" content="A minimal website to practice reading Japanese katakana and hiragana!" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Asobimashou!" />
+  <meta property="og:site_name" content="あそびましょう！" />
+  <meta property="og:description" content="A minimal website to practice reading Japanese katakana and hiragana!" />
+  <meta property="og:image" content="https://sglkc.github.io/asobimashou/thumbnail.png" />
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://sglkc.github.io/asobimashou/" />
+  <meta property="twitter:title" content="Asobimashou!" />
+  <meta property="twitter:description"
+    content="A minimal website to practice reading Japanese katakana and hiragana!" />
+  <meta property="twitter:image" content="https://sglkc.github.io/asobimashou/thumbnail.png" />
+  <link href="favicon.ico" rel="icon" />
+  <link href="manifest.json" rel="manifest" />
+  <link href="thumbnail.png" rel="apple-touch-icon" />
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="assets/css/style.css" rel="stylesheet" />
+  <link href="assets/css/icons.css" rel="stylesheet" />
+  <link href="assets/css/fonts.css" rel="stylesheet" />
+  <script src="assets/js/wanakana.min.js"></script>
+</head>
+
+<body class="preload">
+  <!-- Main Menu -->
+  <section id="menu" class="bg-light">
+    <div class="centering-wrapper container">
       <div class="mb-3 display-5 game-font-change">
         <ruby>あそびましょう！<rt>Asobimashou!</rt></ruby>
         <br />
@@ -50,10 +52,7 @@
         <div id="option-wrapper" class="border">
           <div class="row justify-content-center mb-3">
             <div class="col-auto btn-group-vertical" role="group">
-              <select
-                id="game-font"
-                class="form-select rounded-0 rounded-top"
-                title="Select Game Font"
+              <select id="game-font" class="form-select rounded-0 rounded-top" title="Select Game Font"
                 aria-label="Select Game Font">
                 <option value="inherit" selected>Default Font</option>
                 <option value="Klee One">Klee One</option>
@@ -90,22 +89,21 @@
           Review
         </button>
       </div>
-      <div class="d-flex align-items-center gap-1 fs-3">
-        <a
-          class="text-reset text-decoration-none"
-          href="https://github.com/rapjul/asobimashou/tree/update"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="GitHub Repository">
+      <div class="d-flex justify-content-center align-items-center gap-1 fs-3">
+        <a class="text-reset text-decoration-none" href="https://github.com/rapjul/asobimashou/tree/update"
+          target="_blank" rel="noopener noreferrer" aria-label="GitHub Repository">
           <i class="bi-github"></i>
         </a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Play Area -->
-    <main id="game" class="container-fluid d-none">
-      <div class="row justify-content-center align-items-center">
-        <h2 id="score" class="col col-lg-3 m-0">
+  <!-- Play Area -->
+  <main id="game" class="container-fluid d-none">
+    <!-- <div class="game-spacer top-spacer"></div> -->
+    <div class="game-content-wrapper d-flex flex-column justify-content-center align-items-center">
+      <div id="stats-row" class="row justify-content-center align-items-center gap-3">
+        <h2 id="score" class="stat-item col col-lg-3 m-0">
           <i class="bi-check-circle"></i>
           0/0
         </h2>
@@ -113,13 +111,13 @@
           <i class="bi-stop-fill"></i>
           End
         </button>
-        <h2 id="time" class="col col-lg-3 m-0">
+        <h2 id="time" class="stat-item col col-lg-3 m-0">
           0
           <i class="bi-clock"></i>
         </h2>
       </div>
-      <div class="row justify-content-center">
-        <div class="col-auto py-5">
+      <div class="container">
+        <div id="question-wrapper" class="row justify-content-center col-auto py-5">
           <ruby id="question" class="display-4 game-font-change">
             またひとり
             <rt>また一人</rt>
@@ -127,28 +125,25 @@
           <input id="question-id" class="d-none" type="number" aria-label="Question ID" />
         </div>
       </div>
-      <div class="row justify-content-center mb-4">
-        <div class="col-10 col-md-7 col-lg-5">
-          <input
-            id="answer"
-            class="form-control-lg game-font-change"
-            placeholder="Answer"
-            autocomplete="off"
-            aria-label="Answer" />
-        </div>
+      <div id="answer-wrapper" class="row justify-content-center mb-4 col-10 col-md-7 col-lg-5">
+        <input id="answer" type="text" name="answer" class="form-control-lg game-font-change" placeholder="Answer"
+          autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="Answer" />
       </div>
-      <div class="row justify-content-center align-items-center text-center gap-2">
-        <div class="col-auto">Press <kbd>Space</kbd> to skip.</div>
-        <button id="skip" class="col-auto btn btn-sm">
+      <div id="hints-wrapper" class="row justify-content-center align-items-center text-center gap-3">
+        <div class="col-auto" aria-label="Press space to skip this question.">Press <kbd>Space</kbd> to skip.</div>
+        <button id="skip" class="col-auto btn btn-sm" aria-label="Skip this question.">
           <i class="bi-skip-forward-fill"></i>
           Skip
         </button>
-        <div class="col-auto hint-keyboard">Press <kbd>Tab</kbd> to end.</div>
+        <div class="col-auto hint-keyboard" aria-label="Press tab to end the game.">Press <kbd>Tab</kbd> to end.</div>
       </div>
-    </main>
+    </div>
+    <div class="game-spacer bottom-spacer"></div>
+  </main>
 
-    <!-- End Banner -->
-    <section id="result" class="d-none">
+  <!-- End Banner -->
+  <section id="result" class="d-none">
+    <div class="centering-wrapper container">
       <h1><b>Final Result</b></h1>
       <div class="row mb-3 justify-content-center">
         <div class="col-auto">
@@ -173,7 +168,7 @@
           <tbody id="review-table" class="game-font-change"></tbody>
         </table>
       </div>
-      <div class="d-flex">
+      <div class="d-flex justify-content-center">
         <button id="copy" class="btn me-3">
           <i class="bi-table"></i>
           Copy Table
@@ -187,9 +182,12 @@
           Home
         </button>
       </div>
-    </section>
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/script.js"></script>
-    <script src="assets/js/cards.js" async></script>
-  </body>
+    </div>
+  </section>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/script.js"></script>
+  <script src="assets/js/cards.js" async></script>
+  <script src="assets/js/sw-register.js"></script>
+</body>
+
 </html>
