@@ -33,8 +33,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   width: 100%;
-  height: var(--visual-viewport-height, 100%);
-  transform: translateY(var(--visual-viewport-offset-y, 0px));
+  height: 100%;
 
   /* Very light gray base instead of pure white for all non-dark modes */
   background-color: var(--app-bg);
@@ -381,21 +380,7 @@ td {
 @media (max-height: 600px),
 (max-width: 768px) {
 
-  body.keyboard-open {
-    /* 
-     * Lock the body to the visual viewport when the keyboard is open.
-     * This prevents Safari from creating extra scrollable "blank space"
-     * below the content.
-     */
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: var(--visual-viewport-height, 100%) !important;
-    overflow: hidden !important;
-  }
+
 
   body.keyboard-open .centering-wrapper {
     margin-top: 1vh !important;

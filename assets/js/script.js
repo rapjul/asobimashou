@@ -76,7 +76,7 @@ const updateViewportHeight = () => {
   const vv = window.visualViewport;
   const vh = vv ? vv.height : window.innerHeight;
   const offsetTop = vv ? vv.offsetTop : 0;
-  
+
   document.documentElement.style.setProperty("--visual-viewport-height", `${vh}px`);
   document.documentElement.style.setProperty("--visual-viewport-offset-y", `${offsetTop}px`);
 
