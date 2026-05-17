@@ -9,7 +9,7 @@ html {
   right: 0;
   bottom: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
 }
@@ -33,7 +33,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   width: 100%;
-  height: 100%;
+  height: 100dvh;
 
   /* Very light gray base instead of pure white for all non-dark modes */
   background-color: var(--app-bg);
