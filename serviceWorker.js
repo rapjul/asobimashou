@@ -1,4 +1,4 @@
-const CACHE_NAME = "offline-v4";
+const CACHE_NAME = "offline-v5";
 
 /** All assets that must be cached during service worker installation. */
 const toCache = [
@@ -55,23 +55,46 @@ self.addEventListener("activate", (event) => {
 });
 
 /**
- * Fetch event: cache-first strategy with offline fallback.
+ * Fetch event: split caching strategy.
  *
- * For navigation requests (HTML page loads) that miss the cache AND fail the
- * network, serve the pre-cached offline.html instead of a bare browser error.
+ * - Navigation requests (HTML page loads): network-first so Safari always
+ *   receives the latest version of the page. Falls back to the offline shell
+ *   when the network is unavailable.
+ * - All other requests (JS, CSS, fonts, images): cache-first for performance,
+ *   with a network fallback to update the cache entry on a miss.
  *
  * @param {FetchEvent} event
  */
 self.addEventListener("fetch", (event) => {
+  /* Network-first for HTML navigation — prevents Safari from serving stale pages. */
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          /* Refresh the cached copy with the fresh response. */
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+        })
+        .catch(() => {
+          /* Network failed — serve the cached page or the offline fallback. */
+          return caches.match(event.request).then((cached) => cached || caches.match("./offline.html"));
+        }),
+    );
+    return;
+  }
+
+  /* Cache-first for static assets (JS, CSS, fonts, images). */
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
 
-      return fetch(event.request).catch(() => {
-        /* Only substitute the offline page for full navigation requests. */
-        if (event.request.mode === "navigate") {
-          return caches.match("./offline.html");
-        }
+      return fetch(event.request).then((networkResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
       });
     }),
   );
