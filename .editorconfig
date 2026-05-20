@@ -1,0 +1,15 @@
+# editorconfig.org
+root = true
+
+# Default for HTML, JS, CSS, SVG and JSON files.
+[*]
+indent_style = space
+indent_size = 2
+tab_width = 2
+end_of_line = lf # To allow compiling code on CI.
+charset = utf-8 # For Japanese characters.
+trim_trailing_whitespace = true # To remove trailing whitespace.
+insert_final_newline = true # To add a newline at the end of the file.
+
+[*.md]
+indent_size = 4 # Use 4 spaces for Markdown files.
