@@ -1,5 +1,22 @@
 :root {
+  /* Main application background color (light mode) */
   --app-bg: #f2f2f2;
+  /* Final result review screen background (light mode) */
+  --result-bg: #e5e5e5;
+  /* Background color for table row hovers (light mode) */
+  --table-hover-bg: #d6d6d6;
+  /* Scrollbar track background color (light mode) */
+  --scrollbar-track-bg: rgba(228, 228, 228, 0.25);
+  /* Scrollbar thumb background color (light mode) */
+  --scrollbar-thumb-bg: rgba(161, 161, 161, 0.25);
+  /* Box shadow color for the active input focus (light mode) */
+  --input-focus-shadow: gray;
+  /* Border color for the active dropdown focus (light mode) */
+  --input-focus-border: #ced4da;
+  /* Shadow color for keyboard shortcuts kbd elements (light mode) */
+  --kbd-shadow: rgba(0, 0, 0, 0.1);
+  /* Hover background color for dark theme buttons (light mode) */
+  --btn-dark-hover-bg: #343a40;
 }
 
 html {
@@ -20,7 +37,26 @@ html {
 }
 
 body.bg-dark {
+  /* Main application background color (dark mode) */
   --app-bg: #212529;
+  /* Final result review screen background (dark mode) */
+  --result-bg: #181a1b;
+  /* Background color for table row hovers (dark mode) */
+  --table-hover-bg: #3a3a3a;
+  /* Scrollbar track background color (dark mode) */
+  --scrollbar-track-bg: rgba(228, 228, 228, 0.15);
+  /* Scrollbar thumb background color (dark mode) */
+  --scrollbar-thumb-bg: rgba(161, 161, 161, 0.15);
+  /* Box shadow color for the active input focus (dark mode) */
+  --input-focus-shadow: rgba(255, 255, 255, 0.2);
+  /* Border color for the active dropdown focus (dark mode) */
+  --input-focus-border: #495057;
+  /* Shadow color for keyboard shortcuts kbd elements (dark mode) */
+  --kbd-shadow: rgba(255, 255, 255, 0.1);
+  /* Hover background color for light theme buttons (dark mode) */
+  --btn-light-hover-bg: #e2e6ea;
+  /* Hover border color for light theme buttons (dark mode) */
+  --btn-light-hover-border: #dae0e5;
 }
 
 body {
@@ -136,16 +172,16 @@ body {
  * The :not(.bg-dark) guard keeps dark-mode buttons untouched.
  */
 body:not(.bg-dark) .btn-dark:hover:not(:disabled):not(.active) {
-  background-color: #343a40;
-  border-color: #343a40;
+  background-color: var(--btn-dark-hover-bg);
+  border-color: var(--btn-dark-hover-bg);
 }
 
 /*
- * table-hover in light mode: default Bootstrap overlay is barely
- * visible on #f2f2f2.  Push it to a slightly darker gray.
+ * table-hover: customize the bootstrap hover background overlay
+ * to ensure high visibility across both light and dark backgrounds.
  */
-body:not(.bg-dark) .table-hover>tbody>tr:hover>* {
-  --bs-table-bg-state: #d6d6d6;
+.table-hover>tbody>tr:hover>* {
+  --bs-table-bg-state: var(--table-hover-bg);
 }
 
 /*
@@ -156,17 +192,8 @@ body:not(.bg-dark) .table-hover>tbody>tr:hover>* {
  * :not(.active) ensures the selected button keeps its bright fill.
  */
 body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
-  background-color: #e2e6ea;
-  border-color: #dae0e5;
-}
-
-/*
- * table-hover in dark mode: Bootstrap's overlay is too subtle against
- * the #212529 dark background.
- * Use a slightly lighter dark swatch.
- */
-body.bg-dark .table-hover>tbody>tr:hover>* {
-  --bs-table-bg-state: #3a3a3a;
+  background-color: var(--btn-light-hover-bg);
+  border-color: var(--btn-light-hover-border);
 }
 
 #option-wrapper {
@@ -187,7 +214,7 @@ body.bg-dark .table-hover>tbody>tr:hover>* {
 }
 
 .form-select:focus {
-  border-color: #ced4da !important;
+  border-color: var(--input-focus-border) !important;
   box-shadow: none !important;
 }
 
@@ -277,20 +304,16 @@ body.bg-dark #option-wrapper {
   background: none;
   border: none;
   outline: none;
-  box-shadow: 0 0 5px gray;
+  box-shadow: 0 0 5px var(--input-focus-shadow);
   text-align: center;
   width: 100%;
 }
 
 #result {
-  /* Very light gray overlay instead of pure white */
-  background-color: #f2f2f2ef;
+  /* Solid background that is slightly darker than the base background to keep the main screen fully hidden */
+  background-color: var(--result-bg) !important;
   top: 100%;
   height: 100%;
-}
-
-#result.bg-dark {
-  background-color: #000000cf !important;
 }
 
 #review-wrapper {
@@ -303,12 +326,12 @@ body.bg-dark #option-wrapper {
 }
 
 #review-wrapper::-webkit-scrollbar-track {
-  background-color: #e4e4e43f;
+  background-color: var(--scrollbar-track-bg);
   border-radius: 100px;
 }
 
 #review-wrapper::-webkit-scrollbar-thumb {
-  background-color: #a1a1a13f;
+  background-color: var(--scrollbar-thumb-bg);
   border-radius: 100px;
 }
 
@@ -472,11 +495,7 @@ kbd {
   transition: background-color 0.5s ease, color 0.1s ease, box-shadow 0.5s ease;
   padding: .2rem .4rem;
   border-radius: .25rem;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
-}
-
-body.bg-dark kbd {
-  box-shadow: 0 2px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 0 var(--kbd-shadow);
 }
 
 /*
