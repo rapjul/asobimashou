@@ -129,7 +129,21 @@ const GAME = {
   answered: 0,
   skipped: 0,
 };
-let started = false;
+
+/**
+ * rAF handle for the game timer loop.
+ * @type {number|null}
+ */
+let timerInterval = null;
+
+/**
+ * Monotonic timestamp (ms, via performance.now()) captured when the game starts.
+ * Using performance.now() instead of Date.now() ensures the elapsed time is
+ * unaffected by system-clock adjustments (NTP sync, DST, user changes).
+ * @type {number|null}
+ */
+let gameStartTime = null;
+
 
 /* Apply saved game settings */
 if (SETTINGS.font !== SETTINGS_DEFAULT.font) changeFont();
@@ -302,32 +316,70 @@ document.querySelector("#option").addEventListener("click", () => {
   document.querySelector("#option-wrapper").classList.toggle("p-3");
 });
 
+/**
+ * Click handler for the start button. Initializes a new game session and starts the timer.
+ * @type {EventListener}
+ * @returns {void}
+ */
 document.querySelector("#start").addEventListener("click", () => {
   const timeEl = document.querySelector("#time");
-  const interval = setInterval(() => {
-    if (!started) return clearInterval(interval);
-    timeEl.innerHTML = `${++GAME.timer} <i class="bi-clock"></i>`;
-  }, 1000);
+
+  if (timerInterval) {
+    cancelAnimationFrame(timerInterval);
+    timerInterval = null;
+  }
+
+  gameStartTime = performance.now();
+  GAME.timer = 0;
+
+  /* rAF loop: fires every display frame (~60 fps) but only updates the
+   * DOM and GAME.timer when a full second has elapsed. Using Date.now()
+   * means the displayed time is always correct even when the browser
+   * delays or skips frames (Safari setInterval throttling, etc.). */
+  (function tickLoop() {
+    var elapsed = Math.floor((performance.now() - gameStartTime) / 1000);
+    if (elapsed !== GAME.timer) {
+      GAME.timer = elapsed;
+      timeEl.innerHTML = GAME.timer + ' <i class="bi-clock"></i>';
+    }
+    timerInterval = requestAnimationFrame(tickLoop);
+  }());
 
   document.querySelector("#review-table").innerHTML = "";
   document.querySelector("#start").disabled = true;
   document.querySelector("#game").classList.remove("d-none");
   document.querySelector("#menu").classList.add("slide-up");
   document.querySelector("#answer").focus();
-  started = true;
   nextQuestion();
 });
 
-document.querySelector("#review").addEventListener("click", () => {
-  document.querySelector("#result").classList.remove("d-none");
-  document.querySelector("#result").classList.add("slide-in");
+
+/**
+ * Click handler for the review button. Shows the results screen with transition.
+ * @type {EventListener}
+ * @param {MouseEvent} event - The click event object.
+ * @returns {void}
+ */
+document.querySelector("#review").addEventListener("click", (event) => {
+  const result = document.querySelector("#result");
+  result.classList.remove("d-none");
+  void result.offsetHeight; // Force browser reflow to trigger slide-in transition
+  result.classList.add("slide-in");
 });
 
-document.querySelector("#stop").addEventListener("click", () => {
+/**
+ * Click handler for the stop button. Ends the game, calculates averages, and displays results screen with transition.
+ * @type {EventListener}
+ * @param {MouseEvent} event - The click event object.
+ * @returns {void}
+ */
+document.querySelector("#stop").addEventListener("click", (event) => {
   const average = GAME.timer / (GAME.answered + GAME.skipped);
+  const result = document.querySelector("#result");
 
-  document.querySelector("#result").classList.remove("d-none");
-  document.querySelector("#result").classList.add("slide-in");
+  result.classList.remove("d-none");
+  void result.offsetHeight; // Force browser reflow to trigger slide-in transition
+  result.classList.add("slide-in");
   document.querySelector("#game").classList.add("d-none");
   document.querySelector("#stats-answered").textContent = GAME.answered;
   document.querySelector("#stats-skipped").textContent = GAME.skipped;
@@ -335,7 +387,10 @@ document.querySelector("#stop").addEventListener("click", () => {
   document.querySelector("#stats-average").textContent = average.toFixed(2) + "s";
   document.querySelector("#review").disabled = false;
   document.querySelector("#restart").focus();
-  started = false;
+  if (timerInterval) {
+    cancelAnimationFrame(timerInterval);
+    timerInterval = null;
+  }
 
   if (!GAME.answered && !GAME.skipped) {
     document.querySelector("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
@@ -344,6 +399,11 @@ document.querySelector("#stop").addEventListener("click", () => {
   }
 });
 
+/**
+ * Click handler for the restart (home) button. Resets game stats and returns to the main menu.
+ * @type {EventListener}
+ * @returns {void}
+ */
 document.querySelector("#restart").addEventListener("click", () => {
   document.querySelector("#menu").classList.remove("slide-up");
   const result = document.querySelector("#result");
@@ -367,6 +427,11 @@ document.querySelector("#restart").addEventListener("click", () => {
   GAME.timer = 0;
   GAME.answered = 0;
   GAME.skipped = 0;
+  gameStartTime = null;
+  if (timerInterval) {
+    cancelAnimationFrame(timerInterval);
+    timerInterval = null;
+  }
 });
 
 document.querySelector("#copy").addEventListener("click", async () => {
