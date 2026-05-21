@@ -6,6 +6,11 @@
 
 set -euo pipefail
 
+# SCRIPT_DIR: The directory containing this script.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# ROOT_DIR: The repository root directory (parent of scripts/).
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Print usage instructions.
 # Parameters:
 #   None
@@ -171,10 +176,19 @@ main() {
 
   local input_svg="$1"
 
+  # Check if the file exists before resolving.
   if [ ! -f "$input_svg" ]; then
     echo "Error: File '$input_svg' not found."
     exit 1
   fi
+
+  # Resolve the input SVG path to an absolute path.
+  if [[ "$input_svg" != /* ]]; then
+    input_svg="$(pwd)/$input_svg"
+  fi
+
+  # Change working directory to the repository root.
+  cd "$ROOT_DIR"
 
   # Ensure target directories exist.
   mkdir -p assets/images/icons
