@@ -1,4 +1,4 @@
-const CACHE_NAME = "offline-v5";
+const CACHE_NAME = "offline-v6";
 
 /** All assets that must be cached during service worker installation. */
 const toCache = [
@@ -7,8 +7,11 @@ const toCache = [
   "./offline.html",
   "./manifest.json",
   /* Icons */
-  "./favicon.ico",
-  "./thumbnail.png",
+  "./favicon.svg",
+  "./assets/images/icons/icon-192.png",
+  "./assets/images/icons/icon-512.png",
+  "./apple-touch-icon.png",
+  "./assets/images/thumbnail.png",
   /* JavaScript */
   "./assets/js/bootstrap.bundle.min.js",
   "./assets/js/script.js",
@@ -31,7 +34,9 @@ const toCache = [
  * @param {ExtendableEvent} event
  */
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(toCache)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(toCache)),
+  );
   /* Take control immediately without waiting for old SW to be discarded. */
   self.skipWaiting();
 });
@@ -80,7 +85,9 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => {
           /* Network failed — serve the cached page or the offline fallback. */
-          return caches.match(event.request).then((cached) => cached || caches.match("./offline.html"));
+          return caches
+            .match(event.request)
+            .then((cached) => cached || caches.match("./offline.html"));
         }),
     );
     return;
@@ -97,7 +104,6 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.match(event.request).then((cached) => {
-
         /**
          * Background revalidation: fetch the latest version from the network
          * and silently update the cache entry for the next visit.
