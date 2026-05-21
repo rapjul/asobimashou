@@ -192,7 +192,7 @@ body:not(.bg-dark) .btn-dark:hover:not(:disabled):not(.active) {
  * table-hover: customize the bootstrap hover background overlay
  * to ensure high visibility across both light and dark backgrounds.
  */
-.table-hover>tbody>tr:hover>* {
+.table-hover > tbody > tr:hover > * {
   --bs-table-bg-state: var(--table-hover-bg);
 }
 
@@ -235,29 +235,32 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
  * Uses variables to ensure consistent border colors across all groups.
  */
 #option-wrapper {
-  --opt-border-1: #6c757d;
   /* Group 1 */
-  --opt-border-2: #adb5bd;
+  --opt-border-1: #6c757d;
   /* Group 2 */
-  --opt-border-3: #495057;
+  --opt-border-2: #adb5bd;
   /* Group 3 */
+  --opt-border-3: #495057;
 }
 
 body.bg-dark #option-wrapper {
+  /* Group 1 */
   --opt-border-1: #adb5bd;
+  /* Group 2 */
   --opt-border-2: #6c757d;
+  /* Group 3 */
   --opt-border-3: #dee2e6;
 }
 
 /* Apply group borders */
-#option-wrapper .row:first-child>.col-auto:first-child [role="group"],
-#option-wrapper .row:first-child>.col-auto:first-child .form-select,
-#option-wrapper .row:first-child>.col-auto:first-child #game-kanji {
+#option-wrapper .row:first-child > .col-auto:first-child [role="group"],
+#option-wrapper .row:first-child > .col-auto:first-child .form-select,
+#option-wrapper .row:first-child > .col-auto:first-child #game-kanji {
   border-color: var(--opt-border-1) !important;
 }
 
-#option-wrapper .row:first-child>.col-auto:last-child [role="group"],
-#option-wrapper .row:first-child>.col-auto:last-child .btn {
+#option-wrapper .row:first-child > .col-auto:last-child [role="group"],
+#option-wrapper .row:first-child > .col-auto:last-child .btn {
   border-color: var(--opt-border-2) !important;
 }
 
@@ -276,7 +279,7 @@ body.bg-dark #option-wrapper {
 }
 
 /* Ensure borders don't collapse into invisibility */
-#option-wrapper .btn-group>.btn+.btn {
+#option-wrapper .btn-group > .btn + .btn {
   margin-left: 0 !important;
   /* Remove Bootstrap's overlap */
   border-left: none !important;
@@ -285,11 +288,11 @@ body.bg-dark #option-wrapper {
 
 
 /* Constrain theme row width */
-#option-wrapper .row:first-child>.col-auto:first-child>[role="group"]>.btn-group {
+#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group {
   width: 100%;
 }
 
-#option-wrapper .row:first-child>.col-auto:first-child>[role="group"]>.btn-group .btn {
+#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group .btn {
   flex: 1;
   min-width: 0;
 }
@@ -487,7 +490,7 @@ td {
     flex-wrap: wrap;
   }
 
-  #game #stats-row>* {
+  #game #stats-row > * {
     flex-basis: 100%;
     flex-shrink: 0;
     flex-grow: 0;
