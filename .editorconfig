@@ -13,3 +13,6 @@ insert_final_newline = true # To add a newline at the end of the file.
 
 [*.md]
 indent_size = 4 # Use 4 spaces for Markdown files.
+
+[*.svg]
+insert_final_newline = false
