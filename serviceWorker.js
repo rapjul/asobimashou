@@ -60,8 +60,9 @@ self.addEventListener("activate", (event) => {
  * - Navigation requests (HTML page loads): network-first so Safari always
  *   receives the latest version of the page. Falls back to the offline shell
  *   when the network is unavailable.
- * - All other requests (JS, CSS, fonts, images): cache-first for performance,
- *   with a network fallback to update the cache entry on a miss.
+ * - All other requests (JS, CSS, fonts, images): stale-while-revalidate —
+ *   respond instantly from cache, update the cache in the background so the
+ *   next visit always gets fresh assets without blocking the current load.
  *
  * @param {FetchEvent} event
  */
@@ -85,13 +86,48 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  /* Cache-first for static assets (JS, CSS, fonts, images). */
+  /* Stale-while-revalidate for static assets (JS, CSS, fonts, images).
+   *
+   * 1. Respond immediately from cache if available (fast load).
+   * 2. Always fire a background network request to refresh the cache entry
+   *    so the next visit gets the latest version automatically.
+   * 3. If the network request fails and a cached copy was already served,
+   *    log a warning so the developer knows the cache is stale.
+   */
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((cached) => {
 
-      return fetch(event.request).then((networkResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
+        /**
+         * Background revalidation: fetch the latest version from the network
+         * and silently update the cache entry for the next visit.
+         *
+         * @returns {Promise<void>}
+         */
+        const revalidate = fetch(event.request)
+          .then((networkResponse) => {
+            cache.put(event.request, networkResponse.clone());
+          })
+          .catch(() => {
+            /* Network is unavailable. If we already have a cached copy we can
+             * serve it without interruption, but warn so it's visible in DevTools. */
+            if (cached) {
+              console.warn(
+                "[asobimashou SW] Offline — serving stale cache for:",
+                event.request.url,
+              );
+            }
+          });
+
+        /* Serve the cached response immediately; revalidation runs in the background. */
+        if (cached) {
+          /* Kick off the background update without blocking the response. */
+          event.waitUntil(revalidate);
+          return cached;
+        }
+
+        /* No cache entry yet — wait for the network response and cache it. */
+        return fetch(event.request).then((networkResponse) => {
           cache.put(event.request, networkResponse.clone());
           return networkResponse;
         });
