@@ -17,6 +17,12 @@
   --kbd-shadow: rgba(0, 0, 0, 0.1);
   /* Hover background color for dark theme buttons (light mode) */
   --btn-dark-hover-bg: #343a40;
+
+  /* Toast notification colors (light mode) */
+  --toast-bg: rgba(255, 255, 255, 0.9);
+  --toast-border: rgba(0, 0, 0, 0.1);
+  --toast-color: #212529;
+  --toast-shadow: rgba(0, 0, 0, 0.15);
 }
 
 html {
@@ -57,6 +63,12 @@ body.bg-dark {
   --btn-light-hover-bg: #e2e6ea;
   /* Hover border color for light theme buttons (dark mode) */
   --btn-light-hover-border: #dae0e5;
+
+  /* Toast notification colors (dark mode) */
+  --toast-bg: rgba(33, 37, 41, 0.9);
+  --toast-border: rgba(255, 255, 255, 0.1);
+  --toast-color: #f8f9fa;
+  --toast-shadow: rgba(0, 0, 0, 0.4);
 }
 
 body {
@@ -508,4 +520,39 @@ kbd {
   .hint-keyboard {
     display: none;
   }
+}
+
+/*
+ * Toast Notification styling
+ * Displays floating messages to help users with input tips.
+ */
+#toast-container {
+  pointer-events: none;
+  margin-top: max(10px, env(safe-area-inset-top));
+  z-index: 1100;
+}
+
+.custom-toast {
+  background: var(--toast-bg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--toast-border);
+  color: var(--toast-color);
+  padding: 10px 20px;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px var(--toast-shadow);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+  margin-bottom: 10px;
+}
+
+.custom-toast.show {
+  opacity: 1;
+  transform: translateY(0);
 }

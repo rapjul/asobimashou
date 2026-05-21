@@ -506,7 +506,52 @@ function skipQuestion() {
   nextQuestion();
 }
 
-document.querySelector("#answer").addEventListener("keyup", () => {
+/**
+ * Displays a temporary toast notification reminding the user to use an apostrophe
+ * when transcribing Japanese words with 'n' followed by a vowel or 'y'.
+ *
+ * @param {string} romaji - The correct Romaji string with the required apostrophe (e.g., "ten'in").
+ * @param {string} kana - The correct Kana representation of the word (e.g., "てんいん").
+ * @returns {void}
+ */
+function showApostropheToast(romaji, kana) {
+  const container = document.querySelector("#toast-container");
+  if (!container) return;
+
+  // Clear any existing toasts to avoid cluttering the viewport
+  container.innerHTML = "";
+
+  const toast = document.createElement("div");
+  toast.className = "custom-toast";
+  toast.innerHTML = `
+    <i class="bi-lightbulb-fill text-warning"></i>
+    <span>Tip: Use an apostrophe (') for 'n' followed by a vowel/y (e.g., <strong>${romaji}</strong> &rarr; <strong>${kana}</strong>).</span>
+  `;
+
+  container.appendChild(toast);
+
+  // Force reflow to ensure the transition is animated correctly
+  void toast.offsetHeight;
+  toast.classList.add("show");
+
+  // Auto-fade and remove the toast after 4 seconds
+  setTimeout(() => {
+    toast.classList.remove("show");
+    // Listen for transition completion to remove the element from DOM
+    toast.addEventListener("transitionend", () => {
+      toast.remove();
+    });
+  }, 4000);
+}
+
+/**
+ * Event listener callback for the answer input keyup event.
+ * Validates the user input.
+ *
+ * @param {KeyboardEvent} event - The keyboard event.
+ * @returns {void}
+ */
+document.querySelector("#answer").addEventListener("keyup", (event) => {
   const id = document.querySelector("#question-id").value;
   const card = cards[SETTINGS.card][id];
   const options = { customKanaMapping: { dzu: "づ" } };
@@ -518,7 +563,21 @@ document.querySelector("#answer").addEventListener("keyup", () => {
   /* Space key: skip the current question */
   if (answer.indexOf(" ") > -1) return skipQuestion();
 
-  if (q !== a) return;
+  if (q !== a) {
+    // Check if the user missed an apostrophe for 'n' followed by a vowel or 'y'
+    const romajiCorrect = wanakana.toRomaji(q);
+    if (romajiCorrect.includes("'")) {
+      const normalizedAnswer = answer.toLowerCase().replace(/[’‘']/g, "");
+      const normalizedCorrect = romajiCorrect.toLowerCase().replace(/[’‘']/g, "");
+      if (normalizedAnswer === normalizedCorrect) {
+        showApostropheToast(romajiCorrect, q);
+      } else {
+        return;
+      }
+    } else {
+      return;
+    }
+  }
 
   const jisho = "https://jisho.org/word/" + card.kanji;
   const means = card.meaning.split(", ")[0].trim();
