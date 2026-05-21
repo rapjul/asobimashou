@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Asobimashou! Icon Color Palette Swatches</title>
+  <!-- Import Outfit and several Google Japanese fonts for comparison -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Klee+One:wght@600&family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700;900&family=M+PLUS+1p:wght@300;400;700;900&family=M+PLUS+Rounded+1c:wght@300;400;700;900&family=Zen+Kaku+Gothic+New:wght@300;400;700;900&family=Zen+Maru+Gothic:wght@300;400;700;900&family=Kosugi+Maru&family=Kosugi&family=Shippori+Mincho:wght@700;900&family=Kaisei+Tokumin:wght@700;900&family=Dela+Gothic+One&family=Sawarabi+Mincho&family=Sawarabi+Gothic&family=Yuji+Syuku&family=Mochiy+Pop+One&family=Yusei+Magic&family=RocknRoll+One&family=DotGothic16&family=Shippori+Antique&family=Hachi+Maru+Pop&display=swap"
+    rel="stylesheet">
+  <!-- Link local fonts from the web app assets -->
+  <link href="../../../assets/css/fonts.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 300;
+    }
+
+    /* Controls bar styling */
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      background: rgba(30, 41, 59, 0.4);
+      padding: 0.75rem 1.5rem;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .control-group label {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .btn-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    .btn-toggle.active {
+      background: #6366f1;
+      border-color: #818cf8;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    select.btn-toggle {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 2.25rem;
+      border-radius: 8px;
+    }
+
+    select.btn-toggle option,
+    select.btn-toggle optgroup {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+    }
+
+    /* Main grid optimized for compactness */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Palette card design */
+    .palette-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 0.75rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .palette-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .palette-info {
+      margin-bottom: 0.75rem;
+    }
+
+    .palette-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.35rem;
+    }
+
+    .palette-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .palette-desc {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 300;
+      line-height: 1.4;
+      min-height: 2.2rem;
+    }
+
+    /* Render canvas */
+    .icon-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1.1;
+      background: #182235;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .icon-container::after {
+      content: 'Preview';
+      position: absolute;
+      bottom: 6px;
+      right: 10px;
+      font-size: 0.55rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.15);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .icon-container svg {
+      width: 70%;
+      height: 70%;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+    }
+
+    /* Horizontal Swatches listing (super compact) */
+    .swatches {
+      display: flex;
+      flex-direction: row;
+      gap: 0.4rem;
+      margin-top: auto;
+    }
+
+    .swatch-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.4rem 0.2rem;
+      border-radius: 8px;
+      flex: 1;
+      text-align: center;
+    }
+
+    .swatch-color {
+      width: 100%;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .swatch-color:hover {
+      transform: scale(1.06);
+    }
+
+    .swatch-details {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0.1rem 0;
+      width: 100%;
+    }
+
+    .swatch-label {
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.65rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60px;
+    }
+
+    .swatch-hex {
+      font-family: monospace;
+      color: var(--text-muted);
+      font-size: 0.6rem;
+    }
+
+    .swatch-copy {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.6rem;
+      padding: 0.15rem 0.3rem;
+      border-radius: 4px;
+      width: 90%;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .swatch-copy:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 300;
+    }
+
+    footer a {
+      color: #818cf8;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Asobimashou! Icon Swatches</h1>
+      <p>Interactive color palette proposals and typography previews for the PWA icon.</p>
+    </header>
+
+    <div class="controls">
+      <!-- Font Family -->
+      <div class="control-group">
+        <label for="font-select">Font Face:</label>
+        <select id="font-select" class="btn-toggle" onchange="switchFont(this.value)">
+          <optgroup label="Sans-Serif (Gothic)">
+            <option value="'Outfit', sans-serif" selected>Outfit</option>
+            <option value="'Noto Sans JP', sans-serif">Noto Sans JP</option>
+            <option value="'M PLUS 1p', sans-serif">M PLUS 1p</option>
+            <option value="'M PLUS Rounded 1c', sans-serif">M PLUS Rounded 1c</option>
+            <option value="'Zen Kaku Gothic New', sans-serif">Zen Kaku Gothic New</option>
+            <option value="'Zen Maru Gothic', sans-serif">Zen Maru Gothic</option>
+            <option value="'Sawarabi Gothic', sans-serif">Sawarabi Gothic</option>
+            <option value="'Kosugi', sans-serif">Kosugi</option>
+            <option value="'Kosugi Maru', sans-serif">Kosugi Maru</option>
+            <option value="'Shippori Antique', sans-serif">Shippori Antique</option>
+            <option value="'DotGothic16', sans-serif">DotGothic16 (Retro Pixel)</option>
+            <option value="'Mochiy Pop One', sans-serif">Mochiy Pop One</option>
+            <option value="'Yusei Magic', sans-serif">Yusei Magic</option>
+            <option value="'RocknRoll One', sans-serif">RocknRoll One</option>
+            <option value="'Hachi Maru Pop', sans-serif">Hachi Maru Pop</option>
+            <option value="'Dela Gothic One', sans-serif">Dela Gothic One</option>
+          </optgroup>
+          <optgroup label="Serif (Mincho)">
+            <option value="'Klee One', sans-serif">Klee One (App Default)</option>
+            <option value="'Noto Serif JP', serif">Noto Serif JP</option>
+            <option value="'Yuji Syuku', serif">Yuji Syuku</option>
+            <option value="'Shippori Mincho', serif">Shippori Mincho</option>
+            <option value="'Kaisei Tokumin', serif">Kaisei Tokumin</option>
+            <option value="'Sawarabi Mincho', serif">Sawarabi Mincho</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Font Weight -->
+      <div class="control-group">
+        <label for="weight-select">Weight:</label>
+        <select id="weight-select" class="btn-toggle" onchange="switchWeight(this.value)">
+          <option value="300">Light (300)</option>
+          <option value="400" selected>Normal (400)</option>
+          <option value="600">Medium (600)</option>
+          <option value="700">Bold (700)</option>
+          <option value="900">Black (900)</option>
+        </select>
+      </div>
+
+      <!-- Icon Design Options -->
+      <div class="control-group" style="margin-left: 1rem;">
+        <button id="btn-glitch" class="btn-toggle" onclick="switchDesign('glitch')">Glitch (Option 1)</button>
+        <button id="btn-card" class="btn-toggle active" onclick="switchDesign('card')">Flat Card (Option 2)</button>
+        <button id="btn-cube" class="btn-toggle" onclick="switchDesign('cube')">3D Cube (Option 3)</button>
+      </div>
+    </div>
+
+    <!-- Grid target, rendered dynamically -->
+    <div class="palette-grid" id="palette-grid"></div>
+
+    <footer>
+      <p>Created for Asobimashou! | Click color boxes to copy values. | Custom fonts loaded locally and from Google
+        Fonts.</p>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * Color configuration definitions for the six color palettes.
+     * Contains separate configurations for Option 1, Option 2, and Option 3.
+     * @type {Object}
+     */
+    const PALETTES = {
+      p1: {
+        name: "Monochrome Minimal",
+        desc: "Premium off-black, slate, and silver palette that matches the app's clean light/dark modes.",
+        tag: "Default Match",
+        tagStyle: "background: rgba(206, 212, 218, 0.15); color: #ced4da;",
+        colors: ["#212529", "#495057", "#ced4da"],
+        labels: ["Base Dark", "Mid Slate", "Silver"],
+        cube: {
+          topGradStart: "#dee2e6",
+          topGradEnd: "#ced4da",
+          leftGradStart: "#495057",
+          leftGradEnd: "#343a40",
+          rightGradStart: "#343a40",
+          rightGradEnd: "#212529",
+          faceStroke: "#1a1c1e",
+          topText: "#495057",
+          leftText: "#ffffff",
+          rightText: "#e5e5e5"
+        },
+        card: {
+          cardGradStart: "#495057",
+          cardGradEnd: "#212529",
+          hiraColor: "#ffffff",
+          kataColor: "#ced4da",
+          shadowColor: "#121416",
+          shadowOpacity: 0.45
+        },
+        glitch: {
+          cardGradStart: "#495057",
+          cardGradEnd: "#212529",
+          hiraColor: "#ffffff",
+          glitchOffset1: "#ced4da",
+          glitchOffset2: "#121416"
+        }
+      },
+      p2: {
+        name: "Sumi-e & Washi",
+        desc: "Calligraphy ink black, paper cream, and a splash of traditional vermilion stamp red.",
+        tag: "Recommended",
+        tagStyle: "background: rgba(188, 63, 50, 0.15); color: #f87171;",
+        colors: ["#1a1b1d", "#fdfbf7", "#bc3f32"],
+        labels: ["Sumi Ink", "Washi White", "Stamp Red"],
+        cube: {
+          topGradStart: "#faf8f5",
+          topGradEnd: "#f5f0e6",
+          leftGradStart: "#3e4042",
+          leftGradEnd: "#2b2c2e",
+          rightGradStart: "#2b2c2e",
+          rightGradEnd: "#1a1b1d",
+          faceStroke: "#111213",
+          topText: "#bc3f32",
+          leftText: "#fdfbf7",
+          rightText: "#e6e1da"
+        },
+        card: {
+          cardGradStart: "#2b2c2e",
+          cardGradEnd: "#1a1b1d",
+          hiraColor: "#fdfbf7",
+          kataColor: "#bc3f32",
+          shadowColor: "#111213",
+          shadowOpacity: 0.55
+        },
+        glitch: {
+          cardGradStart: "#2b2c2e",
+          cardGradEnd: "#1a1b1d",
+          hiraColor: "#fdfbf7",
+          glitchOffset1: "#bc3f32",
+          glitchOffset2: "#111213"
+        }
+      },
+      p3: {
+        name: "Warm Charcoal",
+        desc: "Warm slate/charcoal black combined with soft ivory and muted sand for an organic, editorial feel.",
+        tag: "Organic",
+        tagStyle: "background: rgba(214, 207, 196, 0.15); color: #d6cfc4;",
+        colors: ["#222120", "#faf8f5", "#d6cfc4"],
+        labels: ["Warm Black", "Warm Ivory", "Muted Sand"],
+        cube: {
+          topGradStart: "#fdfcfb",
+          topGradEnd: "#f4f1ea",
+          leftGradStart: "#4a4947",
+          leftGradEnd: "#383735",
+          rightGradStart: "#383735",
+          rightGradEnd: "#222120",
+          faceStroke: "#151514",
+          topText: "#4a4947",
+          leftText: "#faf8f5",
+          rightText: "#d6cfc4"
+        },
+        card: {
+          cardGradStart: "#383735",
+          cardGradEnd: "#222120",
+          hiraColor: "#faf8f5",
+          kataColor: "#d6cfc4",
+          shadowColor: "#151514",
+          shadowOpacity: 0.5
+        },
+        glitch: {
+          cardGradStart: "#383735",
+          cardGradEnd: "#222120",
+          hiraColor: "#faf8f5",
+          glitchOffset1: "#d6cfc4",
+          glitchOffset2: "#151514"
+        }
+      },
+      p4: {
+        name: "Urushi Lacquer",
+        desc: "Traditional Japanese lacquerware colors of glossy Urushi black, vermilion red, and Maki-e gold.",
+        tag: "Traditional",
+        tagStyle: "background: rgba(220, 38, 38, 0.15); color: #f87171;",
+        colors: ["#111112", "#c22920", "#cca338"],
+        labels: ["Urushi Black", "Vermilion Red", "Maki-e Gold"],
+        cube: {
+          topGradStart: "#e6c35c",
+          topGradEnd: "#cca338",
+          leftGradStart: "#28282b",
+          leftGradEnd: "#19191b",
+          rightGradStart: "#19191b",
+          rightGradEnd: "#111112",
+          faceStroke: "#080809",
+          topText: "#c22920",
+          leftText: "#fdfbf7",
+          rightText: "#e6c35c"
+        },
+        card: {
+          cardGradStart: "#1c1c1f",
+          cardGradEnd: "#111112",
+          hiraColor: "#c22920",
+          kataColor: "#cca338",
+          shadowColor: "#050506",
+          shadowOpacity: 0.8
+        },
+        glitch: {
+          cardGradStart: "#1c1c1f",
+          cardGradEnd: "#111112",
+          hiraColor: "#fdfbf7",
+          glitchOffset1: "#c22920",
+          glitchOffset2: "#cca338"
+        }
+      },
+      p5: {
+        name: "Forest Gold",
+        desc: "Deep spruce-green backdrop paired with rich, luxurious antique gold and champagne white.",
+        tag: "Premium",
+        tagStyle: "background: rgba(234, 179, 8, 0.15); color: #facc15;",
+        colors: ["#061a15", "#f0e6d2", "#d4af37"],
+        labels: ["Forest Green", "Champagne", "Antique Gold"],
+        cube: {
+          topGradStart: "#f0e6d2",
+          topGradEnd: "#dcd2be",
+          leftGradStart: "#0d2e26",
+          leftGradEnd: "#061a15",
+          rightGradStart: "#061a15",
+          rightGradEnd: "#030d0a",
+          faceStroke: "#020806",
+          topText: "#d4af37",
+          leftText: "#f0e6d2",
+          rightText: "#c8beaa"
+        },
+        card: {
+          cardGradStart: "#0d2e26",
+          cardGradEnd: "#061a15",
+          hiraColor: "#f0e6d2",
+          kataColor: "#d4af37",
+          shadowColor: "#020806",
+          shadowOpacity: 0.6
+        },
+        glitch: {
+          cardGradStart: "#0d2e26",
+          cardGradEnd: "#061a15",
+          hiraColor: "#f0e6d2",
+          glitchOffset1: "#d4af37",
+          glitchOffset2: "#020806"
+        }
+      },
+      p6: {
+        name: "Sakura Dusk",
+        desc: "Muted sakura blossom pink and pure white highlight elements against deep plum and midnight purple.",
+        tag: "Elegant",
+        tagStyle: "background: rgba(244, 114, 182, 0.15); color: #f472b6;",
+        colors: ["#1a0f24", "#ffffff", "#ff9ebb"],
+        labels: ["Plum Dark", "Pure White", "Sakura Pink"],
+        cube: {
+          topGradStart: "#ff9ebb",
+          topGradEnd: "#ff85a7",
+          leftGradStart: "#2a183b",
+          leftGradEnd: "#1a0f24",
+          rightGradStart: "#1a0f24",
+          rightGradEnd: "#0f0814",
+          faceStroke: "#0a050d",
+          topText: "#ffffff",
+          leftText: "#ffffff",
+          rightText: "#ff9ebb"
+        },
+        card: {
+          cardGradStart: "#2a183b",
+          cardGradEnd: "#1a0f24",
+          hiraColor: "#ffffff",
+          kataColor: "#ff9ebb",
+          shadowColor: "#0a050d",
+          shadowOpacity: 0.65
+        },
+        glitch: {
+          cardGradStart: "#2a183b",
+          cardGradEnd: "#1a0f24",
+          hiraColor: "#ffffff",
+          glitchOffset1: "#ff9ebb",
+          glitchOffset2: "#ff4d80"
+        }
+      }
+    };
+
+    /**
+     * Store active view state variables.
+     */
+    let currentDesign = 'card';
+    let currentFont = "'Outfit', sans-serif";
+    let currentWeight = '700';
+
+    /**
+     * Dynamic template generator for Option 1 (Glitch Chromatic Aberration).
+     * @param {string} suffix - Uniquely identifies the gradient/element IDs in the DOM.
+     * @param {Object} p - The palette colors configuration object.
+     * @param {string} font - The CSS font family string to apply.
+     * @param {string} weight - The CSS font weight.
+     * @returns {string} Fully formed, stringified SVG markup.
+     */
+    function getGlitchSVG(suffix, p, font, weight) {
+      return `
+        <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="glitchGrad_${suffix}" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="${p.cardGradStart}" />
+              <stop offset="100%" stop-color="${p.cardGradEnd}" />
+            </linearGradient>
+          </defs>
+          <style>
+            .glitch-bg_${suffix} {
+              fill: url(#glitchGrad_${suffix});
+            }
+            .glitch-text_${suffix} {
+              font-family: ${font};
+              font-size: 56px;
+              font-weight: ${weight};
+              text-anchor: middle;
+            }
+          </style>
+          <rect class="glitch-bg_${suffix}" x="6" y="6" width="88" height="88" rx="22" />
+          <!-- Cyan Offset Layer -->
+          <text class="glitch-text_${suffix}" x="51.5" y="50.5" dy="0.37em" fill="${p.glitchOffset1}" opacity="0.75">あ</text>
+          <!-- Red Offset Layer -->
+          <text class="glitch-text_${suffix}" x="48.5" y="49.5" dy="0.37em" fill="${p.glitchOffset2}" opacity="0.75">あ</text>
+          <!-- Main Layer -->
+          <text class="glitch-text_${suffix}" x="50" y="50" dy="0.37em" fill="${p.hiraColor}">あ</text>
+        </svg>
+      `;
+    }
+
+    /**
+     * Dynamic template generator for the Option 2 (Flat Card).
+     * @param {string} suffix - Uniquely identifies the gradient/element IDs in the DOM.
+     * @param {Object} p - The palette colors configuration object.
+     * @param {string} font - The CSS font family string to apply.
+     * @param {string} weight - The CSS font weight.
+     * @returns {string} Fully formed, stringified SVG markup.
+     */
+    function getCardSVG(suffix, p, font, weight) {
+      return `
+        <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cardGrad_${suffix}" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="${p.cardGradStart}" />
+              <stop offset="100%" stop-color="${p.cardGradEnd}" />
+            </linearGradient>
+          </defs>
+          <style>
+            .card-bg_${suffix} {
+              fill: url(#cardGrad_${suffix});
+            }
+            .kana-char_${suffix} {
+              font-family: ${font};
+              font-weight: ${weight};
+              text-anchor: middle;
+            }
+            .char-hira_${suffix} {
+              font-size: 44px;
+              fill: ${p.hiraColor};
+            }
+            .char-kata_${suffix} {
+              font-size: 38px;
+              fill: ${p.kataColor};
+            }
+            .shadow-text_${suffix} {
+              fill: ${p.shadowColor};
+              opacity: ${p.shadowOpacity};
+            }
+          </style>
+          <rect class="card-bg_${suffix}" x="6" y="6" width="88" height="88" rx="22" />
+          <g>
+            <text class="kana-char_${suffix} char-hira_${suffix} shadow-text_${suffix}" x="37.5" y="41.5" dy="0.37em">あ</text>
+            <text class="kana-char_${suffix} char-kata_${suffix} shadow-text_${suffix}" x="65.5" y="61.5" dy="0.37em">ア</text>
+          </g>
+          <g>
+            <text class="kana-char_${suffix} char-hira_${suffix}" x="36" y="40" dy="0.37em">あ</text>
+            <text class="kana-char_${suffix} char-kata_${suffix}" x="64" y="60" dy="0.37em">ア</text>
+          </g>
+        </svg>
+      `;
+    }
+
+    /**
+     * Dynamic template generator for the Option 3 (3D Cube).
+     * @param {string} suffix - Uniquely identifies the gradient/element IDs in the DOM.
+     * @param {Object} p - The palette colors configuration object.
+     * @param {string} font - The CSS font family string to apply.
+     * @param {string} weight - The CSS font weight.
+     * @returns {string} Fully formed, stringified SVG markup.
+     */
+    function getCubeSVG(suffix, p, font, weight) {
+      return `
+        <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="topGrad_${suffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${p.topGradStart}" />
+              <stop offset="100%" stop-color="${p.topGradEnd}" />
+            </linearGradient>
+            <linearGradient id="leftGrad_${suffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${p.leftGradStart}" />
+              <stop offset="100%" stop-color="${p.leftGradEnd}" />
+            </linearGradient>
+            <linearGradient id="rightGrad_${suffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${p.rightGradStart}" />
+              <stop offset="100%" stop-color="${p.rightGradEnd}" />
+            </linearGradient>
+          </defs>
+          <style>
+            .face_${suffix} {
+              stroke: ${p.faceStroke};
+              stroke-width: 1.5;
+              stroke-linejoin: round;
+            }
+            .cube-text_${suffix} {
+              font-family: ${font};
+              font-weight: ${weight};
+              text-anchor: middle;
+            }
+          </style>
+          <g>
+            <polygon class="face_${suffix}" fill="url(#topGrad_${suffix})" points="50,14 82,30 50,46 18,30" />
+            <polygon class="face_${suffix}" fill="url(#leftGrad_${suffix})" points="18,30 50,46 50,82 18,66" />
+            <polygon class="face_${suffix}" fill="url(#rightGrad_${suffix})" points="50,46 82,30 82,66 50,82" />
+          </g>
+          <g>
+            <text class="cube-text_${suffix}" fill="${p.topText}" font-size="20px" transform="matrix(0.866, 0.5, -0.866, 0.5, 50, 30)" dy="0.37em">★</text>
+            <text class="cube-text_${suffix}" fill="${p.leftText}" font-size="22px" transform="matrix(0.866, 0.5, 0, 1, 34, 57)" dy="0.37em">あ</text>
+            <text class="cube-text_${suffix}" fill="${p.rightText}" font-size="22px" transform="matrix(0.866, -0.5, 0, 1, 66, 57)" dy="0.37em">ア</text>
+          </g>
+        </svg>
+      `;
+    }
+
+    /**
+     * Render the SVGs into their respective container nodes based on active view state.
+     * @returns {void}
+     */
+    function updateSVGs() {
+      let renderFn;
+      if (currentDesign === 'cube') {
+        renderFn = getCubeSVG;
+      } else if (currentDesign === 'card') {
+        renderFn = getCardSVG;
+      } else {
+        renderFn = getGlitchSVG;
+      }
+
+      for (const key of Object.keys(PALETTES)) {
+        const container = document.getElementById(`container-${key}`);
+        if (container) {
+          container.innerHTML = renderFn(key, PALETTES[key][currentDesign], currentFont, currentWeight);
+        }
+      }
+    }
+
+    /**
+     * Dynamically build the DOM structure for all palettes defined.
+     * This avoids duplication of HTML cards.
+     * @returns {void}
+     */
+    function buildPaletteGrid() {
+      const grid = document.getElementById('palette-grid');
+      let html = '';
+
+      for (const [key, p] of Object.entries(PALETTES)) {
+        html += `
+          <div class="palette-card">
+            <div class="palette-info">
+              <span class="palette-tag" style="${p.tagStyle}">${p.tag}</span>
+              <h2 class="palette-title">${p.name}</h2>
+              <p class="palette-desc">${p.desc}</p>
+            </div>
+
+            <div class="icon-container" id="container-${key}"></div>
+
+            <div class="swatches">
+              ${p.colors.map((c, i) => `
+                <div class="swatch-item">
+                  <div class="swatch-color" style="background-color: ${c};" onclick="copyHex('${c}', this)" title="Copy ${c}"></div>
+                  <div class="swatch-details">
+                    <span class="swatch-label">${p.labels[i]}</span>
+                    <span class="swatch-hex">${c}</span>
+                  </div>
+                  <button class="swatch-copy" onclick="copyHex('${c}', this)">Copy</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      grid.innerHTML = html;
+      updateSVGs();
+    }
+
+    /**
+     * Change active design on toggle click.
+     * @param {"cube"|"card"|"glitch"} design - The selected design type.
+     * @returns {void}
+     */
+    function switchDesign(design) {
+      currentDesign = design;
+
+      // Toggle active states on buttons
+      document.getElementById('btn-glitch').classList.toggle('active', design === 'glitch');
+      document.getElementById('btn-card').classList.toggle('active', design === 'card');
+      document.getElementById('btn-cube').classList.toggle('active', design === 'cube');
+
+      updateSVGs();
+    }
+
+    /**
+     * Switch active font on dropdown selection change.
+     * @param {string} fontFace - The CSS font family string chosen.
+     * @returns {void}
+     */
+    function switchFont(fontFace) {
+      currentFont = fontFace;
+      updateSVGs();
+    }
+
+    /**
+     * Switch active font weight on dropdown selection change.
+     * @param {string} weight - The CSS font weight value.
+     * @returns {void}
+     */
+    function switchWeight(weight) {
+      currentWeight = weight;
+      updateSVGs();
+    }
+
+    /**
+     * Flash the button label to a success state on copy.
+     * @param {HTMLButtonElement} btn - The clicked button.
+     * @returns {void}
+     */
+    function showCopiedState(btn) {
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.color = '#34d399';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.color = '';
+      }, 1500);
+    }
+
+    /**
+     * Fallback copy routine for non-secure contexts (such as local file protocol preview).
+     * @param {string} hex - Color hex string.
+     * @param {HTMLButtonElement} btn - Button element.
+     * @returns {void}
+     */
+    function copyFallback(hex, btn) {
+      const ta = document.createElement("textarea");
+      ta.value = hex;
+      ta.style.position = "fixed";
+      ta.style.top = "0";
+      ta.style.left = "0";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        const success = document.execCommand("copy");
+        if (success) {
+          showCopiedState(btn);
+        }
+      } catch (err) {
+        console.error("Fallback copy failed", err);
+      }
+      ta.remove();
+    }
+
+    /**
+     * Copy color hex value to clipboard, handling secure context & local preview paths.
+     * @param {string} hex - The hex code of the color.
+     * @param {HTMLButtonElement} btn - The copy button element.
+     * @returns {void}
+     */
+    function copyHex(hex, btn) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(hex)
+          .then(() => showCopiedState(btn))
+          .catch(() => copyFallback(hex, btn));
+      } else {
+        copyFallback(hex, btn);
+      }
+    }
+
+    // Build the grid and run initial rendering
+    buildPaletteGrid();
+  </script>
+</body>
+
+</html>
+
+
+
+</html>

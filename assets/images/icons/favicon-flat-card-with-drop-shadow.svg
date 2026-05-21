@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  <style>
+    .card-bg {
+      fill: url(#cardGrad);
+    }
+
+    .kana-char {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Klee One", "Noto Serif JP", sans-serif;
+      font-weight: 700;
+      text-anchor: middle;
+      filter: url(#shadow);
+    }
+
+    .char-hira {
+      font-size: 44px;
+      fill: #ffffff;
+    }
+
+    .char-kata {
+      font-size: 38px;
+      fill: #a7f3d0;
+      /* bright soft mint */
+    }
+  </style>
+  <rect class="card-bg" x="6" y="6" width="88" height="88" rx="22" />
+  <!-- Hiragana あ -->
+  <text class="kana-char char-hira" x="36" y="40" dy="0.37em">あ</text>
+  <!-- Katakana ア -->
+  <text class="kana-char char-kata" x="64" y="60" dy="0.37em">ア</text>
+</svg>

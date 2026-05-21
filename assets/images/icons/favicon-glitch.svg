@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <style>
+    .kana-text {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Klee One", "Noto Serif JP", sans-serif;
+      font-size: 72px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .kana-bg {
+      fill: transparent;
+    }
+
+    .kana-main {
+      fill: #212529;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .kana-main {
+        fill: #F8F9FA;
+      }
+    }
+  </style>
+  <rect class="kana-bg" width="100" height="100" rx="20" />
+  <!-- Cyan Offset Layer -->
+  <text class="kana-text" x="51.5" y="50.5" dy="0.37em" fill="#00e5ff" opacity="0.75">あ</text>
+  <!-- Red Offset Layer -->
+  <text class="kana-text" x="48.5" y="49.5" dy="0.37em" fill="#ff2d55" opacity="0.75">あ</text>
+  <!-- Main Text Layer -->
+  <text class="kana-text kana-main" x="50" y="50" dy="0.37em">あ</text>
+</svg>

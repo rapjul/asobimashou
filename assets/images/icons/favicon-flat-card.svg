@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <style>
+    .card-bg {
+      fill: url(#cardGrad);
+    }
+
+    .kana-char {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Klee One", "Noto Serif JP", sans-serif;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .char-hira {
+      font-size: 44px;
+      fill: #ffffff;
+    }
+
+    .char-kata {
+      font-size: 38px;
+      fill: #a7f3d0;
+      /* bright soft mint */
+    }
+
+    .shadow-text {
+      fill: #1e1b4b;
+      /* deep indigo shadow */
+      opacity: 0.45;
+    }
+  </style>
+  <rect class="card-bg" x="6" y="6" width="88" height="88" rx="22" />
+
+  <!-- Shadow layers (rendered first so they sit behind the main characters) -->
+  <g id="shadow-layer">
+    <!-- Hiragana あ -->
+    <text class="kana-char char-hira shadow-text" x="37.5" y="41.5" dy="0.37em">あ</text>
+    <!-- Katakana ア -->
+    <text class="kana-char char-kata shadow-text" x="65.5" y="61.5" dy="0.37em">ア</text>
+  </g>
+
+  <!-- Main text layers -->
+  <g id="main-layer">
+    <!-- Hiragana あ -->
+    <text class="kana-char char-hira" x="36" y="40" dy="0.37em">あ</text>
+    <!-- Katakana ア -->
+    <text class="kana-char char-kata" x="64" y="60" dy="0.37em">ア</text>
+  </g>
+</svg>
