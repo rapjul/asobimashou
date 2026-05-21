@@ -51,7 +51,12 @@ function applyTheme(isDark) {
     // Dark mode  -> light outline (active = filled light/white)
     // Strip all four possible Bootstrap button-variant classes first so they
     // never accumulate and create conflicts across multiple applyTheme calls.
-    el.classList.remove("btn-dark", "btn-light", "btn-outline-dark", "btn-outline-light");
+    el.classList.remove(
+      "btn-dark",
+      "btn-light",
+      "btn-outline-dark",
+      "btn-outline-light",
+    );
     el.classList.toggle("btn-outline-dark", !isDark);
     el.classList.toggle("btn-outline-light", isDark);
   });
@@ -77,12 +82,19 @@ const updateViewportHeight = () => {
   const vh = vv ? vv.height : window.innerHeight;
   const offsetTop = vv ? vv.offsetTop : 0;
 
-  document.documentElement.style.setProperty("--visual-viewport-height", `${vh}px`);
-  document.documentElement.style.setProperty("--visual-viewport-offset-y", `${offsetTop}px`);
+  document.documentElement.style.setProperty(
+    "--visual-viewport-height",
+    `${vh}px`,
+  );
+  document.documentElement.style.setProperty(
+    "--visual-viewport-offset-y",
+    `${offsetTop}px`,
+  );
 
   // If visual viewport is significantly smaller than layout height, the keyboard is likely open.
   // We also check if the answer input is focused as a secondary hint.
-  const isInputFocused = document.activeElement && document.activeElement.id === "answer";
+  const isInputFocused =
+    document.activeElement && document.activeElement.id === "answer";
   const isShort = vh < window.innerHeight * 0.85;
 
   const isKeyboardOpen = isShort || isInputFocused;
@@ -117,8 +129,12 @@ document.body.addEventListener(
 );
 
 // Ensure the class updates immediately when focusing/blurring the input
-document.querySelector("#answer").addEventListener("focus", () => setTimeout(updateViewportHeight, 100));
-document.querySelector("#answer").addEventListener("blur", () => setTimeout(updateViewportHeight, 100));
+document
+  .querySelector("#answer")
+  .addEventListener("focus", () => setTimeout(updateViewportHeight, 100));
+document
+  .querySelector("#answer")
+  .addEventListener("blur", () => setTimeout(updateViewportHeight, 100));
 
 updateViewportHeight();
 
@@ -144,7 +160,6 @@ let timerInterval = null;
  */
 let gameStartTime = null;
 
-
 /* Apply saved game settings */
 if (SETTINGS.font !== SETTINGS_DEFAULT.font) changeFont();
 
@@ -165,8 +180,12 @@ systemDarkMQ.addEventListener("change", () => {
 });
 
 document.querySelector(`#${SETTINGS.type}`).classList.add("active");
-document.querySelector("#game-dakuten").classList.toggle("active", SETTINGS.dakuten);
-document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
+document
+  .querySelector("#game-dakuten")
+  .classList.toggle("active", SETTINGS.dakuten);
+document
+  .querySelector("#game-dakuten > span")
+  .classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
 
 /* Set the active card button based on the saved setting. */
 document.querySelectorAll(".game-card").forEach((el) => {
@@ -180,7 +199,9 @@ kanjiBtn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
 /* Game setting functions */
 function changeFont() {
   document.querySelector("#game-font").value = SETTINGS.font;
-  document.querySelectorAll(".game-font-change").forEach((el) => (el.style.fontFamily = SETTINGS.font));
+  document
+    .querySelectorAll(".game-font-change")
+    .forEach((el) => (el.style.fontFamily = SETTINGS.font));
 }
 
 /* Game functions */
@@ -248,21 +269,25 @@ function nextQuestion() {
     kanji = wanakana.toKatakana(kanji);
   }
 
-  document.querySelector("#question").innerHTML = `${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
+  document.querySelector("#question").innerHTML =
+    `${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
   document.querySelector("#question-id").value = id;
   document.querySelector("#answer").value = "";
   document.querySelector("#score").innerHTML =
-    '<i class="bi-check-circle"></i> ' + `${GAME.answered}/${GAME.answered + GAME.skipped}`;
+    '<i class="bi-check-circle"></i> ' +
+    `${GAME.answered}/${GAME.answered + GAME.skipped}`;
 }
 
 /* Game settings */
-document.querySelectorAll("#option-wrapper button, #game-font").forEach((el) => {
-  el.addEventListener("click", () => {
-    setTimeout(() => {
-      localStorage.setItem("SETTINGS", JSON.stringify(SETTINGS));
-    }, 100);
+document
+  .querySelectorAll("#option-wrapper button, #game-font")
+  .forEach((el) => {
+    el.addEventListener("click", () => {
+      setTimeout(() => {
+        localStorage.setItem("SETTINGS", JSON.stringify(SETTINGS));
+      }, 100);
+    });
   });
-});
 
 document.querySelector("#game-font").addEventListener("change", () => {
   SETTINGS.font = document.querySelector("#game-font").value;
@@ -272,7 +297,9 @@ document.querySelector("#game-font").addEventListener("change", () => {
 document.querySelectorAll(".game-theme").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
-    document.querySelectorAll(".game-theme").forEach((btn) => btn.classList.remove("active"));
+    document
+      .querySelectorAll(".game-theme")
+      .forEach((btn) => btn.classList.remove("active"));
     evt.currentTarget.classList.add("active");
     SETTINGS.theme = evt.currentTarget.value;
     applyTheme(resolveIsDark(SETTINGS.theme));
@@ -289,7 +316,9 @@ document.querySelector("#game-kanji").addEventListener("click", () => {
 document.querySelectorAll(".game-type").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
-    document.querySelectorAll(".game-type").forEach((btn) => btn.classList.remove("active"));
+    document
+      .querySelectorAll(".game-type")
+      .forEach((btn) => btn.classList.remove("active"));
     evt.currentTarget.classList.add("active");
     SETTINGS.type = evt.currentTarget.id;
   });
@@ -297,14 +326,18 @@ document.querySelectorAll(".game-type").forEach((el) => {
 
 document.querySelector("#game-dakuten").addEventListener("click", () => {
   document.querySelector("#game-dakuten").classList.toggle("active");
-  document.querySelector("#game-dakuten > span").classList.toggle("text-decoration-line-through");
+  document
+    .querySelector("#game-dakuten > span")
+    .classList.toggle("text-decoration-line-through");
   SETTINGS.dakuten = !SETTINGS.dakuten;
 });
 
 document.querySelectorAll(".game-card").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
-    document.querySelectorAll(".game-card").forEach((btn) => btn.classList.toggle("active"));
+    document
+      .querySelectorAll(".game-card")
+      .forEach((btn) => btn.classList.toggle("active"));
     SETTINGS.card = evt.currentTarget.value;
   });
 });
@@ -343,7 +376,7 @@ document.querySelector("#start").addEventListener("click", () => {
       timeEl.innerHTML = GAME.timer + ' <i class="bi-clock"></i>';
     }
     timerInterval = requestAnimationFrame(tickLoop);
-  }());
+  })();
 
   document.querySelector("#review-table").innerHTML = "";
   document.querySelector("#start").disabled = true;
@@ -352,7 +385,6 @@ document.querySelector("#start").addEventListener("click", () => {
   document.querySelector("#answer").focus();
   nextQuestion();
 });
-
 
 /**
  * Click handler for the review button. Shows the results screen with transition.
@@ -384,7 +416,8 @@ document.querySelector("#stop").addEventListener("click", (event) => {
   document.querySelector("#stats-answered").textContent = GAME.answered;
   document.querySelector("#stats-skipped").textContent = GAME.skipped;
   document.querySelector("#stats-timer").textContent = GAME.timer + "s";
-  document.querySelector("#stats-average").textContent = average.toFixed(2) + "s";
+  document.querySelector("#stats-average").textContent =
+    average.toFixed(2) + "s";
   document.querySelector("#review").disabled = false;
   document.querySelector("#restart").focus();
   if (timerInterval) {
@@ -393,9 +426,13 @@ document.querySelector("#stop").addEventListener("click", (event) => {
   }
 
   if (!GAME.answered && !GAME.skipped) {
-    document.querySelector("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
+    document
+      .querySelector("#review-wrapper")
+      .insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
   } else if (!GAME.answered && GAME.skipped) {
-    document.querySelector("#review-wrapper").insertAdjacentHTML("afterbegin", "<b>Practice more!</b>");
+    document
+      .querySelector("#review-wrapper")
+      .insertAdjacentHTML("afterbegin", "<b>Practice more!</b>");
   }
 });
 
@@ -414,11 +451,14 @@ document.querySelector("#restart").addEventListener("click", () => {
       result.classList.add("d-none");
       document.querySelector("#game").classList.add("d-none");
       document.querySelector("#time").innerHTML = '0 <i class="bi-clock"></i>';
-      document.querySelector("#score").innerHTML = '<i class="bi-check-circle"></i> 0';
+      document.querySelector("#score").innerHTML =
+        '<i class="bi-check-circle"></i> 0';
       const bold = document.querySelector("#review-wrapper b");
       if (bold) bold.remove();
-      document.querySelector("#copy").innerHTML = '<i class="bi-table"></i> Copy Table';
-      document.querySelector("#share").innerHTML = '<i class="bi-share"></i> Share';
+      document.querySelector("#copy").innerHTML =
+        '<i class="bi-table"></i> Copy Table';
+      document.querySelector("#share").innerHTML =
+        '<i class="bi-share"></i> Share';
       document.querySelector("#start").disabled = false;
     },
     { once: true },
@@ -436,8 +476,11 @@ document.querySelector("#restart").addEventListener("click", () => {
 
 document.querySelector("#copy").addEventListener("click", async () => {
   const text =
-    document.querySelector("#review-table").textContent.replaceAll("‎‎", "\n").replaceAll("‎", " ー ").trim() ||
-    "Why did I copy this?";
+    document
+      .querySelector("#review-table")
+      .textContent.replaceAll("‎‎", "\n")
+      .replaceAll("‎", " ー ")
+      .trim() || "Why did I copy this?";
   try {
     await navigator.clipboard.writeText(text);
   } catch {
@@ -448,7 +491,8 @@ document.querySelector("#copy").addEventListener("click", async () => {
     document.execCommand("copy");
     ta.remove();
   }
-  document.querySelector("#copy").innerHTML = '<i class="bi-table"></i> Copied!';
+  document.querySelector("#copy").innerHTML =
+    '<i class="bi-table"></i> Copied!';
 });
 
 document.querySelector("#share").addEventListener("click", async () => {
@@ -473,7 +517,8 @@ Check it out at: ${location.href}
     document.execCommand("copy");
     ta.remove();
   }
-  document.querySelector("#share").innerHTML = '<i class="bi-share"></i> Copied!';
+  document.querySelector("#share").innerHTML =
+    '<i class="bi-share"></i> Copied!';
 });
 
 /* Answer input handling */
@@ -490,7 +535,9 @@ function skipQuestion() {
   const jisho = "https://jisho.org/word/" + card.kanji;
   const means = card.meaning.split(", ")[0].trim();
   const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
-  const question = document.querySelector("#question").childNodes[0].nodeValue.trim();
+  const question = document
+    .querySelector("#question")
+    .childNodes[0].nodeValue.trim();
   const romaji = wanakana.toRomaji(question);
 
   document
@@ -555,7 +602,9 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
   const id = document.querySelector("#question-id").value;
   const card = cards[SETTINGS.card][id];
   const options = { customKanaMapping: { dzu: "づ" } };
-  const question = document.querySelector("#question").childNodes[0].nodeValue.trim();
+  const question = document
+    .querySelector("#question")
+    .childNodes[0].nodeValue.trim();
   const q = wanakana.toHiragana(question, options);
   const answer = document.querySelector("#answer").value;
   const a = wanakana.toHiragana(answer, options);
@@ -568,7 +617,9 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
     const romajiCorrect = wanakana.toRomaji(q);
     if (romajiCorrect.includes("'")) {
       const normalizedAnswer = answer.toLowerCase().replace(/[’‘']/g, "");
-      const normalizedCorrect = romajiCorrect.toLowerCase().replace(/[’‘']/g, "");
+      const normalizedCorrect = romajiCorrect
+        .toLowerCase()
+        .replace(/[’‘']/g, "");
       if (normalizedAnswer === normalizedCorrect) {
         showApostropheToast(romajiCorrect, q);
       } else {
