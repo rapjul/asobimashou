@@ -263,6 +263,23 @@ with the HTML and CSS files.
 
 ---
 
+### 9. Webpage and PWA Icons: Font Availability and Rendering
+
+**Decision**: The static asset generation script (`scripts/generate-icons.sh`) must ensure that the specific fonts referenced in the source SVG are installed on the local system/runner before conversion.
+
+**Why**: 
+- Browsers render SVG fonts dynamically by fetching external links (e.g., Google Fonts `<link>` tag in `icon-previewer.html`).
+- Local command-line rendering tools (like `rsvg-convert`, `imagemagick`, and `inkscape`) run offline and do not resolve remote font URLs. If a font like `Outfit` is not installed on the system, the rendering tool will silently fall back to `sans-serif` (e.g., Arial or Helvetica), resulting in layout shifts or incorrect styling in the generated PNG icons.
+
+**Implementation**: 
+- The `scripts/generate-icons.sh` script scans the target SVG file for specific fonts (`Outfit`, `Klee One`, `Noto Serif JP`, `Yuji Syuku`).
+- If missing, it downloads the corresponding `.ttf` from the Google Fonts upstream repository and installs it locally:
+    - **macOS**: `~/Library/Fonts/` (native CoreText registers files written here immediately).
+    - **Linux**: `~/.local/share/fonts/` (user-local directory for fontconfig).
+- If `fc-cache` is present (common on Linux and on macOS when Homebrew installs graphical dependencies), it runs `fc-cache -f` to rebuild the Fontconfig cache, ensuring command-line utilities immediately see the new font.
+
+---
+
 ## Known Gotchas
 
 ### Safari `setInterval` throttling
