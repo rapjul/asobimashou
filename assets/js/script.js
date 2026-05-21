@@ -415,9 +415,9 @@ document.querySelector("#stop").addEventListener("click", (event) => {
   document.querySelector("#game").classList.add("d-none");
   document.querySelector("#stats-answered").textContent = GAME.answered;
   document.querySelector("#stats-skipped").textContent = GAME.skipped;
-  document.querySelector("#stats-timer").textContent = GAME.timer + "s";
+  document.querySelector("#stats-timer").textContent = GAME.timer + " s";
   document.querySelector("#stats-average").textContent =
-    average.toFixed(2) + "s";
+    GAME.answered + GAME.skipped > 0 ? average.toFixed(2) + " s/card" : "N/A";
   document.querySelector("#review").disabled = false;
   document.querySelector("#restart").focus();
   if (timerInterval) {
@@ -491,8 +491,16 @@ document.querySelector("#copy").addEventListener("click", async () => {
     document.execCommand("copy");
     ta.remove();
   }
+
+  // Change the button text to "Copied!" for 1.5 seconds
   document.querySelector("#copy").innerHTML =
     '<i class="bi-table"></i> Copied!';
+
+  // Reset the button text after 1.5 seconds
+  setTimeout(() => {
+    document.querySelector("#copy").innerHTML =
+      '<i class="bi-table"></i> Copy Table';
+  }, 1_500);
 });
 
 document.querySelector("#share").addEventListener("click", async () => {
@@ -517,8 +525,16 @@ Check it out at: ${location.href}
     document.execCommand("copy");
     ta.remove();
   }
+
+  // Change the button text to "Copied!" for 1.5 seconds
   document.querySelector("#share").innerHTML =
     '<i class="bi-share"></i> Copied!';
+
+  // Reset the button text after 1.5 seconds
+  setTimeout(() => {
+    document.querySelector("#share").innerHTML =
+      '<i class="bi-share"></i> Share';
+  }, 1_500);
 });
 
 /* Answer input handling */
