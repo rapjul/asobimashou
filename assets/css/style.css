@@ -17,6 +17,8 @@
   --kbd-shadow: rgba(0, 0, 0, 0.1);
   /* Hover background color for dark theme buttons (light mode) */
   --btn-dark-hover-bg: #343a40;
+  /* Skipped answer text color in the review table (light mode) */
+  --review-skipped-color: #dc3545;
 
   /* Toast notification colors (light mode) */
   --toast-bg: rgba(255, 255, 255, 0.9);
@@ -63,6 +65,8 @@ body.bg-dark {
   --btn-light-hover-bg: #e2e6ea;
   /* Hover border color for light theme buttons (dark mode) */
   --btn-light-hover-border: #dae0e5;
+  /* Skipped answer text color in the review table (dark mode) */
+  --review-skipped-color: #ff8787;
 
   /* Toast notification colors (dark mode) */
   --toast-bg: rgba(33, 37, 41, 0.9);
@@ -394,6 +398,11 @@ body.bg-dark #option-wrapper {
 
 #review-table td {
   font-family: 'Klee One', 'Noto Serif JP', 'Yuji Syuku', sans-serif;
+}
+
+/* Color for skipped questions in the review table */
+#review-table .text-danger {
+  color: var(--review-skipped-color) !important;
 }
 
 th,
