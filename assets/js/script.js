@@ -19,6 +19,153 @@ const SETTINGS = Object.assign({}, SETTINGS_DEFAULT, SETTINGS_SAVED);
 const systemDarkMQ = window.matchMedia("(prefers-color-scheme: dark)");
 
 /**
+ * Maps Japanese Kana characters to their valid Romaji representations.
+ * @type {Object<string, string[]>}
+ */
+const ROMAJI_ALTERNATIVES = {
+  "し": ["shi", "si"],
+  "ち": ["chi", "ti"],
+  "つ": ["tsu", "tu"],
+  "じ": ["ji", "zi"],
+  "ぢ": ["ji", "di"],
+  "づ": ["dzu", "du"],
+  "ふ": ["fu", "hu"],
+  "を": ["wo", "o"],
+  "ん": ["n", "nn", "n'"],
+  "しゃ": ["sha", "sya"],
+  "しゅ": ["shu", "syu"],
+  "しょ": ["sho", "syo"],
+  "ちゃ": ["cha", "tya"],
+  "ちゅ": ["chu", "tyu"],
+  "ちょ": ["cho", "tyo"],
+  "じゃ": ["ja", "zya", "jya"],
+  "じゅ": ["ju", "zyu", "jyu"],
+  "じょ": ["jo", "zyo", "jyo"],
+  "ぢゃ": ["dya", "ja"],
+  "ぢゅ": ["dyu", "ju"],
+  "ぢょ": ["dyo", "jo"],
+
+  "シ": ["shi", "si"],
+  "チ": ["chi", "ti"],
+  "ツ": ["tsu", "tu"],
+  "ジ": ["ji", "zi"],
+  "ヂ": ["ji", "di"],
+  "ヅ": ["dzu", "du"],
+  "フ": ["fu", "hu"],
+  "ヲ": ["wo", "o"],
+  "ン": ["n", "nn", "n'"],
+  "シャ": ["sha", "sya"],
+  "シュ": ["shu", "syu"],
+  "ショ": ["sho", "syo"],
+  "チャ": ["cha", "tya"],
+  "チュ": ["chu", "tyu"],
+  "チョ": ["cho", "tyo"],
+  "ジャ": ["ja", "zya", "jya"],
+  "ジュ": ["ju", "zyu", "jyu"],
+  "ジョ": ["jo", "zyo", "jyo"]
+};
+
+/**
+ * Generates all possible Romaji spellings for a given Japanese Kana string.
+ *
+ * @param {string} kanaStr - The Japanese Kana string.
+ * @returns {string[]} An array of all possible Romaji spellings.
+ */
+function generateRomajiSpellings(kanaStr) {
+  const segments = [];
+  let i = 0;
+  while (i < kanaStr.length) {
+    const char = kanaStr[i];
+    const nextChar = kanaStr[i + 1];
+
+    if (nextChar && /[ゃゅょぁぃぅぇぉャュョァィゥェォ]/.test(nextChar)) {
+      const combo = char + nextChar;
+      if (ROMAJI_ALTERNATIVES[combo]) {
+        segments.push(ROMAJI_ALTERNATIVES[combo]);
+      } else {
+        segments.push([wanakana.toRomaji(combo)]);
+      }
+      i += 2;
+    } else if (char === "っ" || char === "ッ") {
+      segments.push({ type: "tsu", index: i });
+      i += 1;
+    } else if (char === "ー") {
+      if (segments.length > 0) {
+        const prevSegment = segments[segments.length - 1];
+        if (Array.isArray(prevSegment)) {
+          const vowels = prevSegment
+            .map((alt) => alt[alt.length - 1])
+            .filter((c) => /[aeiouy]/i.test(c));
+          const uniqueVowels = [...new Set(vowels)];
+          segments.push(uniqueVowels.length > 0 ? uniqueVowels : ["o"]);
+        } else {
+          segments.push(["o"]);
+        }
+      } else {
+        segments.push(["-"]);
+      }
+      i += 1;
+    } else {
+      if (ROMAJI_ALTERNATIVES[char]) {
+        segments.push(ROMAJI_ALTERNATIVES[char]);
+      } else {
+        segments.push([wanakana.toRomaji(char)]);
+      }
+      i += 1;
+    }
+  }
+
+  for (let j = 0; j < segments.length; j++) {
+    if (segments[j] && segments[j].type === "tsu") {
+      let nextArr = null;
+      for (let k = j + 1; k < segments.length; k++) {
+        if (Array.isArray(segments[k])) {
+          nextArr = segments[k];
+          break;
+        }
+      }
+      if (nextArr) {
+        const firstLetters = nextArr
+          .map((alt) => alt[0])
+          .filter((c) => c && /[a-zA-Z]/.test(c));
+        const uniqueLetters = [...new Set(firstLetters)];
+        segments[j] = uniqueLetters.length > 0 ? uniqueLetters : ["t"];
+      } else {
+        segments[j] = ["t"];
+      }
+    }
+  }
+
+  let results = [""];
+  for (const seg of segments) {
+    const nextResults = [];
+    for (const r of results) {
+      for (const opt of seg) {
+        nextResults.push(r + opt);
+      }
+    }
+    results = nextResults;
+  }
+
+  return results;
+}
+
+/**
+ * Checks if the user's current input is a valid prefix of the target Japanese Kana's Romaji spelling.
+ *
+ * @param {string} input - The user's input string.
+ * @param {string} targetKana - The target Japanese Kana string.
+ * @returns {boolean} True if the input is a valid prefix, false otherwise.
+ */
+function isInputValidPrefix(input, targetKana) {
+  const cleanInput = input.toLowerCase().replace(/\s+/g, "");
+  if (!cleanInput) return true;
+  const spellings = generateRomajiSpellings(targetKana);
+  return spellings.some((spelling) => spelling.toLowerCase().startsWith(cleanInput));
+}
+
+
+/**
  * Apply dark or light Bootstrap classes to all themed elements.
  * Uses absolute assignment (not toggle) so the state never drifts.
  * @param {boolean} isDark - True to enable dark mode, false for light.
@@ -730,8 +877,8 @@ function skipQuestion() {
     .insertAdjacentHTML(
       "beforeend",
       `<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
-        `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-        `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
+      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+      `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
     );
   GAME.skipped++;
   document.querySelector("#answer").value = "";
@@ -840,6 +987,20 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
       return;
     }
 
+    // Check if the user gets the answer incorrect on a card containing the vowel lengthening character 'ー'
+    const cardHasVowelLength =
+      (card.kanji && card.kanji.includes("ー")) ||
+      (card.hiragana &&
+        (Array.isArray(card.hiragana)
+          ? card.hiragana.join("")
+          : card.hiragana
+        ).includes("ー"));
+
+    if (cardHasVowelLength && !isInputValidPrefix(answer, question)) {
+      showVowelLengthToast();
+      return;
+    }
+
     // Check if the user missed an apostrophe for 'n' followed by a vowel or 'y'
     const romajiCorrect = wanakana.toRomaji(q);
     if (romajiCorrect.includes("'")) {
@@ -867,8 +1028,8 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
     .insertAdjacentHTML(
       "beforeend",
       `<tr><th><i class="d-none">（${card.kanji}）</i>` +
-        `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-        `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
+      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+      `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
     );
   GAME.answered++;
   nextQuestion();
