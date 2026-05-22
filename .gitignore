@@ -242,3 +242,4 @@ $RECYCLE.BIN/
 CHANGES_*.md
 .specstory/
 _agents/
+.chatledger/

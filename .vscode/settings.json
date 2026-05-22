@@ -1,5 +1,7 @@
 {
   "specstory.cloudSync.enabled": "never",
   "languageToolLinter.languageTool.disabledCategories": "WHITESPACE_RULE",
-  "languageToolLinter.languageTool.disabledRules": "WHITESPACE_RULE"
+  "languageToolLinter.languageTool.disabledRules": "WHITESPACE_RULE",
+  "chatledger.exportDirectory": ".chatledger",
+  "chatledger.enabled": true
 }
