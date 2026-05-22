@@ -264,8 +264,9 @@ body.bg-dark #option-wrapper {
   border-color: var(--opt-border-2) !important;
 }
 
-#option-wrapper .row:last-child .btn,
-#option-wrapper .row:last-child [role="group"] {
+#option-wrapper .row:not(:first-child) .btn,
+#option-wrapper .row:not(:first-child) [role="group"],
+#option-wrapper .row:not(:first-child) .btn-group {
   border-color: var(--opt-border-3) !important;
 }
 
@@ -297,7 +298,11 @@ body.bg-dark #option-wrapper {
   min-width: 0;
 }
 
-#game-dakuten {
+#game-dakuten,
+#game-tsu,
+#game-combo,
+#game-smallvowel,
+#game-vowellength {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,6 +313,38 @@ body.bg-dark #option-wrapper {
   content: "\309B \309C";
   font-size: 1.5em;
   line-height: 1;
+}
+
+#game-tsu:before {
+  content: "\3063 \30C3";
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+#game-combo:before {
+  content: "\3083 \30E3";
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+#game-smallvowel:before {
+  content: "\3041 \30A1";
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+#game-vowellength:before {
+  content: "\30FC";
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+#option-help {
+  min-height: 1.5rem;
+  font-size: 0.85rem;
+  border-top: 1px dashed var(--opt-border-2);
+  padding-top: 0.5rem;
+  transition: color 0.1s ease;
 }
 
 #question {

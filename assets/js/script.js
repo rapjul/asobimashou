@@ -5,6 +5,10 @@ const SETTINGS_DEFAULT = {
   font: "inherit",
   dakuten: true,
   card: "Random",
+  doubledConsonants: true,
+  comboKana: true,
+  smallVowels: true,
+  vowelLength: true,
   kanji: false,
 };
 
@@ -187,6 +191,58 @@ document
   .querySelector("#game-dakuten > span")
   .classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
 
+document
+  .querySelector("#game-tsu")
+  .classList.toggle("active", SETTINGS.doubledConsonants);
+document
+  .querySelector("#game-tsu > span")
+  .classList.toggle(
+    "text-decoration-line-through",
+    !SETTINGS.doubledConsonants,
+  );
+
+document
+  .querySelector("#game-combo")
+  .classList.toggle("active", SETTINGS.comboKana);
+document
+  .querySelector("#game-combo > span")
+  .classList.toggle("text-decoration-line-through", !SETTINGS.comboKana);
+
+document
+  .querySelector("#game-smallvowel")
+  .classList.toggle("active", SETTINGS.smallVowels);
+document
+  .querySelector("#game-smallvowel > span")
+  .classList.toggle("text-decoration-line-through", !SETTINGS.smallVowels);
+
+document
+  .querySelector("#game-vowellength")
+  .classList.toggle("active", SETTINGS.vowelLength);
+document
+  .querySelector("#game-vowellength > span")
+  .classList.toggle("text-decoration-line-through", !SETTINGS.vowelLength);
+
+/**
+ * Update the visibility of conditional settings toggles.
+ * Small Vowels and Vowel Length are hidden in Hiragana-only mode, and shown in Katakana/Mixed.
+ * @returns {void}
+ */
+function updateConditionalTogglesVisibility() {
+  const isHiragana = SETTINGS.type === "game-hiragana";
+  const smallVowelBtn = document.querySelector("#game-smallvowel");
+  const vowelLengthBtn = document.querySelector("#game-vowellength");
+
+  if (isHiragana) {
+    smallVowelBtn.classList.add("d-none");
+    vowelLengthBtn.classList.add("d-none");
+  } else {
+    smallVowelBtn.classList.remove("d-none");
+    vowelLengthBtn.classList.remove("d-none");
+  }
+}
+
+updateConditionalTogglesVisibility();
+
 /* Set the active card button based on the saved setting. */
 document.querySelectorAll(".game-card").forEach((el) => {
   el.classList.toggle("active", el.value === SETTINGS.card);
@@ -211,47 +267,52 @@ function changeFont() {
  * @returns {void}
  */
 function nextQuestion() {
-  const dakuten = [
-    "ば",
-    "ぶ",
-    "び",
-    "べ",
-    "ぼ",
-    "が",
-    "ぎ",
-    "ぐ",
-    "げ",
-    "ご",
-    "ざ",
-    "じ",
-    "ず",
-    "ぜ",
-    "ぞ",
-    "だ",
-    "ぢ",
-    "づ",
-    "で",
-    "ど",
-    "ぱ",
-    "ぴ",
-    "ぷ",
-    "ぺ",
-    "ぽ",
-  ];
-  let id = Math.floor(Math.random() * cards[SETTINGS.card].length);
+  const deck = cards[SETTINGS.card];
+  const allowedCards = [];
 
-  if (!SETTINGS.dakuten) {
-    do {
-      id = Math.floor(Math.random() * cards[SETTINGS.card].length);
-    } while (
-      dakuten.some((e) => {
-        const h = cards[SETTINGS.card][id].hiragana;
-        return (Array.isArray(h) ? h.join("") : h).includes(e);
-      })
-    );
+  const dakutenRegex =
+    /[ばぶびべぼがぎぐげござじずぜぞだぢづでどぱぴぷぺぽゔガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポヴ]/;
+  const tsuRegex = /[っッ]/;
+  const comboRegex = /[ゃゅょャュョ]/;
+  const smallVowelRegex = /[ぁぃぅぇぉァィゥェォ]/;
+
+  for (let i = 0; i < deck.length; i++) {
+    const card = deck[i];
+    const h = Array.isArray(card.hiragana)
+      ? card.hiragana.join("")
+      : card.hiragana;
+    const k = card.kanji || "";
+
+    if (!SETTINGS.dakuten && (dakutenRegex.test(h) || dakutenRegex.test(k)))
+      continue;
+    if (!SETTINGS.doubledConsonants && (tsuRegex.test(h) || tsuRegex.test(k)))
+      continue;
+    if (!SETTINGS.comboKana && (comboRegex.test(h) || comboRegex.test(k)))
+      continue;
+    if (
+      SETTINGS.type !== "game-hiragana" &&
+      !SETTINGS.smallVowels &&
+      (smallVowelRegex.test(h) || smallVowelRegex.test(k))
+    )
+      continue;
+    if (
+      SETTINGS.type !== "game-hiragana" &&
+      !SETTINGS.vowelLength &&
+      (h.includes("ー") || k.includes("ー"))
+    )
+      continue;
+
+    allowedCards.push(i);
   }
 
-  const card = cards[SETTINGS.card][id];
+  let id;
+  if (allowedCards.length > 0) {
+    id = allowedCards[Math.floor(Math.random() * allowedCards.length)];
+  } else {
+    id = Math.floor(Math.random() * deck.length);
+  }
+
+  const card = deck[id];
   const hiragana =
     card.hiragana.constructor === Array
       ? card.hiragana[Math.floor(Math.random() * card.hiragana.length)]
@@ -321,6 +382,7 @@ document.querySelectorAll(".game-type").forEach((el) => {
       .forEach((btn) => btn.classList.remove("active"));
     evt.currentTarget.classList.add("active");
     SETTINGS.type = evt.currentTarget.id;
+    updateConditionalTogglesVisibility();
   });
 });
 
@@ -332,6 +394,38 @@ document.querySelector("#game-dakuten").addEventListener("click", () => {
   SETTINGS.dakuten = !SETTINGS.dakuten;
 });
 
+document.querySelector("#game-tsu").addEventListener("click", () => {
+  document.querySelector("#game-tsu").classList.toggle("active");
+  document
+    .querySelector("#game-tsu > span")
+    .classList.toggle("text-decoration-line-through");
+  SETTINGS.doubledConsonants = !SETTINGS.doubledConsonants;
+});
+
+document.querySelector("#game-combo").addEventListener("click", () => {
+  document.querySelector("#game-combo").classList.toggle("active");
+  document
+    .querySelector("#game-combo > span")
+    .classList.toggle("text-decoration-line-through");
+  SETTINGS.comboKana = !SETTINGS.comboKana;
+});
+
+document.querySelector("#game-smallvowel").addEventListener("click", () => {
+  document.querySelector("#game-smallvowel").classList.toggle("active");
+  document
+    .querySelector("#game-smallvowel > span")
+    .classList.toggle("text-decoration-line-through");
+  SETTINGS.smallVowels = !SETTINGS.smallVowels;
+});
+
+document.querySelector("#game-vowellength").addEventListener("click", () => {
+  document.querySelector("#game-vowellength").classList.toggle("active");
+  document
+    .querySelector("#game-vowellength > span")
+    .classList.toggle("text-decoration-line-through");
+  SETTINGS.vowelLength = !SETTINGS.vowelLength;
+});
+
 document.querySelectorAll(".game-card").forEach((el) => {
   el.addEventListener("click", (evt) => {
     if (evt.currentTarget.matches(".active")) return;
@@ -339,6 +433,63 @@ document.querySelectorAll(".game-card").forEach((el) => {
       .querySelectorAll(".game-card")
       .forEach((btn) => btn.classList.toggle("active"));
     SETTINGS.card = evt.currentTarget.value;
+  });
+});
+
+/* Interactive Help Text System */
+const HELP_TEXTS = {
+  "#game-font": "Select the font used for displaying Japanese characters.",
+  '.game-theme[value="system"]': "Follow the system theme preference.",
+  '.game-theme[value="light"]': "Use a bright, clean light theme.",
+  '.game-theme[value="dark"]': "Use a comfortable dark theme.",
+  "#game-kanji":
+    "Show or hide Kanji characters as ruby text (Furigana) above the Kana.",
+  "#game-hiragana":
+    "Practice reading standard Hiragana characters (あいうえお).",
+  "#game-mixed": "Practice reading a mix of Hiragana and Katakana characters.",
+  "#game-katakana":
+    "Practice reading standard Katakana characters (アイウエオ).",
+  "#game-dakuten": "Include or exclude voiced sounds (゛/ ゜, e.g., ば, ぱ).",
+  "#game-tsu": "Include or exclude doubled consonants (っ / ッ, e.g., よっつ).",
+  "#game-combo":
+    "Include or exclude contracted combo sounds (ゃ/ゅ/ょ / ャ/ュ/ョ, e.g., しゃ).",
+  "#game-smallvowel":
+    "Include or exclude small vowels (ぁ/ぃ/ぅ/ぇ/ぉ / ァ/ィ/ゥ/ェ/ォ, e.g., フェ).",
+  "#game-vowellength":
+    "Include or exclude prolonged vowel mark (ー, e.g., ノート).",
+  '.game-card[value="Random"]':
+    "Practice using a randomized deck of common vocabulary.",
+  '.game-card[value="JLPT"]':
+    "Practice using vocabulary from the JLPT N5 and N4 lists.",
+};
+
+const helpEl = document.querySelector("#option-help");
+const defaultHelpText = "Hover or focus an option to see details.";
+
+Object.entries(HELP_TEXTS).forEach(([selector, text]) => {
+  document.querySelectorAll(selector).forEach((el) => {
+    /**
+     * Show help description for the currently focused or hovered setting.
+     * @returns {void}
+     */
+    const showHelp = () => {
+      helpEl.textContent = text;
+    };
+
+    /**
+     * Hide help description and restore the default placeholder.
+     * @returns {void}
+     */
+    const hideHelp = () => {
+      if (helpEl.textContent === text) {
+        helpEl.textContent = defaultHelpText;
+      }
+    };
+
+    el.addEventListener("mouseenter", showHelp);
+    el.addEventListener("mouseleave", hideHelp);
+    el.addEventListener("focus", showHelp);
+    el.addEventListener("blur", hideHelp);
   });
 });
 
@@ -507,9 +658,23 @@ document.querySelector("#share").addEventListener("click", async () => {
   const average = GAME.timer / (GAME.answered + GAME.skipped);
   const activeType = document.querySelector(".game-type.active");
   const type = activeType ? activeType.textContent.trim() : "";
+
+  const isHiragana = SETTINGS.type === "game-hiragana";
+  const settingsParts = [
+    `Dakuten: ${SETTINGS.dakuten ? "on" : "off"}`,
+    `Doubles: ${SETTINGS.doubledConsonants ? "on" : "off"}`,
+    `Combo: ${SETTINGS.comboKana ? "on" : "off"}`,
+  ];
+  if (!isHiragana) {
+    settingsParts.push(`Small Vowels: ${SETTINGS.smallVowels ? "on" : "off"}`);
+    settingsParts.push(`Vowel Length: ${SETTINGS.vowelLength ? "on" : "off"}`);
+  }
+  const settingsStr = settingsParts.join(" | ");
+
   const text = `
 Asobimashou! 遊びましょう！ (Let's Play!)
-Card: ${SETTINGS.card} | Type: ${type} | Dakuten: ${SETTINGS.dakuten}
+Card: ${SETTINGS.card} | Type: ${type}
+Settings: ${settingsStr}
 Answered: ${GAME.answered} | Skipped: ${GAME.skipped}
 Time: ${GAME.timer}s | Average: ${average.toFixed(2)}s
 
@@ -608,6 +773,42 @@ function showApostropheToast(romaji, kana) {
 }
 
 /**
+ * Displays a temporary toast notification reminding the user to duplicate
+ * the preceding vowel when typing the vowel lengthening character (ー).
+ *
+ * @returns {void}
+ */
+function showVowelLengthToast() {
+  const container = document.querySelector("#toast-container");
+  if (!container) return;
+
+  // Clear any existing toasts to avoid cluttering the viewport
+  container.innerHTML = "";
+
+  const toast = document.createElement("div");
+  toast.className = "custom-toast";
+  toast.innerHTML = `
+    <i class="bi-lightbulb-fill text-warning"></i>
+    <span>Tip: For the vowel lengthening character (ー), duplicate the preceding vowel (e.g., write <strong>ii</strong> for <strong>iー</strong>).</span>
+  `;
+
+  container.appendChild(toast);
+
+  // Force reflow to ensure the transition is animated correctly
+  void toast.offsetHeight;
+  toast.classList.add("show");
+
+  // Auto-fade and remove the toast after 4 seconds
+  setTimeout(() => {
+    toast.classList.remove("show");
+    // Listen for transition completion to remove the element from DOM
+    toast.addEventListener("transitionend", () => {
+      toast.remove();
+    });
+  }, 4000);
+}
+
+/**
  * Event listener callback for the answer input keyup event.
  * Validates the user input.
  *
@@ -629,6 +830,12 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
   if (answer.indexOf(" ") > -1) return skipQuestion();
 
   if (q !== a) {
+    // Check if the user typed a hyphen '-' or the vowel lengthening character 'ー'
+    if (answer.includes("-") || answer.includes("ー") || a.includes("ー")) {
+      showVowelLengthToast();
+      return;
+    }
+
     // Check if the user missed an apostrophe for 'n' followed by a vowel or 'y'
     const romajiCorrect = wanakana.toRomaji(q);
     if (romajiCorrect.includes("'")) {

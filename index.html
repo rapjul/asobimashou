@@ -73,16 +73,35 @@
               <button id="game-katakana" class="btn game-type">カタカナ</button>
             </div>
           </div>
-          <div class="row justify-content-center">
+          <div class="row justify-content-center mb-3">
             <div class="col-auto btn-group-vertical" role="group">
-              <button id="game-dakuten" class="btn active">
-                <span>Dakuten</span>
-              </button>
               <div class="btn-group">
                 <button class="btn game-card active" value="Random">Random</button>
                 <button class="btn game-card" value="JLPT">JLPT N5-N4</button>
               </div>
             </div>
+          </div>
+          <div class="row justify-content-center">
+            <div class="col-auto btn-group-vertical" role="group">
+              <button id="game-dakuten" class="btn active">
+                <span>Dakuten</span>
+              </button>
+              <button id="game-tsu" class="btn active">
+                <span>Doubled Consonants</span>
+              </button>
+              <button id="game-combo" class="btn active">
+                <span>Combo Kana</span>
+              </button>
+              <button id="game-smallvowel" class="btn active">
+                <span>Small Vowels</span>
+              </button>
+              <button id="game-vowellength" class="btn active">
+                <span>Vowel Length</span>
+              </button>
+            </div>
+          </div>
+          <div id="option-help" class="text-muted mt-2 text-center small" aria-live="polite">
+            Hover or focus an option to see details.
           </div>
         </div>
         <button id="review" class="btn py-2" disabled>
