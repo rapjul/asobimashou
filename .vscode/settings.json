@@ -3,5 +3,14 @@
   "languageToolLinter.languageTool.disabledCategories": "WHITESPACE_RULE",
   "languageToolLinter.languageTool.disabledRules": "WHITESPACE_RULE",
   "chatledger.exportDirectory": ".chatledger",
-  "chatledger.enabled": true
+  "chatledger.enabled": true,
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+  },
+  "css.format.enable": true,
+  "css.format.spaceAroundSelectorSeparator": true, // Adds spaces around selectors: `a > b {}` instead of `a>b {}`
+  "css.format.newlineBetweenRules": false, // Off allows multiple rules per line
+  "css.format.newlineBetweenSelectors": false, // Adds newlines between selectors: `a, \n b {}` instead of `a, b {}`
+  "css.format.preserveNewLines": true, // Preserves newlines: `a \n {}` instead of `a {}`
+  "css.format.braceStyle": "collapse", // Expands braces: `a { \n }` instead of `a {}`
 }
