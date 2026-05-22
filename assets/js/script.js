@@ -696,7 +696,11 @@ document.querySelector("#start").addEventListener("click", () => {
   document.querySelector("#start").disabled = true;
   document.querySelector("#game").classList.remove("d-none");
   document.querySelector("#menu").classList.add("slide-up");
-  document.querySelector("#answer").focus();
+
+  const answerEl = document.querySelector("#answer");
+  answerEl.classList.remove("is-valid");
+  answerEl.focus();
+
   nextQuestion();
 });
 
@@ -722,6 +726,9 @@ document.querySelector("#review").addEventListener("click", (event) => {
 document.querySelector("#stop").addEventListener("click", (event) => {
   const average = GAME.timer / (GAME.answered + GAME.skipped);
   const result = document.querySelector("#result");
+
+  const answerEl = document.querySelector("#answer");
+  answerEl.classList.remove("is-valid");
 
   result.classList.remove("d-none");
   void result.offsetHeight; // Force browser reflow to trigger slide-in transition
@@ -893,7 +900,11 @@ function skipQuestion() {
       `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
     );
   GAME.skipped++;
-  document.querySelector("#answer").value = "";
+
+  const answerEl = document.querySelector("#answer");
+  answerEl.value = "";
+  answerEl.classList.remove("is-valid");
+
   nextQuestion();
 }
 
@@ -979,7 +990,13 @@ function showVowelLengthToast() {
  * @returns {void}
  */
 document.querySelector("#answer").addEventListener("keyup", (event) => {
-  const answer = document.querySelector("#answer").value;
+  const answerEl = document.querySelector("#answer");
+  const answer = answerEl.value;
+
+  // Immediately remove is-valid when starting to type a new answer
+  if (answer.length > 0) {
+    answerEl.classList.remove("is-valid");
+  }
 
   /* Space key: skip the current question */
   if (answer.indexOf(" ") > -1) return skipQuestion();
@@ -992,8 +1009,6 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
     .childNodes[0].nodeValue.trim();
   const q = wanakana.toHiragana(question, options);
   const a = wanakana.toHiragana(answer, options);
-
-  const answerEl = document.querySelector("#answer");
 
   // Validate spelling prefix
   if (isInputValidPrefix(answer, question)) {
@@ -1057,6 +1072,17 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
       `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
     );
   GAME.answered++;
+
+  // Trigger success visual feedback animation
+  answerEl.classList.remove("is-valid");
+  void answerEl.offsetHeight; // trigger reflow
+  answerEl.classList.add("is-valid");
+
+  // Remove the success visual feedback after the animation finishes
+  setTimeout(() => {
+    answerEl.classList.remove("is-valid");
+  }, 250);
+
   nextQuestion();
 });
 

@@ -20,6 +20,10 @@
   /* Skipped answer text color in the review table (light mode) */
   --review-skipped-color: #dc3545;
 
+  /* Valid input shadow and border (light mode) */
+  --input-valid-shadow: rgba(25, 135, 84, 0.4);
+  --input-valid-border: #198754;
+
   /* Invalid input shadow (light mode) */
   --input-invalid-shadow: rgba(253, 126, 20, 0.6);
 
@@ -70,6 +74,10 @@ body.bg-dark {
   --btn-light-hover-border: #dae0e5;
   /* Skipped answer text color in the review table (dark mode) */
   --review-skipped-color: #ff8787;
+
+  /* Valid input shadow and border (dark mode) */
+  --input-valid-shadow: rgba(46, 204, 113, 0.4);
+  --input-valid-border: #2ecc71;
 
   /* Invalid input shadow (dark mode) */
   --input-invalid-shadow: rgba(255, 159, 67, 0.6);
@@ -625,6 +633,24 @@ kbd {
 .custom-toast.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+#answer.is-valid {
+  border-color: var(--input-valid-border) !important;
+  box-shadow: 0 0 10px var(--input-valid-shadow) !important;
+  animation: pop-success 0.25s ease-out;
+}
+
+@keyframes pop-success {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 #answer.is-invalid {
