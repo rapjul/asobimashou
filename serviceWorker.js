@@ -1,4 +1,4 @@
-const CACHE_NAME = "offline-v6";
+const CACHE_NAME = "offline-v7";
 
 /** All assets that must be cached during service worker installation. */
 const toCache = [
@@ -25,6 +25,7 @@ const toCache = [
   /* Fonts */
   "./assets/fonts/bootstrap-icons.woff2",
   "./assets/fonts/klee-one.woff2",
+  "./assets/fonts/noto-sans-jp.woff2",
   "./assets/fonts/noto-serif-jp.woff2",
   "./assets/fonts/yuji-syuku.woff2",
 ];
