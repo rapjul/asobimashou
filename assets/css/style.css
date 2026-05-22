@@ -402,7 +402,9 @@ body.bg-dark #option-wrapper {
 }
 
 #review-table td {
-  font-family: 'Klee One', 'Noto Serif JP', 'Yuji Syuku', sans-serif;
+  font-family:
+    "Noto Sans JP", "Klee One", "Noto Serif JP", "Yuji Syuku", sans-serif,
+    system-ui, serif;
 }
 
 /* Color for skipped questions in the review table */

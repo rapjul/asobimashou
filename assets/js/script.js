@@ -2,7 +2,7 @@
 const SETTINGS_DEFAULT = {
   type: "game-hiragana",
   theme: "system",
-  font: "inherit",
+  font: "Noto Sans JP",
   dakuten: true,
   card: "Random",
   doubledConsonants: true,
@@ -165,7 +165,7 @@ let timerInterval = null;
 let gameStartTime = null;
 
 /* Apply saved game settings */
-if (SETTINGS.font !== SETTINGS_DEFAULT.font) changeFont();
+changeFont();
 
 window.addEventListener("load", () => {
   setTimeout(() => {
@@ -253,6 +253,10 @@ kanjiBtn.classList.toggle("active", SETTINGS.kanji);
 kanjiBtn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
 
 /* Game setting functions */
+/**
+ * Apply the selected font family to all themed game font elements.
+ * @returns {void}
+ */
 function changeFont() {
   document.querySelector("#game-font").value = SETTINGS.font;
   document

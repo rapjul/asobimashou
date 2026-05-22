@@ -8,6 +8,14 @@
 
 @font-face {
   font-display: swap;
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/noto-sans-jp.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
   font-family: 'Noto Serif JP';
   font-style: normal;
   font-weight: 400;
