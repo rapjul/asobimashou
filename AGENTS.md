@@ -123,18 +123,14 @@ Chromium/Edge but died after one tick on Safari.
 
 ### 3. Toast notifications for Romaji input hints
 
-**Decision**: When a user types a Romaji answer that is missing a required
-apostrophe (e.g. `tenin` instead of `ten'in` for `てんいん`), accept the answer
-as correct but immediately display a transient toast notification showing the
-correct spelling with the apostrophe.
+**Decision**: 
+- **Apostrophe Hints**: When a user types a Romaji answer that is missing a required apostrophe (e.g. `tenin` instead of `ten'in` for `てんいん`), accept the answer as correct but immediately display a transient toast notification showing the correct spelling with the apostrophe.
+- **Vowel Lengthening Hints**: When a user types a hyphen `-` or `ー`, or gets an answer incorrect on a card containing the vowel lengthening character `ー`, display a transient toast notification reminding them to duplicate the preceding vowel (e.g., write `ii` for `iー`).
 
-**Why**: The apostrophe for `ん` before a vowel or `y` is a genuine Romaji
-rule, but enforcing it as a hard error would frustrate learners. A toast keeps
-the focus on learning Kana, not Romaji punctuation.
+**Why**: 
+- The apostrophe and vowel lengthening rules are genuine Romaji constraints, but enforcing them strictly as errors blocks the flow of learning Kana. Toasts keep the focus on practice while providing passive instruction.
 
-**Implementation files**: `assets/js/script.js` (`showApostropheToast`),
-`assets/css/style.css` (`.custom-toast`, `#toast-container`),
-`index.html` (`#toast-container`).
+**Implementation files**: `assets/js/script.js` (`showApostropheToast`, `showVowelLengthToast`), `assets/css/style.css` (`.custom-toast`, `#toast-container`), `index.html` (`#toast-container`).
 
 ---
 
@@ -277,6 +273,15 @@ with the HTML and CSS files.
     - **macOS**: `~/Library/Fonts/` (native CoreText registers files written here immediately).
     - **Linux**: `~/.local/share/fonts/` (user-local directory for fontconfig).
 - If `fc-cache` is present (common on Linux and on macOS when Homebrew installs graphical dependencies), it runs `fc-cache -f` to rebuild the Fontconfig cache, ensuring command-line utilities immediately see the new font.
+
+---
+
+### 10. Broadened diacritic filtering pattern
+
+**Decision**: The `dakutenRegex` includes both Hiragana and Katakana voiced and semi-voiced characters (including `ゔ` and `ヴ`). In addition, the game filtering loop checks both the Hiragana (`h`) and Kanji/Katakana (`k`) properties of the cards:
+`if (!SETTINGS.dakuten && (dakutenRegex.test(h) || dakutenRegex.test(k))) continue;`
+
+**Why**: This aligns Katakana Dakuten/Handakuten handling with other phonetic filters (e.g., small vowels, doubled consonants) and ensures consistent filtering across all Hiragana/Katakana game modes.
 
 ---
 
