@@ -151,6 +151,15 @@ function generateRomajiSpellings(kanaStr) {
 }
 
 /**
+ * Custom Romaji mapping used to normalize converted Kana for prefix validation.
+ * @type {Object<string, string>}
+ */
+const CUSTOM_ROMAJI_MAPPING = {
+  "づ": "dzu",
+  "ヅ": "dzu"
+};
+
+/**
  * Checks if the user's current input is a valid prefix of the target Japanese Kana's Romaji spelling.
  *
  * @param {string} input - The user's input string.
@@ -158,7 +167,8 @@ function generateRomajiSpellings(kanaStr) {
  * @returns {boolean} True if the input is a valid prefix, false otherwise.
  */
 function isInputValidPrefix(input, targetKana) {
-  const cleanInput = input.toLowerCase().replace(/\s+/g, "");
+  const romajiInput = wanakana.toRomaji(input, { customRomajiMapping: CUSTOM_ROMAJI_MAPPING });
+  const cleanInput = romajiInput.toLowerCase().replace(/\s+/g, "");
   if (!cleanInput) return true;
   const spellings = generateRomajiSpellings(targetKana);
   return spellings.some((spelling) => spelling.toLowerCase().startsWith(cleanInput));
@@ -484,7 +494,9 @@ function nextQuestion() {
   document.querySelector("#question").innerHTML =
     `${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
   document.querySelector("#question-id").value = id;
-  document.querySelector("#answer").value = "";
+  const answerEl = document.querySelector("#answer");
+  answerEl.value = "";
+  answerEl.classList.remove("is-invalid");
   document.querySelector("#score").innerHTML =
     '<i class="bi-check-circle"></i> ' +
     `${GAME.answered}/${GAME.answered + GAME.skipped}`;
@@ -967,6 +979,11 @@ function showVowelLengthToast() {
  * @returns {void}
  */
 document.querySelector("#answer").addEventListener("keyup", (event) => {
+  const answer = document.querySelector("#answer").value;
+
+  /* Space key: skip the current question */
+  if (answer.indexOf(" ") > -1) return skipQuestion();
+
   const id = document.querySelector("#question-id").value;
   const card = cards[SETTINGS.card][id];
   const options = { customKanaMapping: { dzu: "づ" } };
@@ -974,11 +991,19 @@ document.querySelector("#answer").addEventListener("keyup", (event) => {
     .querySelector("#question")
     .childNodes[0].nodeValue.trim();
   const q = wanakana.toHiragana(question, options);
-  const answer = document.querySelector("#answer").value;
   const a = wanakana.toHiragana(answer, options);
 
-  /* Space key: skip the current question */
-  if (answer.indexOf(" ") > -1) return skipQuestion();
+  const answerEl = document.querySelector("#answer");
+
+  // Validate spelling prefix
+  if (isInputValidPrefix(answer, question)) {
+    answerEl.classList.remove("is-invalid");
+  } else {
+    // Re-trigger shake animation
+    answerEl.classList.remove("is-invalid");
+    void answerEl.offsetHeight; // trigger reflow
+    answerEl.classList.add("is-invalid");
+  }
 
   if (q !== a) {
     // Check if the user typed a hyphen '-' or the vowel lengthening character 'ー'

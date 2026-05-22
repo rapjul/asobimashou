@@ -20,6 +20,9 @@
   /* Skipped answer text color in the review table (light mode) */
   --review-skipped-color: #dc3545;
 
+  /* Invalid input shadow (light mode) */
+  --input-invalid-shadow: rgba(253, 126, 20, 0.6);
+
   /* Toast notification colors (light mode) */
   --toast-bg: rgba(255, 255, 255, 0.9);
   --toast-border: rgba(0, 0, 0, 0.1);
@@ -67,6 +70,9 @@ body.bg-dark {
   --btn-light-hover-border: #dae0e5;
   /* Skipped answer text color in the review table (dark mode) */
   --review-skipped-color: #ff8787;
+
+  /* Invalid input shadow (dark mode) */
+  --input-invalid-shadow: rgba(255, 159, 67, 0.6);
 
   /* Toast notification colors (dark mode) */
   --toast-bg: rgba(33, 37, 41, 0.9);
@@ -619,4 +625,21 @@ kbd {
 .custom-toast.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+#answer.is-invalid {
+  box-shadow: 0 0 10px var(--input-invalid-shadow) !important;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-6px);
+  }
+  40%, 80% {
+    transform: translateX(6px);
+  }
 }
