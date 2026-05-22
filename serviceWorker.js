@@ -11,7 +11,6 @@ const toCache = [
   "./assets/images/icons/icon-192.png",
   "./assets/images/icons/icon-512.png",
   "./apple-touch-icon.png",
-  "./assets/images/thumbnail.png",
   /* JavaScript */
   "./assets/js/bootstrap.bundle.min.js",
   "./assets/js/script.js",

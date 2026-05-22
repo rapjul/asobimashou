@@ -32,6 +32,11 @@
   --toast-border: rgba(0, 0, 0, 0.1);
   --toast-color: #212529;
   --toast-shadow: rgba(0, 0, 0, 0.15);
+
+  /* Offline Status Badge colors (light mode) */
+  --offline-badge-bg: rgba(253, 126, 20, 0.1);
+  --offline-badge-border: rgba(253, 126, 20, 0.3);
+  --offline-badge-color: #d9480f;
 }
 
 html {
@@ -87,6 +92,11 @@ body.bg-dark {
   --toast-border: rgba(255, 255, 255, 0.1);
   --toast-color: #f8f9fa;
   --toast-shadow: rgba(0, 0, 0, 0.4);
+
+  /* Offline Status Badge colors (dark mode) */
+  --offline-badge-bg: rgba(255, 159, 67, 0.15);
+  --offline-badge-border: rgba(255, 159, 67, 0.4);
+  --offline-badge-color: #ff9f43;
 }
 
 body {
@@ -606,6 +616,8 @@ kbd {
   pointer-events: none;
   margin-top: max(10px, env(safe-area-inset-top));
   z-index: 1100;
+  width: max-content;
+  max-width: calc(100vw - 32px);
 }
 
 .custom-toast {
@@ -619,7 +631,7 @@ kbd {
   box-shadow: 0 4px 15px var(--toast-shadow);
   font-size: 0.9rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   opacity: 0;
   transform: translateY(-20px);
@@ -628,11 +640,26 @@ kbd {
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
   margin-bottom: 10px;
+  white-space: nowrap;
+}
+
+.custom-toast i {
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .custom-toast.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Responsive adjustments for narrow viewports */
+@media (max-width: 575.98px) {
+  .custom-toast {
+    white-space: normal;
+    border-radius: 20px;
+    text-align: left;
+  }
 }
 
 #answer.is-valid {
@@ -668,4 +695,37 @@ kbd {
   40%, 80% {
     transform: translateX(6px);
   }
+}
+
+/*
+ * Offline Badge styling
+ * Displays a persistent, non-intrusive badge in the top-right corner when connection is lost.
+ */
+#offline-badge {
+  position: fixed;
+  top: max(15px, env(safe-area-inset-top));
+  right: max(15px, env(safe-area-inset-right));
+  background: var(--offline-badge-bg);
+  border: 1px solid var(--offline-badge-border);
+  color: var(--offline-badge-color);
+  padding: 6px 14px;
+  border-radius: 50px;
+  box-shadow: 0 4px 10px var(--toast-shadow);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 1050;
+}
+
+#offline-badge.show {
+  opacity: 1;
+  transform: translateY(0);
 }

@@ -909,6 +909,41 @@ function skipQuestion() {
 }
 
 /**
+ * Displays a generic temporary toast notification in the toast container.
+ *
+ * @param {string} htmlContent - The HTML content to render inside the toast.
+ * @param {string} [className=""] - Additional class name to add to the toast wrapper.
+ * @param {number} [duration=4000] - Duration in milliseconds to display the toast.
+ * @returns {void}
+ */
+function showToast(htmlContent, className = "", duration = 4000) {
+  const container = document.querySelector("#toast-container");
+  if (!container) return;
+
+  // Clear any existing toasts to avoid cluttering the viewport
+  container.innerHTML = "";
+
+  const toast = document.createElement("div");
+  toast.className = "custom-toast" + (className ? " " + className : "");
+  toast.innerHTML = htmlContent;
+
+  container.appendChild(toast);
+
+  // Force reflow to ensure the transition is animated correctly
+  void toast.offsetHeight;
+  toast.classList.add("show");
+
+  // Auto-fade and remove the toast after duration
+  setTimeout(() => {
+    toast.classList.remove("show");
+    // Listen for transition completion to remove the element from DOM
+    toast.addEventListener("transitionend", () => {
+      toast.remove();
+    });
+  }, duration);
+}
+
+/**
  * Displays a temporary toast notification reminding the user to use an apostrophe
  * when transcribing Japanese words with 'n' followed by a vowel or 'y'.
  *
@@ -917,33 +952,11 @@ function skipQuestion() {
  * @returns {void}
  */
 function showApostropheToast(romaji, kana) {
-  const container = document.querySelector("#toast-container");
-  if (!container) return;
-
-  // Clear any existing toasts to avoid cluttering the viewport
-  container.innerHTML = "";
-
-  const toast = document.createElement("div");
-  toast.className = "custom-toast";
-  toast.innerHTML = `
+  const html = `
     <i class="bi-lightbulb-fill text-warning"></i>
     <span>Tip: Use an apostrophe (') for 'n' followed by a vowel/y (e.g., <strong>${romaji}</strong> &rarr; <strong>${kana}</strong>).</span>
   `;
-
-  container.appendChild(toast);
-
-  // Force reflow to ensure the transition is animated correctly
-  void toast.offsetHeight;
-  toast.classList.add("show");
-
-  // Auto-fade and remove the toast after 4 seconds
-  setTimeout(() => {
-    toast.classList.remove("show");
-    // Listen for transition completion to remove the element from DOM
-    toast.addEventListener("transitionend", () => {
-      toast.remove();
-    });
-  }, 4000);
+  showToast(html, "toast-apostrophe");
 }
 
 /**
@@ -953,33 +966,11 @@ function showApostropheToast(romaji, kana) {
  * @returns {void}
  */
 function showVowelLengthToast() {
-  const container = document.querySelector("#toast-container");
-  if (!container) return;
-
-  // Clear any existing toasts to avoid cluttering the viewport
-  container.innerHTML = "";
-
-  const toast = document.createElement("div");
-  toast.className = "custom-toast";
-  toast.innerHTML = `
+  const html = `
     <i class="bi-lightbulb-fill text-warning"></i>
     <span>Tip: For the vowel lengthening character (ー), duplicate the preceding vowel (e.g., write <strong>ii</strong> for <strong>iー</strong>).</span>
   `;
-
-  container.appendChild(toast);
-
-  // Force reflow to ensure the transition is animated correctly
-  void toast.offsetHeight;
-  toast.classList.add("show");
-
-  // Auto-fade and remove the toast after 4 seconds
-  setTimeout(() => {
-    toast.classList.remove("show");
-    // Listen for transition completion to remove the element from DOM
-    toast.addEventListener("transitionend", () => {
-      toast.remove();
-    });
-  }, 4000);
+  showToast(html, "toast-vowel-length");
 }
 
 /**
@@ -1098,3 +1089,100 @@ document.querySelector("#answer").addEventListener("keydown", (e) => {
     document.querySelector("#stop").click();
   }
 });
+
+/**
+ * Displays a toast notification informing the user they are offline.
+ *
+ * @returns {void}
+ */
+function showOfflineToast() {
+  const html = `
+    <i class="bi-wifi-off text-danger"></i>
+    <span>Offline. <br class="d-block d-sm-none">Running from cache.</span>
+  `;
+  showToast(html, "toast-offline");
+}
+
+/**
+ * Displays a toast notification informing the user they are back online.
+ *
+ * @returns {void}
+ */
+function showOnlineToast() {
+  const html = `
+    <i class="bi-wifi text-success"></i>
+    <span>Back online! <br class="d-block d-sm-none">Connection restored.</span>
+  `;
+  showToast(html, "toast-online");
+}
+
+/**
+ * Displays a toast notification when the content is first successfully cached.
+ *
+ * @returns {void}
+ */
+function showCacheSuccessToast() {
+  const html = `
+    <i class="bi-cloud-check-fill text-success"></i>
+    <span>Content cached! <br class="d-block d-sm-none">Ready for offline use.</span>
+  `;
+  showToast(html, "toast-cached");
+}
+
+/**
+ * Displays a toast notification when a cache update is found and installed.
+ *
+ * @returns {void}
+ */
+function showCacheUpdateToast() {
+  const html = `
+    <i class="bi-arrow-clockwise text-primary"></i>
+    <span>Cache updated! <br class="d-block d-sm-none">Reload the page to see changes.</span>
+  `;
+  showToast(html, "toast-updated", 6000);
+}
+
+/**
+ * Toggles the visibility of the persistent offline badge.
+ *
+ * @param {boolean} isOffline - True to show the offline badge, false to hide it.
+ * @returns {void}
+ */
+function toggleOfflineBadge(isOffline) {
+  const badge = document.getElementById("offline-badge");
+  if (!badge) return;
+
+  if (isOffline) {
+    badge.classList.remove("d-none");
+    // Force reflow
+    void badge.offsetHeight;
+    badge.classList.add("show");
+  } else {
+    badge.classList.remove("show");
+    // Use setTimeout corresponding to transition duration (0.3s)
+    setTimeout(() => {
+      if (!badge.classList.contains("show")) {
+        badge.classList.add("d-none");
+      }
+    }, 300);
+  }
+}
+
+// Expose cache notifications and badge toggle globally
+window.showCacheSuccessToast = showCacheSuccessToast;
+window.showCacheUpdateToast = showCacheUpdateToast;
+window.toggleOfflineBadge = toggleOfflineBadge;
+
+// Monitor connection transitions
+window.addEventListener("online", () => {
+  toggleOfflineBadge(false);
+  showOnlineToast();
+});
+
+window.addEventListener("offline", () => {
+  toggleOfflineBadge(true);
+  showOfflineToast();
+});
+
+// Initialize connection state badge on load
+toggleOfflineBadge(!navigator.onLine);
