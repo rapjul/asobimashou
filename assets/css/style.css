@@ -135,8 +135,7 @@ body {
 }
 
 /* On mobile/small screens, add back the optical shift */
-@media (max-width: 768px),
-(max-height: 600px) {
+@media (max-width: 768px), (max-height: 600px) {
   .centering-wrapper {
     padding-bottom: 6vh;
   }
@@ -148,7 +147,6 @@ body {
 
 /* On desktop, keep everything locked and perfectly centered */
 @media (min-width: 769px) and (min-height: 601px) {
-
   #menu,
   #game,
   #result {
@@ -171,13 +169,15 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1050;
   /* Ensure it stays above game */
+  z-index: 1050;
 }
 
 #menu,
 #option-wrapper * {
-  transition: background-color .5s ease, color .1s ease;
+  transition:
+    background-color 0.5s ease,
+    color 0.1s ease;
 }
 
 /*
@@ -218,8 +218,14 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
   max-height: 0;
   margin-top: -2px;
   border-color: #00000000;
-  transition: opacity, border, padding, max-height;
-  transition-duration: 0.3s, 0.5s;
+  transition:
+    opacity,
+    border,
+    padding,
+    max-height;
+  transition-duration:
+    0.3s,
+    0.5s;
   transition-timing-function: ease;
 }
 
@@ -290,7 +296,6 @@ body.bg-dark #option-wrapper {
   border-left: none !important;
   /* Prevent double borders */
 }
-
 
 /* Constrain theme row width */
 #option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group {
@@ -412,7 +417,9 @@ td {
 
 /* Slide animations: replacing jQuery slideUp/slideDown/animate */
 #menu {
-  transition: transform 0.5s ease, opacity 0.5s ease;
+  transition:
+    transform 0.5s ease,
+    opacity 0.5s ease;
 }
 
 #menu.slide-up,
@@ -444,7 +451,11 @@ td {
 }
 
 .btn {
-  transition: background-color 0.3s ease, color 0.1s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+  transition:
+    background-color 0.3s ease,
+    color 0.1s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease !important;
 }
 
 /*
@@ -456,16 +467,13 @@ td {
 #game #question-wrapper,
 #game #answer-wrapper,
 #game #hints-wrapper {
-  transition: padding 0.7s cubic-bezier(0.3, 1, 0.3, 1),
+  transition:
+    padding 0.7s cubic-bezier(0.3, 1, 0.3, 1),
     margin 0.7s cubic-bezier(0.3, 1, 0.3, 1),
     gap 0.7s cubic-bezier(0.3, 1, 0.3, 1);
 }
 
-@media (max-height: 600px),
-(max-width: 768px) {
-
-
-
+@media (max-height: 600px), (max-width: 768px) {
   body.keyboard-open .centering-wrapper {
     margin-top: 1vh !important;
     margin-bottom: 0.5rem !important;
@@ -553,9 +561,12 @@ td {
  * We add transitions and a subtle shadow for a premium feel.
  */
 kbd {
-  transition: background-color 0.5s ease, color 0.1s ease, box-shadow 0.5s ease;
-  padding: .2rem .4rem;
-  border-radius: .25rem;
+  transition:
+    background-color 0.5s ease,
+    color 0.1s ease,
+    box-shadow 0.5s ease;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
   box-shadow: 0 2px 0 var(--kbd-shadow);
 }
 
@@ -596,7 +607,9 @@ kbd {
   gap: 10px;
   opacity: 0;
   transform: translateY(-20px);
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
   margin-bottom: 10px;
 }
