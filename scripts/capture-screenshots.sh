@@ -111,6 +111,9 @@ main() {
   agent-browser open "http://localhost:${PORT}"
   agent-browser wait 1000
 
+  # Clear any active PWA caching toasts before taking screenshots.
+  agent-browser eval "document.querySelectorAll('.custom-toast').forEach(el => el.remove())"
+
   # 1. Capture the start screen (main menu, before options are opened)
   echo "Capturing start screen..."
   agent-browser screenshot "${SCREENSHOTS_DIR}/start_screen.png"
