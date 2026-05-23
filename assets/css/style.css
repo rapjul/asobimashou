@@ -236,7 +236,18 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
   border-color: var(--btn-light-hover-border);
 }
 
+#main-menu-group {
+  width: 260px;
+  max-width: 100%;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#main-menu-group.expanded {
+  width: 400px;
+}
+
 #option-wrapper {
+  width: 100%;
   overflow: hidden;
   opacity: 0;
   max-height: 0;
@@ -256,7 +267,8 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
 #option-wrapper.collapsed {
   border-color: inherit;
   opacity: 1;
-  max-height: 40vh;
+  max-height: 284px;
+  height: 284px;
 }
 
 .form-select:focus {
@@ -287,48 +299,61 @@ body.bg-dark #option-wrapper {
 }
 
 /* Apply group borders */
-#option-wrapper .row:first-child > .col-auto:first-child [role="group"],
-#option-wrapper .row:first-child > .col-auto:first-child .form-select,
-#option-wrapper .row:first-child > .col-auto:first-child #game-kanji {
-  border-color: var(--opt-border-1) !important;
-}
-
-#option-wrapper .row:first-child > .col-auto:last-child [role="group"],
-#option-wrapper .row:first-child > .col-auto:last-child .btn {
-  border-color: var(--opt-border-2) !important;
-}
-
-#option-wrapper .row:not(:first-child) .btn,
-#option-wrapper .row:not(:first-child) [role="group"],
-#option-wrapper .row:not(:first-child) .btn-group {
-  border-color: var(--opt-border-3) !important;
-}
-
-/*
- * Theme Row (System/Light/Dark) Specific Fixes
- */
-#option-wrapper .game-theme {
-  position: relative;
-  /* Ensure a base border exists */
+#option-wrapper .border-group-1,
+#option-wrapper select.border-group-1,
+#option-wrapper .btn.border-group-1 {
   border: 1px solid var(--opt-border-1) !important;
 }
 
-/* Ensure borders don't collapse into invisibility */
-#option-wrapper .btn-group > .btn + .btn {
-  margin-left: 0 !important;
-  /* Remove Bootstrap's overlap */
-  border-left: none !important;
-  /* Prevent double borders */
+#option-wrapper .btn.border-group-2 {
+  border: 1px solid var(--opt-border-2) !important;
 }
 
-/* Constrain theme row width */
-#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group {
+#option-wrapper .btn.border-group-3 {
+  border: 1px solid var(--opt-border-3) !important;
+}
+
+/* Ensure borders don't collapse into double borders by overlapping them by 1px */
+#option-wrapper .btn-group > .btn + .btn {
+  margin-left: -1px !important;
+}
+
+#option-wrapper .btn-group-vertical > .btn + .btn {
+  margin-top: -1px !important;
+}
+
+#option-wrapper .btn:hover,
+#option-wrapper .btn:focus,
+#option-wrapper .btn.active {
+  z-index: 2 !important;
+}
+
+/* Ensure button groups span full width and space children evenly */
+#option-wrapper .btn-group {
+  display: flex;
   width: 100%;
 }
 
-#option-wrapper .row:first-child > .col-auto:first-child > [role="group"] > .btn-group .btn {
+#option-wrapper .btn-group .btn {
   flex: 1;
-  min-width: 0;
+  width: min-content;
+}
+
+/* Options scroll container for paginated settings */
+#options-scroll-container {
+  height: 230px;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+.options-page {
+  height: 230px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 #game-dakuten,
@@ -373,11 +398,23 @@ body.bg-dark #option-wrapper {
 }
 
 #option-help {
-  min-height: 1.5rem;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.85rem;
   border-top: 1px dashed var(--opt-border-2);
-  padding-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
   transition: color 0.1s ease;
+}
+
+/*
+ * Force the inner span flex item to allow wrapping and scaling
+ * on narrow viewports, preventing browser layout engines from
+ * ignoring soft wrap boundaries.
+ */
+#option-help span {
+  min-width: 0;
 }
 
 #question {

@@ -601,42 +601,48 @@ document.querySelectorAll(".game-card").forEach((el) => {
 
 /* Interactive Help Text System */
 const HELP_TEXTS = {
-  "#game-font": "Select the font used for displaying Japanese characters.",
+  "#game-font": "Select the font used for <wbr>displaying Japanese characters.",
   '.game-theme[value="system"]': "Follow the system theme preference.",
-  '.game-theme[value="light"]': "Use a bright, clean light theme.",
-  '.game-theme[value="dark"]': "Use a comfortable dark theme.",
+  '.game-theme[value="light"]': "Use a bright, clean <wbr>light theme.",
+  '.game-theme[value="dark"]': "Use a comfortable <wbr>dark theme.",
   "#game-kanji":
-    "Show or hide Kanji characters as ruby text (Furigana) above the Kana.",
+    "Show or hide Kanji characters as <wbr>ruby text <wbr>(Furigana) <wbr>above the Kana.",
   "#game-hiragana":
-    "Practice reading standard Hiragana characters (あいうえお).",
-  "#game-mixed": "Practice reading a mix of Hiragana and Katakana characters.",
+    "Practice reading standard Hiragana characters <wbr>(あいうえお).",
+  "#game-mixed": "Practice reading a mix of <wbr>Hiragana and Katakana characters.",
   "#game-katakana":
-    "Practice reading standard Katakana characters (アイウエオ).",
-  "#game-dakuten": "Include or exclude voiced sounds (゛/ ゜, e.g., ば, ぱ).",
-  "#game-tsu": "Include or exclude doubled consonants (っ / ッ, e.g., よっつ).",
+    "Practice reading standard Katakana characters <wbr>(アイウエオ).",
+  "#game-dakuten": "Include or exclude voiced sounds <wbr>(゛/ ゜, e.g., ば, ぱ).",
+  "#game-tsu": "Include or exclude doubled consonants <wbr>(っ / ッ, e.g., よっつ).",
   "#game-combo":
-    "Include or exclude contracted combo sounds (ゃ/ゅ/ょ / ャ/ュ/ョ, e.g., しゃ).",
+    "Include or exclude contracted combo sounds <wbr>(ゃ/ゅ/ょ / ャ/ュ/ョ, e.g., しゃ).",
   "#game-smallvowel":
-    "Include or exclude small vowels (ぁ/ぃ/ぅ/ぇ/ぉ / ァ/ィ/ゥ/ェ/ォ, e.g., フェ).",
+    "Include or exclude small vowels <wbr>(ぁ/ぃ/ぅ/ぇ/ぉ / ァ/ィ/ゥ/ェ/ォ, e.g., フェ).",
   "#game-vowellength":
-    "Include or exclude prolonged vowel mark (ー, e.g., ノート).",
+    "Include or exclude prolonged vowel mark <wbr>(ー, e.g., ノート).",
   '.game-card[value="Random"]':
-    "Practice using a randomized deck of common vocabulary.",
+    "Practice using a randomized deck of <wbr>common vocabulary.",
   '.game-card[value="JLPT"]':
-    "Practice using vocabulary from the JLPT N5 and N4 lists.",
+    "Practice using vocabulary from <wbr>the JLPT N5 and N4 lists.",
+  "#options-btn-more":
+    "Configure advanced filters for <wbr>voiced, combo, and small sounds.",
+  "#options-btn-back":
+    "Return to the <wbr>main options screen.",
 };
 
 const helpEl = document.querySelector("#option-help");
 const defaultHelpText = "Hover or focus an option to see details.";
 
 Object.entries(HELP_TEXTS).forEach(([selector, text]) => {
+  const formattedText = text.replace(/(\([^)]+\)\.?)$/, '<span class="text-nowrap">$1</span>');
+
   document.querySelectorAll(selector).forEach((el) => {
     /**
      * Show help description for the currently focused or hovered setting.
      * @returns {void}
      */
     const showHelp = () => {
-      helpEl.textContent = text;
+      helpEl.innerHTML = `<span class="text-center w-100">${formattedText}</span>`;
     };
 
     /**
@@ -644,8 +650,8 @@ Object.entries(HELP_TEXTS).forEach(([selector, text]) => {
      * @returns {void}
      */
     const hideHelp = () => {
-      if (helpEl.textContent === text) {
-        helpEl.textContent = defaultHelpText;
+      if (helpEl.innerHTML.includes(formattedText)) {
+        helpEl.innerHTML = `<span class="text-center w-100">${defaultHelpText}</span>`;
       }
     };
 
@@ -656,12 +662,83 @@ Object.entries(HELP_TEXTS).forEach(([selector, text]) => {
   });
 });
 
+/**
+ * Closes the game options section if it is currently open.
+ * @returns {void}
+ */
+function closeOptions() {
+  const optionBtn = document.querySelector("#option");
+  const optionWrapper = document.querySelector("#option-wrapper");
+  const menuGroup = document.querySelector("#main-menu-group");
+  if (optionWrapper.classList.contains("collapsed")) {
+    optionBtn.classList.remove("active");
+    optionWrapper.classList.remove("collapsed");
+    if (menuGroup) {
+      menuGroup.classList.remove("expanded");
+    }
+    document.getElementById("options-scroll-container").scrollTop = 0;
+    if (optionWrapper.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  }
+}
+
 /* Buttons event listener */
+/**
+ * Click handler for the options button. Toggles the options section visibility and expands/collapses the menu button container.
+ * @type {EventListener}
+ * @returns {void}
+ */
 document.querySelector("#option").addEventListener("click", () => {
-  document.querySelector("#option").classList.toggle("active");
-  document.querySelector("#option-wrapper").classList.toggle("collapsed");
-  document.querySelector("#option-wrapper").classList.toggle("p-3");
+  const optionBtn = document.querySelector("#option");
+  const optionWrapper = document.querySelector("#option-wrapper");
+  const menuGroup = document.querySelector("#main-menu-group");
+
+  optionBtn.classList.toggle("active");
+  optionWrapper.classList.toggle("collapsed");
+  if (menuGroup) {
+    menuGroup.classList.toggle("expanded", optionWrapper.classList.contains("collapsed"));
+  }
+  document.getElementById("options-scroll-container").scrollTop = 0;
 });
+
+// Click listener to navigate to the extra options (phonetic filters) screen.
+document.querySelector("#options-btn-more").addEventListener("click", () => {
+  document.querySelector("#options-scroll-container").scrollTo({ top: 230, behavior: "smooth" });
+});
+
+// Click listener to navigate back to the primary options screen.
+document.querySelector("#options-btn-back").addEventListener("click", () => {
+  document.querySelector("#options-scroll-container").scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/**
+ * Handles keyboard events to close the options panel when Escape is pressed.
+ * @param {KeyboardEvent} event - The keyboard event object.
+ * @returns {void}
+ */
+function handleOptionsKeydown(event) {
+  if (event.key === "Escape") {
+    closeOptions();
+  }
+}
+
+/**
+ * Handles click events to close the options panel when clicking outside.
+ * @param {MouseEvent} event - The mouse event object.
+ * @returns {void}
+ */
+function handleOptionsClickOutside(event) {
+  const optionBtn = document.querySelector("#option");
+  const optionWrapper = document.querySelector("#option-wrapper");
+  const target = /** @type {Node} */ (event.target);
+  if (!optionBtn.contains(target) && !optionWrapper.contains(target)) {
+    closeOptions();
+  }
+}
+
+document.addEventListener("keydown", handleOptionsKeydown);
+document.addEventListener("click", handleOptionsClickOutside);
 
 /**
  * Click handler for the start button. Initializes a new game session and starts the timer.

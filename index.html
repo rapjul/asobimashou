@@ -41,12 +41,12 @@
   <!-- Main Menu -->
   <section id="menu" class="bg-light">
     <div class="centering-wrapper container">
-      <div class="mb-3 display-5 game-font-change">
+      <div id="title-wrapper" class="mb-3 display-5 game-font-change">
         <ruby>あそびましょう！<rt>Asobimashou!</rt></ruby>
         <br />
         (Let's Play!)
       </div>
-      <div class="mb-3 btn-group-vertical" role="group">
+      <div id="main-menu-group" class="mb-3 btn-group-vertical" role="group">
         <button id="start" class="btn py-2" disabled>
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
           <span>Loading Game...</span>
@@ -56,59 +56,94 @@
           Options
         </button>
         <div id="option-wrapper" class="border">
-          <div class="row justify-content-center mb-3">
-            <div class="col-auto btn-group-vertical" role="group">
-              <select id="game-font" class="form-select rounded-0 rounded-top" title="Select Game Font"
-                aria-label="Select Game Font">
-                <option value="system-ui">System Sans-Serif</option>
-                <option value="serif">System Serif</option>
-                <option value="Klee One">Klee One</option>
-                <option value="Noto Sans JP" selected>Noto Sans JP</option>
-                <option value="Noto Serif JP">Noto Serif JP</option>
-                <option value="Yuji Syuku">Yuji Syuku</option>
-              </select>
-              <div class="btn-group" role="group">
-                <button class="btn game-theme active" value="system">System</button>
-                <button class="btn game-theme ms-0" value="light">Light</button>
-                <button class="btn game-theme ms-0" value="dark">Dark</button>
+          <div id="options-scroll-container">
+            <!-- Page 1: Primary Options section -->
+            <div class="options-page" id="options-page-primary">
+              <div class="d-flex justify-content-between mb-2 px-3">
+                <div class="btn-group-vertical" role="group">
+                  <!--- Font Selection section -->
+                  <select id="game-font" class="form-select rounded-0 rounded-top border-group-1"
+                    title="Select Game Font" aria-label="Select Game Font">
+                    <option value="system-ui">System Sans-Serif</option>
+                    <option value="serif">System Serif</option>
+                    <option value="Klee One">Klee One</option>
+                    <option value="Noto Sans JP" selected>Noto Sans JP</option>
+                    <option value="Noto Serif JP">Noto Serif JP</option>
+                    <option value="Yuji Syuku">Yuji Syuku</option>
+                  </select>
+                  <!--- Theme section -->
+                  <div class="btn-group justify-content-between" role="group">
+                    <button class="btn game-theme active border-group-1" value="system">System</button>
+                    <button class="btn game-theme border-group-1" value="light">Light</button>
+                    <button class="btn game-theme border-group-1" value="dark">Dark</button>
+                  </div>
+                  <!--- Kanji section -->
+                  <button id="game-kanji" class="btn rounded-0 rounded-bottom border-group-1">Show Kanji</button>
+                </div>
+
+                <!--- Game Type section -->
+                <div class="btn-group-vertical" role="group">
+                  <button id="game-hiragana" class="btn game-type border-group-2 rounded-top">ひらがな</button>
+                  <button id="game-mixed" class="btn game-type border-group-2">Mixed</button>
+                  <button id="game-katakana" class="btn game-type border-group-2 rounded-bottom">カタカナ</button>
+                </div>
               </div>
-              <button id="game-kanji" class="btn rounded-0 rounded-bottom">Show Kanji</button>
+
+              <!--- Deck/Wordlist section -->
+              <div class="px-3 mb-2">
+                <div class="btn-group w-100" role="group">
+                  <button class="btn game-card active border-group-2" value="Random">Random</button>
+                  <button class="btn game-card border-group-2" value="JLPT">JLPT N5-N4</button>
+                </div>
+              </div>
+
+              <!--- Phonetic Filters / More Options button -->
+              <div class="px-3">
+                <button id="options-btn-more"
+                  class="btn w-100 border-group-3 d-flex align-items-center justify-content-center gap-1 py-1">
+                  <span>Phonetic Filters</span>
+                  <i class="bi-chevron-down"></i>
+                </button>
+              </div>
             </div>
-            <div class="col-auto btn-group-vertical" role="group">
-              <button id="game-hiragana" class="btn game-type">ひらがな</button>
-              <button id="game-mixed" class="btn game-type">Mixed</button>
-              <button id="game-katakana" class="btn game-type">カタカナ</button>
-            </div>
-          </div>
-          <div class="row justify-content-center mb-3">
-            <div class="col-auto btn-group-vertical" role="group">
-              <div class="btn-group">
-                <button class="btn game-card active" value="Random">Random</button>
-                <button class="btn game-card" value="JLPT">JLPT N5-N4</button>
+
+            <!-- Page 2: More Options (Phonetic Filters) section -->
+            <div class="options-page" id="options-page-extra">
+
+              <!--- Back button -->
+              <div class="px-3 mb-2">
+                <button id="options-btn-back"
+                  class="btn w-100 border-group-3 d-flex align-items-center justify-content-center gap-1 py-1">
+                  <i class="bi-chevron-up"></i>
+                  <span>Back to Main Options</span>
+                </button>
+              </div>
+
+              <!--- Phonetic Filters section -->
+              <div class="px-3">
+                <div class="btn-group-vertical w-100" role="group">
+                  <button id="game-dakuten" class="btn active border-group-3 py-1">
+                    <span>Dakuten</span>
+                  </button>
+                  <button id="game-tsu" class="btn active border-group-3 py-1">
+                    <span>Doubled Consonants</span>
+                  </button>
+                  <button id="game-combo" class="btn active border-group-3 py-1">
+                    <span>Combo Kana</span>
+                  </button>
+                  <button id="game-smallvowel" class="btn active border-group-3 py-1">
+                    <span>Small Vowels</span>
+                  </button>
+                  <button id="game-vowellength" class="btn active border-group-3 py-1">
+                    <span>Vowel Length</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          <div class="row justify-content-center">
-            <div class="col-auto btn-group-vertical" role="group">
-              <button id="game-dakuten" class="btn active">
-                <span>Dakuten</span>
-              </button>
-              <button id="game-tsu" class="btn active">
-                <span>Doubled Consonants</span>
-              </button>
-              <button id="game-combo" class="btn active">
-                <span>Combo Kana</span>
-              </button>
-              <button id="game-smallvowel" class="btn active">
-                <span>Small Vowels</span>
-              </button>
-              <button id="game-vowellength" class="btn active">
-                <span>Vowel Length</span>
-              </button>
-            </div>
-          </div>
-          <div id="option-help" class="text-muted mt-2 text-center small" aria-live="polite">
-            Hover or focus an option to see details.
+
+          <div id="option-help" class="text-muted mt-1 mb-1 text-center small" aria-live="polite">
+            <span class="text-center w-100">Hover or focus an option to see details.</span>
           </div>
         </div>
         <button id="review" class="btn py-2" disabled>
