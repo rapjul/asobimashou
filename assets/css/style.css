@@ -253,14 +253,8 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
   max-height: 0;
   margin-top: -2px;
   border-color: #00000000;
-  transition:
-    opacity,
-    border,
-    padding,
-    max-height;
-  transition-duration:
-    0.3s,
-    0.5s;
+  transition: opacity, border, padding, max-height;
+  transition-duration: 0.3s, 0.5s;
   transition-timing-function: ease;
 }
 
@@ -723,13 +717,16 @@ kbd {
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  20%, 60% {
+  20%,
+  60% {
     transform: translateX(-6px);
   }
-  40%, 80% {
+  40%,
+  80% {
     transform: translateX(6px);
   }
 }

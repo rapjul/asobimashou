@@ -13,16 +13,16 @@ No build step. No framework. Served directly via `npx serve .` (or `npm run dev`
 
 **Tech stack**
 
-| Layer         | Technology                            |
-|---------------|---------------------------------------|
-| Structure     | HTML5 (`index.html`, `offline.html`)  |
-| Style         | Vanilla CSS (`assets/css/style.css`)  |
-| Logic         | Vanilla JS (`assets/js/script.js`)    |
-| IME           | WanaKana (`assets/js/wanakana.min.js`)|
-| UI components | Bootstrap 5 (local copy)              |
-| PWA           | Service Worker (`serviceWorker.js`)   |
-| SW register   | `assets/js/sw-register.js`            |
-| Vocab data    | `assets/js/cards.js`                  |
+| Layer         | Technology                             |
+| ------------- | -------------------------------------- |
+| Structure     | HTML5 (`index.html`, `offline.html`)   |
+| Style         | Vanilla CSS (`assets/css/style.css`)   |
+| Logic         | Vanilla JS (`assets/js/script.js`)     |
+| IME           | WanaKana (`assets/js/wanakana.min.js`) |
+| UI components | Bootstrap 5 (local copy)               |
+| PWA           | Service Worker (`serviceWorker.js`)    |
+| SW register   | `assets/js/sw-register.js`             |
+| Vocab data    | `assets/js/cards.js`                   |
 
 ---
 
@@ -43,12 +43,12 @@ No build step. No framework. Served directly via `npx serve .` (or `npm run dev`
 
 Follow **Conventional Commits**. Scopes in use:
 
-| Scope    | Usage example                                |
-|----------|----------------------------------------------|
-| `game`   | Timer, scoring, question flow                |
-| `style`  | CSS / visual changes                         |
-| `sw`     | Service worker / PWA caching                 |
-| `config` | `.editorconfig`, `.hintrc`, `.vscode/`       |
+| Scope    | Usage example                          |
+| -------- | -------------------------------------- |
+| `game`   | Timer, scoring, question flow          |
+| `style`  | CSS / visual changes                   |
+| `sw`     | Service worker / PWA caching           |
+| `config` | `.editorconfig`, `.hintrc`, `.vscode/` |
 
 ---
 
@@ -99,22 +99,22 @@ Chromium/Edge but died after one tick on Safari.
 
 **Variable catalogue** (light → dark):
 
-| Variable                | Light            | Dark              | Purpose                          |
-|-------------------------|------------------|-------------------|----------------------------------|
-| `--app-bg`              | `#f2f2f2`        | `#212529`         | Main application background      |
-| `--result-bg`           | `#e5e5e5`        | `#181a1b`         | Review screen (slightly darker)  |
-| `--table-hover-bg`      | `#d6d6d6`        | `#3a3a3a`         | Table row hover                  |
-| `--scrollbar-track-bg`  | rgba(228…, 0.25) | rgba(228…, 0.15)  | Custom scrollbar track           |
-| `--scrollbar-thumb-bg`  | rgba(161…, 0.25) | rgba(161…, 0.15)  | Custom scrollbar thumb           |
-| `--input-focus-shadow`  | `gray`           | rgba(255…, 0.2)   | Answer input focus glow          |
-| `--input-focus-border`  | `#ced4da`        | `#495057`         | Select element focus border      |
-| `--kbd-shadow`          | rgba(0…, 0.1)    | rgba(255…, 0.1)   | `<kbd>` box-shadow               |
-| `--btn-dark-hover-bg`   | `#343a40`        | (same)            | Dark button hover state          |
-| `--btn-light-hover-bg`  | `#e2e6ea`        | (same)            | Light button hover state         |
-| `--toast-bg`            | rgba(255…, 0.9)  | rgba(33…, 0.9)    | Toast notification background    |
-| `--toast-border`        | rgba(0…, 0.1)    | rgba(255…, 0.15)  | Toast notification border        |
-| `--toast-color`         | `#212529`        | `#f8f9fa`         | Toast notification text          |
-| `--toast-shadow`        | rgba(0…, 0.15)   | rgba(0…, 0.4)     | Toast notification drop shadow   |
+| Variable               | Light            | Dark             | Purpose                         |
+| ---------------------- | ---------------- | ---------------- | ------------------------------- |
+| `--app-bg`             | `#f2f2f2`        | `#212529`        | Main application background     |
+| `--result-bg`          | `#e5e5e5`        | `#181a1b`        | Review screen (slightly darker) |
+| `--table-hover-bg`     | `#d6d6d6`        | `#3a3a3a`        | Table row hover                 |
+| `--scrollbar-track-bg` | rgba(228…, 0.25) | rgba(228…, 0.15) | Custom scrollbar track          |
+| `--scrollbar-thumb-bg` | rgba(161…, 0.25) | rgba(161…, 0.15) | Custom scrollbar thumb          |
+| `--input-focus-shadow` | `gray`           | rgba(255…, 0.2)  | Answer input focus glow         |
+| `--input-focus-border` | `#ced4da`        | `#495057`        | Select element focus border     |
+| `--kbd-shadow`         | rgba(0…, 0.1)    | rgba(255…, 0.1)  | `<kbd>` box-shadow              |
+| `--btn-dark-hover-bg`  | `#343a40`        | (same)           | Dark button hover state         |
+| `--btn-light-hover-bg` | `#e2e6ea`        | (same)           | Light button hover state        |
+| `--toast-bg`           | rgba(255…, 0.9)  | rgba(33…, 0.9)   | Toast notification background   |
+| `--toast-border`       | rgba(0…, 0.1)    | rgba(255…, 0.15) | Toast notification border       |
+| `--toast-color`        | `#212529`        | `#f8f9fa`        | Toast notification text         |
+| `--toast-shadow`       | rgba(0…, 0.15)   | rgba(0…, 0.4)    | Toast notification drop shadow  |
 
 **Rule**: When adding new styled elements, define variables in `:root` and
 `body.bg-dark` first, then reference them in the selector.
@@ -123,11 +123,13 @@ Chromium/Edge but died after one tick on Safari.
 
 ### 3. Toast notifications for Romaji input hints
 
-**Decision**: 
+**Decision**:
+
 - **Apostrophe Hints**: When a user types a Romaji answer that is missing a required apostrophe (e.g. `tenin` instead of `ten'in` for `てんいん`), accept the answer as correct but immediately display a transient toast notification showing the correct spelling with the apostrophe.
 - **Vowel Lengthening Hints**: When a user types a hyphen `-` or `ー`, or gets an answer incorrect on a card containing the vowel lengthening character `ー`, display a transient toast notification reminding them to duplicate the preceding vowel (e.g., write `ii` for `iー`).
 
-**Why**: 
+**Why**:
+
 - The apostrophe and vowel lengthening rules are genuine Romaji constraints, but enforcing them strictly as errors blocks the flow of learning Kana. Toasts keep the focus on practice while providing passive instruction.
 
 **Implementation files**: `assets/js/script.js` (`showApostropheToast`, `showVowelLengthToast`), `assets/css/style.css` (`.custom-toast`, `#toast-container`), `index.html` (`#toast-container`).
@@ -139,7 +141,7 @@ Chromium/Edge but died after one tick on Safari.
 **Strategies in use**:
 
 | Request type              | Strategy               |
-|---------------------------|------------------------|
+| ------------------------- | ---------------------- |
 | HTML (`navigate`)         | Network-first          |
 | JS / CSS / fonts / images | Stale-while-revalidate |
 
@@ -155,8 +157,8 @@ visit — no manual version bump required for routine edits.
 **How updates are loaded**:
 Because static assets use stale-while-revalidate, when an update is deployed:
 
-1. On the **first load/visit**, the browser immediately renders the page using the *stale* (old) cached JS/CSS files.
-2. Simultaneously, the Service Worker triggers a background fetch to get the *new* JS/CSS files and updates the cache.
+1. On the **first load/visit**, the browser immediately renders the page using the _stale_ (old) cached JS/CSS files.
+2. Simultaneously, the Service Worker triggers a background fetch to get the _new_ JS/CSS files and updates the cache.
 3. The user must **reload the page** (typically after a brief moment for the background fetch to finish) to load and execute the new version.
 
 **Flow for a cached static asset**:
@@ -200,13 +202,13 @@ SW `install` event, so the app is fully playable offline from the first visit.
 
 **Practical effects**:
 
-| Scenario | What happens |
-|----------|--------------|
+| Scenario                              | What happens                                                                                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | You update `script.js` or `style.css` | First visit serves the stale cached version while fetching the update in the background; a subsequent page reload executes the updated version |
-| User is fully offline | Cached assets are served instantly; SW logs a `console.warn` per asset in the browser's DevTools |
-| First ever visit (nothing cached yet) | Every asset is fetched from the network and cached; subsequent visits are fast |
-| You delete or rename a cached file | Old cache entry lingers until `CACHE_NAME` is bumped, and the SW reactivates |
-| You need a forced hard reset | Bump `CACHE_NAME` — the `activate` event purges all older caches on next visit |
+| User is fully offline                 | Cached assets are served instantly; SW logs a `console.warn` per asset in the browser's DevTools                                               |
+| First ever visit (nothing cached yet) | Every asset is fetched from the network and cached; subsequent visits are fast                                                                 |
+| You delete or rename a cached file    | Old cache entry lingers until `CACHE_NAME` is bumped, and the SW reactivates                                                                   |
+| You need a forced hard reset          | Bump `CACHE_NAME` — the `activate` event purges all older caches on next visit                                                                 |
 
 ---
 
@@ -263,11 +265,13 @@ with the HTML and CSS files.
 
 **Decision**: The static asset generation script (`scripts/generate-icons.sh`) must ensure that the specific fonts referenced in the source SVG are installed on the local system/runner before conversion.
 
-**Why**: 
+**Why**:
+
 - Browsers render SVG fonts dynamically by fetching external links (e.g., Google Fonts `<link>` tag in `icon-previewer.html`).
 - Local command-line rendering tools (like `rsvg-convert`, `imagemagick`, and `inkscape`) run offline and do not resolve remote font URLs. If a font like `Outfit` is not installed on the system, the rendering tool will silently fall back to `sans-serif` (e.g., Arial or Helvetica), resulting in layout shifts or incorrect styling in the generated PNG icons.
 
-**Implementation**: 
+**Implementation**:
+
 - The `scripts/generate-icons.sh` script scans the target SVG file for specific fonts (`Outfit`, `Klee One`, `Noto Serif JP`, `Yuji Syuku`).
 - If missing, it downloads the corresponding `.ttf` from the Google Fonts upstream repository and installs it locally:
     - **macOS**: `~/Library/Fonts/` (native CoreText registers files written here immediately).
@@ -300,6 +304,7 @@ The old SW keeps serving the old cache until **all tabs** for the origin are
 closed and reopened. There is no JS API to force this faster.
 
 To manually clear during development:
+
 > Safari → Settings → Privacy → Manage Website Data → Remove
 
 ### WanaKana `bind` on `#answer`
@@ -309,8 +314,8 @@ directly, bypassing the IME layer. To test the answer comparison in automation,
 manually dispatch a `keyup` event after setting `.value` to trigger the handler:
 
 ```js
-answerInput.value = 'tenin';
-answerInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'n' }));
+answerInput.value = "tenin";
+answerInput.dispatchEvent(new KeyboardEvent("keyup", { key: "n" }));
 ```
 
 ### `cards.js` structure
@@ -319,7 +324,7 @@ answerInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'n' }));
 Start button:
 
 ```js
-const startBtn = document.getElementById('start');
+const startBtn = document.getElementById("start");
 startBtn.disabled = false;
 ```
 

@@ -1,15 +1,15 @@
 /* Persistent settings — saved to localStorage */
 const SETTINGS_DEFAULT = {
-  type: "game-hiragana",
-  theme: "system",
-  font: "Noto Sans JP",
-  dakuten: true,
-  card: "Random",
-  doubledConsonants: true,
-  comboKana: true,
-  smallVowels: true,
-  vowelLength: true,
-  kanji: false,
+	type: "game-hiragana",
+	theme: "system",
+	font: "Noto Sans JP",
+	dakuten: true,
+	card: "Random",
+	doubledConsonants: true,
+	comboKana: true,
+	smallVowels: true,
+	vowelLength: true,
+	kanji: false,
 };
 
 const SETTINGS_SAVED = JSON.parse(localStorage.getItem("SETTINGS")) || {};
@@ -23,46 +23,46 @@ const systemDarkMQ = window.matchMedia("(prefers-color-scheme: dark)");
  * @type {Object<string, string[]>}
  */
 const ROMAJI_ALTERNATIVES = {
-  "し": ["shi", "si"],
-  "ち": ["chi", "ti"],
-  "つ": ["tsu", "tu"],
-  "じ": ["ji", "zi"],
-  "ぢ": ["ji", "di"],
-  "づ": ["dzu", "du"],
-  "ふ": ["fu", "hu"],
-  "を": ["wo", "o"],
-  "ん": ["n", "nn", "n'"],
-  "しゃ": ["sha", "sya"],
-  "しゅ": ["shu", "syu"],
-  "しょ": ["sho", "syo"],
-  "ちゃ": ["cha", "tya"],
-  "ちゅ": ["chu", "tyu"],
-  "ちょ": ["cho", "tyo"],
-  "じゃ": ["ja", "zya", "jya"],
-  "じゅ": ["ju", "zyu", "jyu"],
-  "じょ": ["jo", "zyo", "jyo"],
-  "ぢゃ": ["dya", "ja"],
-  "ぢゅ": ["dyu", "ju"],
-  "ぢょ": ["dyo", "jo"],
+	し: ["shi", "si"],
+	ち: ["chi", "ti"],
+	つ: ["tsu", "tu"],
+	じ: ["ji", "zi"],
+	ぢ: ["ji", "di"],
+	づ: ["dzu", "du"],
+	ふ: ["fu", "hu"],
+	を: ["wo", "o"],
+	ん: ["n", "nn", "n'"],
+	しゃ: ["sha", "sya"],
+	しゅ: ["shu", "syu"],
+	しょ: ["sho", "syo"],
+	ちゃ: ["cha", "tya"],
+	ちゅ: ["chu", "tyu"],
+	ちょ: ["cho", "tyo"],
+	じゃ: ["ja", "zya", "jya"],
+	じゅ: ["ju", "zyu", "jyu"],
+	じょ: ["jo", "zyo", "jyo"],
+	ぢゃ: ["dya", "ja"],
+	ぢゅ: ["dyu", "ju"],
+	ぢょ: ["dyo", "jo"],
 
-  "シ": ["shi", "si"],
-  "チ": ["chi", "ti"],
-  "ツ": ["tsu", "tu"],
-  "ジ": ["ji", "zi"],
-  "ヂ": ["ji", "di"],
-  "ヅ": ["dzu", "du"],
-  "フ": ["fu", "hu"],
-  "ヲ": ["wo", "o"],
-  "ン": ["n", "nn", "n'"],
-  "シャ": ["sha", "sya"],
-  "シュ": ["shu", "syu"],
-  "ショ": ["sho", "syo"],
-  "チャ": ["cha", "tya"],
-  "チュ": ["chu", "tyu"],
-  "チョ": ["cho", "tyo"],
-  "ジャ": ["ja", "zya", "jya"],
-  "ジュ": ["ju", "zyu", "jyu"],
-  "ジョ": ["jo", "zyo", "jyo"]
+	シ: ["shi", "si"],
+	チ: ["chi", "ti"],
+	ツ: ["tsu", "tu"],
+	ジ: ["ji", "zi"],
+	ヂ: ["ji", "di"],
+	ヅ: ["dzu", "du"],
+	フ: ["fu", "hu"],
+	ヲ: ["wo", "o"],
+	ン: ["n", "nn", "n'"],
+	シャ: ["sha", "sya"],
+	シュ: ["shu", "syu"],
+	ショ: ["sho", "syo"],
+	チャ: ["cha", "tya"],
+	チュ: ["chu", "tyu"],
+	チョ: ["cho", "tyo"],
+	ジャ: ["ja", "zya", "jya"],
+	ジュ: ["ju", "zyu", "jyu"],
+	ジョ: ["jo", "zyo", "jyo"],
 };
 
 /**
@@ -72,82 +72,84 @@ const ROMAJI_ALTERNATIVES = {
  * @returns {string[]} An array of all possible Romaji spellings.
  */
 function generateRomajiSpellings(kanaStr) {
-  const segments = [];
-  let i = 0;
-  while (i < kanaStr.length) {
-    const char = kanaStr[i];
-    const nextChar = kanaStr[i + 1];
+	const segments = [];
+	let i = 0;
+	while (i < kanaStr.length) {
+		const char = kanaStr[i];
+		const nextChar = kanaStr[i + 1];
 
-    if (nextChar && /[ゃゅょぁぃぅぇぉャュョァィゥェォ]/.test(nextChar)) {
-      const combo = char + nextChar;
-      if (ROMAJI_ALTERNATIVES[combo]) {
-        segments.push(ROMAJI_ALTERNATIVES[combo]);
-      } else {
-        segments.push([wanakana.toRomaji(combo)]);
-      }
-      i += 2;
-    } else if (char === "っ" || char === "ッ") {
-      segments.push({ type: "tsu", index: i });
-      i += 1;
-    } else if (char === "ー") {
-      if (segments.length > 0) {
-        const prevSegment = segments[segments.length - 1];
-        if (Array.isArray(prevSegment)) {
-          const vowels = prevSegment
-            .map((alt) => alt[alt.length - 1])
-            .filter((c) => /[aeiouy]/i.test(c));
-          const uniqueVowels = [...new Set(vowels)];
-          segments.push(uniqueVowels.length > 0 ? uniqueVowels : ["o"]);
-        } else {
-          segments.push(["o"]);
-        }
-      } else {
-        segments.push(["-"]);
-      }
-      i += 1;
-    } else {
-      if (ROMAJI_ALTERNATIVES[char]) {
-        segments.push(ROMAJI_ALTERNATIVES[char]);
-      } else {
-        segments.push([wanakana.toRomaji(char)]);
-      }
-      i += 1;
-    }
-  }
+		if (nextChar && /[ゃゅょぁぃぅぇぉャュョァィゥェォ]/.test(nextChar)) {
+			const combo = char + nextChar;
+			if (ROMAJI_ALTERNATIVES[combo]) {
+				segments.push(ROMAJI_ALTERNATIVES[combo]);
+			} else {
+				segments.push([wanakana.toRomaji(combo)]);
+			}
+			i += 2;
+		} else if (char === "っ" || char === "ッ") {
+			segments.push({ type: "tsu", index: i });
+			i += 1;
+		} else if (char === "ー") {
+			if (segments.length > 0) {
+				const prevSegment = segments[segments.length - 1];
+				if (Array.isArray(prevSegment)) {
+					const vowels = prevSegment
+						.map((alt) => alt[alt.length - 1])
+						.filter((c) => /[aeiouy]/i.test(c));
+					const uniqueVowels = [...new Set(vowels)];
+					segments.push(
+						uniqueVowels.length > 0 ? uniqueVowels : ["o"],
+					);
+				} else {
+					segments.push(["o"]);
+				}
+			} else {
+				segments.push(["-"]);
+			}
+			i += 1;
+		} else {
+			if (ROMAJI_ALTERNATIVES[char]) {
+				segments.push(ROMAJI_ALTERNATIVES[char]);
+			} else {
+				segments.push([wanakana.toRomaji(char)]);
+			}
+			i += 1;
+		}
+	}
 
-  for (let j = 0; j < segments.length; j++) {
-    if (segments[j] && segments[j].type === "tsu") {
-      let nextArr = null;
-      for (let k = j + 1; k < segments.length; k++) {
-        if (Array.isArray(segments[k])) {
-          nextArr = segments[k];
-          break;
-        }
-      }
-      if (nextArr) {
-        const firstLetters = nextArr
-          .map((alt) => alt[0])
-          .filter((c) => c && /[a-zA-Z]/.test(c));
-        const uniqueLetters = [...new Set(firstLetters)];
-        segments[j] = uniqueLetters.length > 0 ? uniqueLetters : ["t"];
-      } else {
-        segments[j] = ["t"];
-      }
-    }
-  }
+	for (let j = 0; j < segments.length; j++) {
+		if (segments[j] && segments[j].type === "tsu") {
+			let nextArr = null;
+			for (let k = j + 1; k < segments.length; k++) {
+				if (Array.isArray(segments[k])) {
+					nextArr = segments[k];
+					break;
+				}
+			}
+			if (nextArr) {
+				const firstLetters = nextArr
+					.map((alt) => alt[0])
+					.filter((c) => c && /[a-zA-Z]/.test(c));
+				const uniqueLetters = [...new Set(firstLetters)];
+				segments[j] = uniqueLetters.length > 0 ? uniqueLetters : ["t"];
+			} else {
+				segments[j] = ["t"];
+			}
+		}
+	}
 
-  let results = [""];
-  for (const seg of segments) {
-    const nextResults = [];
-    for (const r of results) {
-      for (const opt of seg) {
-        nextResults.push(r + opt);
-      }
-    }
-    results = nextResults;
-  }
+	let results = [""];
+	for (const seg of segments) {
+		const nextResults = [];
+		for (const r of results) {
+			for (const opt of seg) {
+				nextResults.push(r + opt);
+			}
+		}
+		results = nextResults;
+	}
 
-  return results;
+	return results;
 }
 
 /**
@@ -155,8 +157,8 @@ function generateRomajiSpellings(kanaStr) {
  * @type {Object<string, string>}
  */
 const CUSTOM_ROMAJI_MAPPING = {
-  "づ": "dzu",
-  "ヅ": "dzu"
+	づ: "dzu",
+	ヅ: "dzu",
 };
 
 /**
@@ -167,13 +169,16 @@ const CUSTOM_ROMAJI_MAPPING = {
  * @returns {boolean} True if the input is a valid prefix, false otherwise.
  */
 function isInputValidPrefix(input, targetKana) {
-  const romajiInput = wanakana.toRomaji(input, { customRomajiMapping: CUSTOM_ROMAJI_MAPPING });
-  const cleanInput = romajiInput.toLowerCase().replace(/\s+/g, "");
-  if (!cleanInput) return true;
-  const spellings = generateRomajiSpellings(targetKana);
-  return spellings.some((spelling) => spelling.toLowerCase().startsWith(cleanInput));
+	const romajiInput = wanakana.toRomaji(input, {
+		customRomajiMapping: CUSTOM_ROMAJI_MAPPING,
+	});
+	const cleanInput = romajiInput.toLowerCase().replace(/\s+/g, "");
+	if (!cleanInput) return true;
+	const spellings = generateRomajiSpellings(targetKana);
+	return spellings.some((spelling) =>
+		spelling.toLowerCase().startsWith(cleanInput),
+	);
 }
-
 
 /**
  * Apply dark or light Bootstrap classes to all themed elements.
@@ -181,46 +186,46 @@ function isInputValidPrefix(input, targetKana) {
  * @param {boolean} isDark - True to enable dark mode, false for light.
  */
 function applyTheme(isDark) {
-  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-  if (metaThemeColor) {
-    metaThemeColor.setAttribute("content", isDark ? "#212529" : "#F8F9FA");
-  }
+	const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+	if (metaThemeColor) {
+		metaThemeColor.setAttribute("content", isDark ? "#212529" : "#F8F9FA");
+	}
 
-  document.querySelectorAll("body, #menu, #result").forEach((el) => {
-    el.classList.toggle("bg-dark", isDark);
-    el.classList.toggle("bg-light", !isDark);
-    el.classList.toggle("text-white", isDark);
-  });
-  document.querySelector("#answer").classList.toggle("text-white", isDark);
-  document.querySelectorAll("kbd").forEach((el) => {
-    // Keyboard keys (kbd) should have inverted themes:
-    // Dark mode -> White background, dark text
-    // Light mode -> Dark background, white text
-    el.classList.toggle("bg-white", isDark);
-    el.classList.toggle("text-dark", isDark);
-    el.classList.toggle("bg-dark", !isDark);
-    el.classList.toggle("text-white", !isDark);
-  });
-  document.querySelectorAll(".table").forEach((el) => {
-    el.classList.toggle("table-hover", !isDark);
-    el.classList.toggle("text-white", isDark);
-  });
-  document.querySelectorAll(".btn").forEach((el) => {
-    // Buttons use outline variants so the Bootstrap .active class renders as a
-    // visually distinct filled state (solid bg + contrasting text).
-    // Light mode -> dark outline (active = filled dark)
-    // Dark mode  -> light outline (active = filled light/white)
-    // Strip all four possible Bootstrap button-variant classes first so they
-    // never accumulate and create conflicts across multiple applyTheme calls.
-    el.classList.remove(
-      "btn-dark",
-      "btn-light",
-      "btn-outline-dark",
-      "btn-outline-light",
-    );
-    el.classList.toggle("btn-outline-dark", !isDark);
-    el.classList.toggle("btn-outline-light", isDark);
-  });
+	document.querySelectorAll("body, #menu, #result").forEach((el) => {
+		el.classList.toggle("bg-dark", isDark);
+		el.classList.toggle("bg-light", !isDark);
+		el.classList.toggle("text-white", isDark);
+	});
+	document.querySelector("#answer").classList.toggle("text-white", isDark);
+	document.querySelectorAll("kbd").forEach((el) => {
+		// Keyboard keys (kbd) should have inverted themes:
+		// Dark mode -> White background, dark text
+		// Light mode -> Dark background, white text
+		el.classList.toggle("bg-white", isDark);
+		el.classList.toggle("text-dark", isDark);
+		el.classList.toggle("bg-dark", !isDark);
+		el.classList.toggle("text-white", !isDark);
+	});
+	document.querySelectorAll(".table").forEach((el) => {
+		el.classList.toggle("table-hover", !isDark);
+		el.classList.toggle("text-white", isDark);
+	});
+	document.querySelectorAll(".btn").forEach((el) => {
+		// Buttons use outline variants so the Bootstrap .active class renders as a
+		// visually distinct filled state (solid bg + contrasting text).
+		// Light mode -> dark outline (active = filled dark)
+		// Dark mode  -> light outline (active = filled light/white)
+		// Strip all four possible Bootstrap button-variant classes first so they
+		// never accumulate and create conflicts across multiple applyTheme calls.
+		el.classList.remove(
+			"btn-dark",
+			"btn-light",
+			"btn-outline-dark",
+			"btn-outline-light",
+		);
+		el.classList.toggle("btn-outline-dark", !isDark);
+		el.classList.toggle("btn-outline-light", isDark);
+	});
 }
 
 /**
@@ -229,9 +234,9 @@ function applyTheme(isDark) {
  * @returns {boolean} True if dark mode should be applied.
  */
 function resolveIsDark(theme) {
-  if (theme === "dark") return true;
-  if (theme === "light") return false;
-  return systemDarkMQ.matches; // "system"
+	if (theme === "dark") return true;
+	if (theme === "light") return false;
+	return systemDarkMQ.matches; // "system"
 }
 
 /* Apply theme on load */
@@ -239,33 +244,33 @@ applyTheme(resolveIsDark(SETTINGS.theme));
 
 /* Viewport height adjustment for mobile keyboards */
 const updateViewportHeight = () => {
-  const vv = window.visualViewport;
-  const vh = vv ? vv.height : window.innerHeight;
-  const offsetTop = vv ? vv.offsetTop : 0;
+	const vv = window.visualViewport;
+	const vh = vv ? vv.height : window.innerHeight;
+	const offsetTop = vv ? vv.offsetTop : 0;
 
-  document.documentElement.style.setProperty(
-    "--visual-viewport-height",
-    `${vh}px`,
-  );
-  document.documentElement.style.setProperty(
-    "--visual-viewport-offset-y",
-    `${offsetTop}px`,
-  );
+	document.documentElement.style.setProperty(
+		"--visual-viewport-height",
+		`${vh}px`,
+	);
+	document.documentElement.style.setProperty(
+		"--visual-viewport-offset-y",
+		`${offsetTop}px`,
+	);
 
-  // If visual viewport is significantly smaller than layout height, the keyboard is likely open.
-  // We also check if the answer input is focused as a secondary hint.
-  const isInputFocused =
-    document.activeElement && document.activeElement.id === "answer";
-  const isShort = vh < window.innerHeight * 0.85;
+	// If visual viewport is significantly smaller than layout height, the keyboard is likely open.
+	// We also check if the answer input is focused as a secondary hint.
+	const isInputFocused =
+		document.activeElement && document.activeElement.id === "answer";
+	const isShort = vh < window.innerHeight * 0.85;
 
-  const isKeyboardOpen = isShort || isInputFocused;
+	const isKeyboardOpen = isShort || isInputFocused;
 
-  document.body.classList.toggle("keyboard-open", isKeyboardOpen);
+	document.body.classList.toggle("keyboard-open", isKeyboardOpen);
 };
 
 if (window.visualViewport) {
-  window.visualViewport.addEventListener("resize", updateViewportHeight);
-  window.visualViewport.addEventListener("scroll", updateViewportHeight);
+	window.visualViewport.addEventListener("resize", updateViewportHeight);
+	window.visualViewport.addEventListener("scroll", updateViewportHeight);
 }
 window.addEventListener("resize", updateViewportHeight);
 
@@ -276,35 +281,35 @@ window.addEventListener("resize", updateViewportHeight);
  * (like the result review table).
  */
 document.body.addEventListener(
-  "touchmove",
-  (e) => {
-    if (document.body.classList.contains("keyboard-open")) {
-      // Allow scrolling only if the target is inside a scrollable container
-      const isScrollable = e.target.closest("#review-wrapper");
-      if (!isScrollable) {
-        e.preventDefault();
-      }
-    }
-  },
-  { passive: false },
+	"touchmove",
+	(e) => {
+		if (document.body.classList.contains("keyboard-open")) {
+			// Allow scrolling only if the target is inside a scrollable container
+			const isScrollable = e.target.closest("#review-wrapper");
+			if (!isScrollable) {
+				e.preventDefault();
+			}
+		}
+	},
+	{ passive: false },
 );
 
 // Ensure the class updates immediately when focusing/blurring the input
 document
-  .querySelector("#answer")
-  .addEventListener("focus", () => setTimeout(updateViewportHeight, 100));
+	.querySelector("#answer")
+	.addEventListener("focus", () => setTimeout(updateViewportHeight, 100));
 document
-  .querySelector("#answer")
-  .addEventListener("blur", () => setTimeout(updateViewportHeight, 100));
+	.querySelector("#answer")
+	.addEventListener("blur", () => setTimeout(updateViewportHeight, 100));
 
 updateViewportHeight();
 
 /* Runtime state — never persisted, always fresh */
 const GAME = {
-  total: 0,
-  timer: 0,
-  answered: 0,
-  skipped: 0,
+	total: 0,
+	timer: 0,
+	answered: 0,
+	skipped: 0,
 };
 
 /**
@@ -325,59 +330,59 @@ let gameStartTime = null;
 changeFont();
 
 window.addEventListener("load", () => {
-  setTimeout(() => {
-    document.body.classList.remove("preload");
-  }, 100);
+	setTimeout(() => {
+		document.body.classList.remove("preload");
+	}, 100);
 });
 
 /* Keep active button in sync with the loaded setting */
 document.querySelectorAll(".game-theme").forEach((btn) => {
-  btn.classList.toggle("active", btn.value === SETTINGS.theme);
+	btn.classList.toggle("active", btn.value === SETTINGS.theme);
 });
 
 /* React to OS-level theme changes when in "system" mode */
 systemDarkMQ.addEventListener("change", () => {
-  if (SETTINGS.theme === "system") applyTheme(systemDarkMQ.matches);
+	if (SETTINGS.theme === "system") applyTheme(systemDarkMQ.matches);
 });
 
 document.querySelector(`#${SETTINGS.type}`).classList.add("active");
 document
-  .querySelector("#game-dakuten")
-  .classList.toggle("active", SETTINGS.dakuten);
+	.querySelector("#game-dakuten")
+	.classList.toggle("active", SETTINGS.dakuten);
 document
-  .querySelector("#game-dakuten > span")
-  .classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
+	.querySelector("#game-dakuten > span")
+	.classList.toggle("text-decoration-line-through", !SETTINGS.dakuten);
 
 document
-  .querySelector("#game-tsu")
-  .classList.toggle("active", SETTINGS.doubledConsonants);
+	.querySelector("#game-tsu")
+	.classList.toggle("active", SETTINGS.doubledConsonants);
 document
-  .querySelector("#game-tsu > span")
-  .classList.toggle(
-    "text-decoration-line-through",
-    !SETTINGS.doubledConsonants,
-  );
+	.querySelector("#game-tsu > span")
+	.classList.toggle(
+		"text-decoration-line-through",
+		!SETTINGS.doubledConsonants,
+	);
 
 document
-  .querySelector("#game-combo")
-  .classList.toggle("active", SETTINGS.comboKana);
+	.querySelector("#game-combo")
+	.classList.toggle("active", SETTINGS.comboKana);
 document
-  .querySelector("#game-combo > span")
-  .classList.toggle("text-decoration-line-through", !SETTINGS.comboKana);
+	.querySelector("#game-combo > span")
+	.classList.toggle("text-decoration-line-through", !SETTINGS.comboKana);
 
 document
-  .querySelector("#game-smallvowel")
-  .classList.toggle("active", SETTINGS.smallVowels);
+	.querySelector("#game-smallvowel")
+	.classList.toggle("active", SETTINGS.smallVowels);
 document
-  .querySelector("#game-smallvowel > span")
-  .classList.toggle("text-decoration-line-through", !SETTINGS.smallVowels);
+	.querySelector("#game-smallvowel > span")
+	.classList.toggle("text-decoration-line-through", !SETTINGS.smallVowels);
 
 document
-  .querySelector("#game-vowellength")
-  .classList.toggle("active", SETTINGS.vowelLength);
+	.querySelector("#game-vowellength")
+	.classList.toggle("active", SETTINGS.vowelLength);
 document
-  .querySelector("#game-vowellength > span")
-  .classList.toggle("text-decoration-line-through", !SETTINGS.vowelLength);
+	.querySelector("#game-vowellength > span")
+	.classList.toggle("text-decoration-line-through", !SETTINGS.vowelLength);
 
 /**
  * Update the visibility of conditional settings toggles.
@@ -385,24 +390,24 @@ document
  * @returns {void}
  */
 function updateConditionalTogglesVisibility() {
-  const isHiragana = SETTINGS.type === "game-hiragana";
-  const smallVowelBtn = document.querySelector("#game-smallvowel");
-  const vowelLengthBtn = document.querySelector("#game-vowellength");
+	const isHiragana = SETTINGS.type === "game-hiragana";
+	const smallVowelBtn = document.querySelector("#game-smallvowel");
+	const vowelLengthBtn = document.querySelector("#game-vowellength");
 
-  if (isHiragana) {
-    smallVowelBtn.classList.add("d-none");
-    vowelLengthBtn.classList.add("d-none");
-  } else {
-    smallVowelBtn.classList.remove("d-none");
-    vowelLengthBtn.classList.remove("d-none");
-  }
+	if (isHiragana) {
+		smallVowelBtn.classList.add("d-none");
+		vowelLengthBtn.classList.add("d-none");
+	} else {
+		smallVowelBtn.classList.remove("d-none");
+		vowelLengthBtn.classList.remove("d-none");
+	}
 }
 
 updateConditionalTogglesVisibility();
 
 /* Set the active card button based on the saved setting. */
 document.querySelectorAll(".game-card").forEach((el) => {
-  el.classList.toggle("active", el.value === SETTINGS.card);
+	el.classList.toggle("active", el.value === SETTINGS.card);
 });
 
 const kanjiBtn = document.querySelector("#game-kanji");
@@ -415,10 +420,10 @@ kanjiBtn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
  * @returns {void}
  */
 function changeFont() {
-  document.querySelector("#game-font").value = SETTINGS.font;
-  document
-    .querySelectorAll(".game-font-change")
-    .forEach((el) => (el.style.fontFamily = SETTINGS.font));
+	document.querySelector("#game-font").value = SETTINGS.font;
+	document
+		.querySelectorAll(".game-font-change")
+		.forEach((el) => (el.style.fontFamily = SETTINGS.font));
 }
 
 /* Game functions */
@@ -428,238 +433,247 @@ function changeFont() {
  * @returns {void}
  */
 function nextQuestion() {
-  const deck = cards[SETTINGS.card];
-  const allowedCards = [];
+	const deck = cards[SETTINGS.card];
+	const allowedCards = [];
 
-  const dakutenRegex =
-    /[ばぶびべぼがぎぐげござじずぜぞだぢづでどぱぴぷぺぽゔガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポヴ]/;
-  const tsuRegex = /[っッ]/;
-  const comboRegex = /[ゃゅょャュョ]/;
-  const smallVowelRegex = /[ぁぃぅぇぉァィゥェォ]/;
+	const dakutenRegex =
+		/[ばぶびべぼがぎぐげござじずぜぞだぢづでどぱぴぷぺぽゔガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポヴ]/;
+	const tsuRegex = /[っッ]/;
+	const comboRegex = /[ゃゅょャュョ]/;
+	const smallVowelRegex = /[ぁぃぅぇぉァィゥェォ]/;
 
-  for (let i = 0; i < deck.length; i++) {
-    const card = deck[i];
-    const h = Array.isArray(card.hiragana)
-      ? card.hiragana.join("")
-      : card.hiragana;
-    const k = card.kanji || "";
+	for (let i = 0; i < deck.length; i++) {
+		const card = deck[i];
+		const h = Array.isArray(card.hiragana)
+			? card.hiragana.join("")
+			: card.hiragana;
+		const k = card.kanji || "";
 
-    if (!SETTINGS.dakuten && (dakutenRegex.test(h) || dakutenRegex.test(k)))
-      continue;
-    if (!SETTINGS.doubledConsonants && (tsuRegex.test(h) || tsuRegex.test(k)))
-      continue;
-    if (!SETTINGS.comboKana && (comboRegex.test(h) || comboRegex.test(k)))
-      continue;
-    if (
-      SETTINGS.type !== "game-hiragana" &&
-      !SETTINGS.smallVowels &&
-      (smallVowelRegex.test(h) || smallVowelRegex.test(k))
-    )
-      continue;
-    if (
-      SETTINGS.type !== "game-hiragana" &&
-      !SETTINGS.vowelLength &&
-      (h.includes("ー") || k.includes("ー"))
-    )
-      continue;
+		if (!SETTINGS.dakuten && (dakutenRegex.test(h) || dakutenRegex.test(k)))
+			continue;
+		if (
+			!SETTINGS.doubledConsonants &&
+			(tsuRegex.test(h) || tsuRegex.test(k))
+		)
+			continue;
+		if (!SETTINGS.comboKana && (comboRegex.test(h) || comboRegex.test(k)))
+			continue;
+		if (
+			SETTINGS.type !== "game-hiragana" &&
+			!SETTINGS.smallVowels &&
+			(smallVowelRegex.test(h) || smallVowelRegex.test(k))
+		)
+			continue;
+		if (
+			SETTINGS.type !== "game-hiragana" &&
+			!SETTINGS.vowelLength &&
+			(h.includes("ー") || k.includes("ー"))
+		)
+			continue;
 
-    allowedCards.push(i);
-  }
+		allowedCards.push(i);
+	}
 
-  let id;
-  if (allowedCards.length > 0) {
-    id = allowedCards[Math.floor(Math.random() * allowedCards.length)];
-  } else {
-    id = Math.floor(Math.random() * deck.length);
-  }
+	let id;
+	if (allowedCards.length > 0) {
+		id = allowedCards[Math.floor(Math.random() * allowedCards.length)];
+	} else {
+		id = Math.floor(Math.random() * deck.length);
+	}
 
-  const card = deck[id];
-  const hiragana =
-    card.hiragana.constructor === Array
-      ? card.hiragana[Math.floor(Math.random() * card.hiragana.length)]
-      : card.hiragana;
-  const katakana = wanakana.toKatakana(hiragana);
-  let kanji = card.kanji;
-  let question = hiragana;
+	const card = deck[id];
+	const hiragana =
+		card.hiragana.constructor === Array
+			? card.hiragana[Math.floor(Math.random() * card.hiragana.length)]
+			: card.hiragana;
+	const katakana = wanakana.toKatakana(hiragana);
+	let kanji = card.kanji;
+	let question = hiragana;
 
-  if (SETTINGS.type === "game-mixed") {
-    const random = Math.random() < 0.5;
-    question = random ? hiragana : wanakana.toKatakana(question);
-    kanji = random ? kanji : wanakana.toKatakana(kanji);
-  } else if (SETTINGS.type === "game-katakana") {
-    question = katakana;
-    kanji = wanakana.toKatakana(kanji);
-  }
+	if (SETTINGS.type === "game-mixed") {
+		const random = Math.random() < 0.5;
+		question = random ? hiragana : wanakana.toKatakana(question);
+		kanji = random ? kanji : wanakana.toKatakana(kanji);
+	} else if (SETTINGS.type === "game-katakana") {
+		question = katakana;
+		kanji = wanakana.toKatakana(kanji);
+	}
 
-  document.querySelector("#question").innerHTML =
-    `${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
-  document.querySelector("#question-id").value = id;
-  const answerEl = document.querySelector("#answer");
-  answerEl.value = "";
-  answerEl.classList.remove("is-invalid");
-  document.querySelector("#score").innerHTML =
-    '<i class="bi-check-circle"></i> ' +
-    `${GAME.answered}/${GAME.answered + GAME.skipped}`;
+	document.querySelector("#question").innerHTML =
+		`${question}<rt>${SETTINGS.kanji ? kanji : ""}</rt>`;
+	document.querySelector("#question-id").value = id;
+	const answerEl = document.querySelector("#answer");
+	answerEl.value = "";
+	answerEl.classList.remove("is-invalid");
+	document.querySelector("#score").innerHTML =
+		'<i class="bi-check-circle"></i> ' +
+		`${GAME.answered}/${GAME.answered + GAME.skipped}`;
 }
 
 /* Game settings */
 document
-  .querySelectorAll("#option-wrapper button, #game-font")
-  .forEach((el) => {
-    el.addEventListener("click", () => {
-      setTimeout(() => {
-        localStorage.setItem("SETTINGS", JSON.stringify(SETTINGS));
-      }, 100);
-    });
-  });
+	.querySelectorAll("#option-wrapper button, #game-font")
+	.forEach((el) => {
+		el.addEventListener("click", () => {
+			setTimeout(() => {
+				localStorage.setItem("SETTINGS", JSON.stringify(SETTINGS));
+			}, 100);
+		});
+	});
 
 document.querySelector("#game-font").addEventListener("change", () => {
-  SETTINGS.font = document.querySelector("#game-font").value;
-  changeFont();
+	SETTINGS.font = document.querySelector("#game-font").value;
+	changeFont();
 });
 
 document.querySelectorAll(".game-theme").forEach((el) => {
-  el.addEventListener("click", (evt) => {
-    if (evt.currentTarget.matches(".active")) return;
-    document
-      .querySelectorAll(".game-theme")
-      .forEach((btn) => btn.classList.remove("active"));
-    evt.currentTarget.classList.add("active");
-    SETTINGS.theme = evt.currentTarget.value;
-    applyTheme(resolveIsDark(SETTINGS.theme));
-  });
+	el.addEventListener("click", (evt) => {
+		if (evt.currentTarget.matches(".active")) return;
+		document
+			.querySelectorAll(".game-theme")
+			.forEach((btn) => btn.classList.remove("active"));
+		evt.currentTarget.classList.add("active");
+		SETTINGS.theme = evt.currentTarget.value;
+		applyTheme(resolveIsDark(SETTINGS.theme));
+	});
 });
 
 document.querySelector("#game-kanji").addEventListener("click", () => {
-  SETTINGS.kanji = !SETTINGS.kanji;
-  const btn = document.querySelector("#game-kanji");
-  btn.classList.toggle("active", SETTINGS.kanji);
-  btn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
+	SETTINGS.kanji = !SETTINGS.kanji;
+	const btn = document.querySelector("#game-kanji");
+	btn.classList.toggle("active", SETTINGS.kanji);
+	btn.classList.toggle("text-decoration-line-through", !SETTINGS.kanji);
 });
 
 document.querySelectorAll(".game-type").forEach((el) => {
-  el.addEventListener("click", (evt) => {
-    if (evt.currentTarget.matches(".active")) return;
-    document
-      .querySelectorAll(".game-type")
-      .forEach((btn) => btn.classList.remove("active"));
-    evt.currentTarget.classList.add("active");
-    SETTINGS.type = evt.currentTarget.id;
-    updateConditionalTogglesVisibility();
-  });
+	el.addEventListener("click", (evt) => {
+		if (evt.currentTarget.matches(".active")) return;
+		document
+			.querySelectorAll(".game-type")
+			.forEach((btn) => btn.classList.remove("active"));
+		evt.currentTarget.classList.add("active");
+		SETTINGS.type = evt.currentTarget.id;
+		updateConditionalTogglesVisibility();
+	});
 });
 
 document.querySelector("#game-dakuten").addEventListener("click", () => {
-  document.querySelector("#game-dakuten").classList.toggle("active");
-  document
-    .querySelector("#game-dakuten > span")
-    .classList.toggle("text-decoration-line-through");
-  SETTINGS.dakuten = !SETTINGS.dakuten;
+	document.querySelector("#game-dakuten").classList.toggle("active");
+	document
+		.querySelector("#game-dakuten > span")
+		.classList.toggle("text-decoration-line-through");
+	SETTINGS.dakuten = !SETTINGS.dakuten;
 });
 
 document.querySelector("#game-tsu").addEventListener("click", () => {
-  document.querySelector("#game-tsu").classList.toggle("active");
-  document
-    .querySelector("#game-tsu > span")
-    .classList.toggle("text-decoration-line-through");
-  SETTINGS.doubledConsonants = !SETTINGS.doubledConsonants;
+	document.querySelector("#game-tsu").classList.toggle("active");
+	document
+		.querySelector("#game-tsu > span")
+		.classList.toggle("text-decoration-line-through");
+	SETTINGS.doubledConsonants = !SETTINGS.doubledConsonants;
 });
 
 document.querySelector("#game-combo").addEventListener("click", () => {
-  document.querySelector("#game-combo").classList.toggle("active");
-  document
-    .querySelector("#game-combo > span")
-    .classList.toggle("text-decoration-line-through");
-  SETTINGS.comboKana = !SETTINGS.comboKana;
+	document.querySelector("#game-combo").classList.toggle("active");
+	document
+		.querySelector("#game-combo > span")
+		.classList.toggle("text-decoration-line-through");
+	SETTINGS.comboKana = !SETTINGS.comboKana;
 });
 
 document.querySelector("#game-smallvowel").addEventListener("click", () => {
-  document.querySelector("#game-smallvowel").classList.toggle("active");
-  document
-    .querySelector("#game-smallvowel > span")
-    .classList.toggle("text-decoration-line-through");
-  SETTINGS.smallVowels = !SETTINGS.smallVowels;
+	document.querySelector("#game-smallvowel").classList.toggle("active");
+	document
+		.querySelector("#game-smallvowel > span")
+		.classList.toggle("text-decoration-line-through");
+	SETTINGS.smallVowels = !SETTINGS.smallVowels;
 });
 
 document.querySelector("#game-vowellength").addEventListener("click", () => {
-  document.querySelector("#game-vowellength").classList.toggle("active");
-  document
-    .querySelector("#game-vowellength > span")
-    .classList.toggle("text-decoration-line-through");
-  SETTINGS.vowelLength = !SETTINGS.vowelLength;
+	document.querySelector("#game-vowellength").classList.toggle("active");
+	document
+		.querySelector("#game-vowellength > span")
+		.classList.toggle("text-decoration-line-through");
+	SETTINGS.vowelLength = !SETTINGS.vowelLength;
 });
 
 document.querySelectorAll(".game-card").forEach((el) => {
-  el.addEventListener("click", (evt) => {
-    if (evt.currentTarget.matches(".active")) return;
-    document
-      .querySelectorAll(".game-card")
-      .forEach((btn) => btn.classList.toggle("active"));
-    SETTINGS.card = evt.currentTarget.value;
-  });
+	el.addEventListener("click", (evt) => {
+		if (evt.currentTarget.matches(".active")) return;
+		document
+			.querySelectorAll(".game-card")
+			.forEach((btn) => btn.classList.toggle("active"));
+		SETTINGS.card = evt.currentTarget.value;
+	});
 });
 
 /* Interactive Help Text System */
 const HELP_TEXTS = {
-  "#game-font": "Select the font used for <wbr>displaying Japanese characters.",
-  '.game-theme[value="system"]': "Follow the system theme preference.",
-  '.game-theme[value="light"]': "Use a bright, clean <wbr>light theme.",
-  '.game-theme[value="dark"]': "Use a comfortable <wbr>dark theme.",
-  "#game-kanji":
-    "Show or hide Kanji characters as <wbr>ruby text <wbr>(Furigana) <wbr>above the Kana.",
-  "#game-hiragana":
-    "Practice reading standard Hiragana characters <wbr>(あいうえお).",
-  "#game-mixed": "Practice reading a mix of <wbr>Hiragana and Katakana characters.",
-  "#game-katakana":
-    "Practice reading standard Katakana characters <wbr>(アイウエオ).",
-  "#game-dakuten": "Include or exclude voiced sounds <wbr>(゛/ ゜, e.g., ば, ぱ).",
-  "#game-tsu": "Include or exclude doubled consonants <wbr>(っ / ッ, e.g., よっつ).",
-  "#game-combo":
-    "Include or exclude contracted combo sounds <wbr>(ゃ/ゅ/ょ / ャ/ュ/ョ, e.g., しゃ).",
-  "#game-smallvowel":
-    "Include or exclude small vowels <wbr>(ぁ/ぃ/ぅ/ぇ/ぉ / ァ/ィ/ゥ/ェ/ォ, e.g., フェ).",
-  "#game-vowellength":
-    "Include or exclude prolonged vowel mark <wbr>(ー, e.g., ノート).",
-  '.game-card[value="Random"]':
-    "Practice using a randomized deck of <wbr>common vocabulary.",
-  '.game-card[value="JLPT"]':
-    "Practice using vocabulary from <wbr>the JLPT N5 and N4 lists.",
-  "#options-btn-more":
-    "Configure advanced filters for <wbr>voiced, combo, and small sounds.",
-  "#options-btn-back":
-    "Return to the <wbr>main options screen.",
+	"#game-font":
+		"Select the font used for <wbr>displaying Japanese characters.",
+	'.game-theme[value="system"]': "Follow the system theme preference.",
+	'.game-theme[value="light"]': "Use a bright, clean <wbr>light theme.",
+	'.game-theme[value="dark"]': "Use a comfortable <wbr>dark theme.",
+	"#game-kanji":
+		"Show or hide Kanji characters as <wbr>ruby text <wbr>(Furigana) <wbr>above the Kana.",
+	"#game-hiragana":
+		"Practice reading standard Hiragana characters <wbr>(あいうえお).",
+	"#game-mixed":
+		"Practice reading a mix of <wbr>Hiragana and Katakana characters.",
+	"#game-katakana":
+		"Practice reading standard Katakana characters <wbr>(アイウエオ).",
+	"#game-dakuten":
+		"Include or exclude voiced sounds <wbr>(゛/ ゜, e.g., ば, ぱ).",
+	"#game-tsu":
+		"Include or exclude doubled consonants <wbr>(っ / ッ, e.g., よっつ).",
+	"#game-combo":
+		"Include or exclude contracted combo sounds <wbr>(ゃ/ゅ/ょ / ャ/ュ/ョ, e.g., しゃ).",
+	"#game-smallvowel":
+		"Include or exclude small vowels <wbr>(ぁ/ぃ/ぅ/ぇ/ぉ / ァ/ィ/ゥ/ェ/ォ, e.g., フェ).",
+	"#game-vowellength":
+		"Include or exclude prolonged vowel mark <wbr>(ー, e.g., ノート).",
+	'.game-card[value="Random"]':
+		"Practice using a randomized deck of <wbr>common vocabulary.",
+	'.game-card[value="JLPT"]':
+		"Practice using vocabulary from <wbr>the JLPT N5 and N4 lists.",
+	"#options-btn-more":
+		"Configure advanced filters for <wbr>voiced, combo, and small sounds.",
+	"#options-btn-back": "Return to the <wbr>main options screen.",
 };
 
 const helpEl = document.querySelector("#option-help");
 const defaultHelpText = "Hover or focus an option to see details.";
 
 Object.entries(HELP_TEXTS).forEach(([selector, text]) => {
-  const formattedText = text.replace(/(\([^)]+\)\.?)$/, '<span class="text-nowrap">$1</span>');
+	const formattedText = text.replace(
+		/(\([^)]+\)\.?)$/,
+		'<span class="text-nowrap">$1</span>',
+	);
 
-  document.querySelectorAll(selector).forEach((el) => {
-    /**
-     * Show help description for the currently focused or hovered setting.
-     * @returns {void}
-     */
-    const showHelp = () => {
-      helpEl.innerHTML = `<span class="text-center w-100">${formattedText}</span>`;
-    };
+	document.querySelectorAll(selector).forEach((el) => {
+		/**
+		 * Show help description for the currently focused or hovered setting.
+		 * @returns {void}
+		 */
+		const showHelp = () => {
+			helpEl.innerHTML = `<span class="text-center w-100">${formattedText}</span>`;
+		};
 
-    /**
-     * Hide help description and restore the default placeholder.
-     * @returns {void}
-     */
-    const hideHelp = () => {
-      if (helpEl.innerHTML.includes(formattedText)) {
-        helpEl.innerHTML = `<span class="text-center w-100">${defaultHelpText}</span>`;
-      }
-    };
+		/**
+		 * Hide help description and restore the default placeholder.
+		 * @returns {void}
+		 */
+		const hideHelp = () => {
+			if (helpEl.innerHTML.includes(formattedText)) {
+				helpEl.innerHTML = `<span class="text-center w-100">${defaultHelpText}</span>`;
+			}
+		};
 
-    el.addEventListener("mouseenter", showHelp);
-    el.addEventListener("mouseleave", hideHelp);
-    el.addEventListener("focus", showHelp);
-    el.addEventListener("blur", hideHelp);
-  });
+		el.addEventListener("mouseenter", showHelp);
+		el.addEventListener("mouseleave", hideHelp);
+		el.addEventListener("focus", showHelp);
+		el.addEventListener("blur", hideHelp);
+	});
 });
 
 /**
@@ -667,20 +681,20 @@ Object.entries(HELP_TEXTS).forEach(([selector, text]) => {
  * @returns {void}
  */
 function closeOptions() {
-  const optionBtn = document.querySelector("#option");
-  const optionWrapper = document.querySelector("#option-wrapper");
-  const menuGroup = document.querySelector("#main-menu-group");
-  if (optionWrapper.classList.contains("collapsed")) {
-    optionBtn.classList.remove("active");
-    optionWrapper.classList.remove("collapsed");
-    if (menuGroup) {
-      menuGroup.classList.remove("expanded");
-    }
-    document.getElementById("options-scroll-container").scrollTop = 0;
-    if (optionWrapper.contains(document.activeElement)) {
-      document.activeElement.blur();
-    }
-  }
+	const optionBtn = document.querySelector("#option");
+	const optionWrapper = document.querySelector("#option-wrapper");
+	const menuGroup = document.querySelector("#main-menu-group");
+	if (optionWrapper.classList.contains("collapsed")) {
+		optionBtn.classList.remove("active");
+		optionWrapper.classList.remove("collapsed");
+		if (menuGroup) {
+			menuGroup.classList.remove("expanded");
+		}
+		document.getElementById("options-scroll-container").scrollTop = 0;
+		if (optionWrapper.contains(document.activeElement)) {
+			document.activeElement.blur();
+		}
+	}
 }
 
 /* Buttons event listener */
@@ -690,26 +704,33 @@ function closeOptions() {
  * @returns {void}
  */
 document.querySelector("#option").addEventListener("click", () => {
-  const optionBtn = document.querySelector("#option");
-  const optionWrapper = document.querySelector("#option-wrapper");
-  const menuGroup = document.querySelector("#main-menu-group");
+	const optionBtn = document.querySelector("#option");
+	const optionWrapper = document.querySelector("#option-wrapper");
+	const menuGroup = document.querySelector("#main-menu-group");
 
-  optionBtn.classList.toggle("active");
-  optionWrapper.classList.toggle("collapsed");
-  if (menuGroup) {
-    menuGroup.classList.toggle("expanded", optionWrapper.classList.contains("collapsed"));
-  }
-  document.getElementById("options-scroll-container").scrollTop = 0;
+	optionBtn.classList.toggle("active");
+	optionWrapper.classList.toggle("collapsed");
+	if (menuGroup) {
+		menuGroup.classList.toggle(
+			"expanded",
+			optionWrapper.classList.contains("collapsed"),
+		);
+	}
+	document.getElementById("options-scroll-container").scrollTop = 0;
 });
 
 // Click listener to navigate to the extra options (phonetic filters) screen.
 document.querySelector("#options-btn-more").addEventListener("click", () => {
-  document.querySelector("#options-scroll-container").scrollTo({ top: 230, behavior: "smooth" });
+	document
+		.querySelector("#options-scroll-container")
+		.scrollTo({ top: 230, behavior: "smooth" });
 });
 
 // Click listener to navigate back to the primary options screen.
 document.querySelector("#options-btn-back").addEventListener("click", () => {
-  document.querySelector("#options-scroll-container").scrollTo({ top: 0, behavior: "smooth" });
+	document
+		.querySelector("#options-scroll-container")
+		.scrollTo({ top: 0, behavior: "smooth" });
 });
 
 /**
@@ -718,9 +739,9 @@ document.querySelector("#options-btn-back").addEventListener("click", () => {
  * @returns {void}
  */
 function handleOptionsKeydown(event) {
-  if (event.key === "Escape") {
-    closeOptions();
-  }
+	if (event.key === "Escape") {
+		closeOptions();
+	}
 }
 
 /**
@@ -729,12 +750,12 @@ function handleOptionsKeydown(event) {
  * @returns {void}
  */
 function handleOptionsClickOutside(event) {
-  const optionBtn = document.querySelector("#option");
-  const optionWrapper = document.querySelector("#option-wrapper");
-  const target = /** @type {Node} */ (event.target);
-  if (!optionBtn.contains(target) && !optionWrapper.contains(target)) {
-    closeOptions();
-  }
+	const optionBtn = document.querySelector("#option");
+	const optionWrapper = document.querySelector("#option-wrapper");
+	const target = /** @type {Node} */ (event.target);
+	if (!optionBtn.contains(target) && !optionWrapper.contains(target)) {
+		closeOptions();
+	}
 }
 
 document.addEventListener("keydown", handleOptionsKeydown);
@@ -746,39 +767,39 @@ document.addEventListener("click", handleOptionsClickOutside);
  * @returns {void}
  */
 document.querySelector("#start").addEventListener("click", () => {
-  const timeEl = document.querySelector("#time");
+	const timeEl = document.querySelector("#time");
 
-  if (timerInterval) {
-    cancelAnimationFrame(timerInterval);
-    timerInterval = null;
-  }
+	if (timerInterval) {
+		cancelAnimationFrame(timerInterval);
+		timerInterval = null;
+	}
 
-  gameStartTime = performance.now();
-  GAME.timer = 0;
+	gameStartTime = performance.now();
+	GAME.timer = 0;
 
-  /* rAF loop: fires every display frame (~60 fps) but only updates the
-   * DOM and GAME.timer when a full second has elapsed. Using Date.now()
-   * means the displayed time is always correct even when the browser
-   * delays or skips frames (Safari setInterval throttling, etc.). */
-  (function tickLoop() {
-    var elapsed = Math.floor((performance.now() - gameStartTime) / 1000);
-    if (elapsed !== GAME.timer) {
-      GAME.timer = elapsed;
-      timeEl.innerHTML = GAME.timer + ' <i class="bi-clock"></i>';
-    }
-    timerInterval = requestAnimationFrame(tickLoop);
-  })();
+	/* rAF loop: fires every display frame (~60 fps) but only updates the
+	 * DOM and GAME.timer when a full second has elapsed. Using Date.now()
+	 * means the displayed time is always correct even when the browser
+	 * delays or skips frames (Safari setInterval throttling, etc.). */
+	(function tickLoop() {
+		var elapsed = Math.floor((performance.now() - gameStartTime) / 1000);
+		if (elapsed !== GAME.timer) {
+			GAME.timer = elapsed;
+			timeEl.innerHTML = GAME.timer + ' <i class="bi-clock"></i>';
+		}
+		timerInterval = requestAnimationFrame(tickLoop);
+	})();
 
-  document.querySelector("#review-table").innerHTML = "";
-  document.querySelector("#start").disabled = true;
-  document.querySelector("#game").classList.remove("d-none");
-  document.querySelector("#menu").classList.add("slide-up");
+	document.querySelector("#review-table").innerHTML = "";
+	document.querySelector("#start").disabled = true;
+	document.querySelector("#game").classList.remove("d-none");
+	document.querySelector("#menu").classList.add("slide-up");
 
-  const answerEl = document.querySelector("#answer");
-  answerEl.classList.remove("is-valid");
-  answerEl.focus();
+	const answerEl = document.querySelector("#answer");
+	answerEl.classList.remove("is-valid");
+	answerEl.focus();
 
-  nextQuestion();
+	nextQuestion();
 });
 
 /**
@@ -788,10 +809,10 @@ document.querySelector("#start").addEventListener("click", () => {
  * @returns {void}
  */
 document.querySelector("#review").addEventListener("click", (event) => {
-  const result = document.querySelector("#result");
-  result.classList.remove("d-none");
-  void result.offsetHeight; // Force browser reflow to trigger slide-in transition
-  result.classList.add("slide-in");
+	const result = document.querySelector("#result");
+	result.classList.remove("d-none");
+	void result.offsetHeight; // Force browser reflow to trigger slide-in transition
+	result.classList.add("slide-in");
 });
 
 /**
@@ -801,37 +822,39 @@ document.querySelector("#review").addEventListener("click", (event) => {
  * @returns {void}
  */
 document.querySelector("#stop").addEventListener("click", (event) => {
-  const average = GAME.timer / (GAME.answered + GAME.skipped);
-  const result = document.querySelector("#result");
+	const average = GAME.timer / (GAME.answered + GAME.skipped);
+	const result = document.querySelector("#result");
 
-  const answerEl = document.querySelector("#answer");
-  answerEl.classList.remove("is-valid");
+	const answerEl = document.querySelector("#answer");
+	answerEl.classList.remove("is-valid");
 
-  result.classList.remove("d-none");
-  void result.offsetHeight; // Force browser reflow to trigger slide-in transition
-  result.classList.add("slide-in");
-  document.querySelector("#game").classList.add("d-none");
-  document.querySelector("#stats-answered").textContent = GAME.answered;
-  document.querySelector("#stats-skipped").textContent = GAME.skipped;
-  document.querySelector("#stats-timer").textContent = GAME.timer + " s";
-  document.querySelector("#stats-average").textContent =
-    GAME.answered + GAME.skipped > 0 ? average.toFixed(2) + " s/card" : "N/A";
-  document.querySelector("#review").disabled = false;
-  document.querySelector("#restart").focus();
-  if (timerInterval) {
-    cancelAnimationFrame(timerInterval);
-    timerInterval = null;
-  }
+	result.classList.remove("d-none");
+	void result.offsetHeight; // Force browser reflow to trigger slide-in transition
+	result.classList.add("slide-in");
+	document.querySelector("#game").classList.add("d-none");
+	document.querySelector("#stats-answered").textContent = GAME.answered;
+	document.querySelector("#stats-skipped").textContent = GAME.skipped;
+	document.querySelector("#stats-timer").textContent = GAME.timer + " s";
+	document.querySelector("#stats-average").textContent =
+		GAME.answered + GAME.skipped > 0
+			? average.toFixed(2) + " s/card"
+			: "N/A";
+	document.querySelector("#review").disabled = false;
+	document.querySelector("#restart").focus();
+	if (timerInterval) {
+		cancelAnimationFrame(timerInterval);
+		timerInterval = null;
+	}
 
-  if (!GAME.answered && !GAME.skipped) {
-    document
-      .querySelector("#review-wrapper")
-      .insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
-  } else if (!GAME.answered && GAME.skipped) {
-    document
-      .querySelector("#review-wrapper")
-      .insertAdjacentHTML("afterbegin", "<b>Practice more!</b>");
-  }
+	if (!GAME.answered && !GAME.skipped) {
+		document
+			.querySelector("#review-wrapper")
+			.insertAdjacentHTML("afterbegin", "<b>Be serious.</b>");
+	} else if (!GAME.answered && GAME.skipped) {
+		document
+			.querySelector("#review-wrapper")
+			.insertAdjacentHTML("afterbegin", "<b>Practice more!</b>");
+	}
 });
 
 /**
@@ -840,85 +863,90 @@ document.querySelector("#stop").addEventListener("click", (event) => {
  * @returns {void}
  */
 document.querySelector("#restart").addEventListener("click", () => {
-  document.querySelector("#menu").classList.remove("slide-up");
-  const result = document.querySelector("#result");
-  result.classList.remove("slide-in");
-  result.addEventListener(
-    "transitionend",
-    () => {
-      result.classList.add("d-none");
-      document.querySelector("#game").classList.add("d-none");
-      document.querySelector("#time").innerHTML = '0 <i class="bi-clock"></i>';
-      document.querySelector("#score").innerHTML =
-        '<i class="bi-check-circle"></i> 0';
-      const bold = document.querySelector("#review-wrapper b");
-      if (bold) bold.remove();
-      document.querySelector("#copy").innerHTML =
-        '<i class="bi-table"></i> Copy Table';
-      document.querySelector("#share").innerHTML =
-        '<i class="bi-share"></i> Share';
-      document.querySelector("#start").disabled = false;
-    },
-    { once: true },
-  );
+	document.querySelector("#menu").classList.remove("slide-up");
+	const result = document.querySelector("#result");
+	result.classList.remove("slide-in");
+	result.addEventListener(
+		"transitionend",
+		() => {
+			result.classList.add("d-none");
+			document.querySelector("#game").classList.add("d-none");
+			document.querySelector("#time").innerHTML =
+				'0 <i class="bi-clock"></i>';
+			document.querySelector("#score").innerHTML =
+				'<i class="bi-check-circle"></i> 0';
+			const bold = document.querySelector("#review-wrapper b");
+			if (bold) bold.remove();
+			document.querySelector("#copy").innerHTML =
+				'<i class="bi-table"></i> Copy Table';
+			document.querySelector("#share").innerHTML =
+				'<i class="bi-share"></i> Share';
+			document.querySelector("#start").disabled = false;
+		},
+		{ once: true },
+	);
 
-  GAME.timer = 0;
-  GAME.answered = 0;
-  GAME.skipped = 0;
-  gameStartTime = null;
-  if (timerInterval) {
-    cancelAnimationFrame(timerInterval);
-    timerInterval = null;
-  }
+	GAME.timer = 0;
+	GAME.answered = 0;
+	GAME.skipped = 0;
+	gameStartTime = null;
+	if (timerInterval) {
+		cancelAnimationFrame(timerInterval);
+		timerInterval = null;
+	}
 });
 
 document.querySelector("#copy").addEventListener("click", async () => {
-  const text =
-    document
-      .querySelector("#review-table")
-      .textContent.replaceAll("‎‎", "\n")
-      .replaceAll("‎", " ー ")
-      .trim() || "Why did I copy this?";
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.querySelector("#result").appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-  }
+	const text =
+		document
+			.querySelector("#review-table")
+			.textContent.replaceAll("‎‎", "\n")
+			.replaceAll("‎", " ー ")
+			.trim() || "Why did I copy this?";
+	try {
+		await navigator.clipboard.writeText(text);
+	} catch {
+		const ta = document.createElement("textarea");
+		ta.value = text;
+		document.querySelector("#result").appendChild(ta);
+		ta.select();
+		document.execCommand("copy");
+		ta.remove();
+	}
 
-  // Change the button text to "Copied!" for 1.5 seconds
-  document.querySelector("#copy").innerHTML =
-    '<i class="bi-table"></i> Copied!';
+	// Change the button text to "Copied!" for 1.5 seconds
+	document.querySelector("#copy").innerHTML =
+		'<i class="bi-table"></i> Copied!';
 
-  // Reset the button text after 1.5 seconds
-  setTimeout(() => {
-    document.querySelector("#copy").innerHTML =
-      '<i class="bi-table"></i> Copy Table';
-  }, 1_500);
+	// Reset the button text after 1.5 seconds
+	setTimeout(() => {
+		document.querySelector("#copy").innerHTML =
+			'<i class="bi-table"></i> Copy Table';
+	}, 1_500);
 });
 
 document.querySelector("#share").addEventListener("click", async () => {
-  const average = GAME.timer / (GAME.answered + GAME.skipped);
-  const activeType = document.querySelector(".game-type.active");
-  const type = activeType ? activeType.textContent.trim() : "";
+	const average = GAME.timer / (GAME.answered + GAME.skipped);
+	const activeType = document.querySelector(".game-type.active");
+	const type = activeType ? activeType.textContent.trim() : "";
 
-  const isHiragana = SETTINGS.type === "game-hiragana";
-  const settingsParts = [
-    `Dakuten: ${SETTINGS.dakuten ? "on" : "off"}`,
-    `Doubles: ${SETTINGS.doubledConsonants ? "on" : "off"}`,
-    `Combo: ${SETTINGS.comboKana ? "on" : "off"}`,
-  ];
-  if (!isHiragana) {
-    settingsParts.push(`Small Vowels: ${SETTINGS.smallVowels ? "on" : "off"}`);
-    settingsParts.push(`Vowel Length: ${SETTINGS.vowelLength ? "on" : "off"}`);
-  }
-  const settingsStr = settingsParts.join(" | ");
+	const isHiragana = SETTINGS.type === "game-hiragana";
+	const settingsParts = [
+		`Dakuten: ${SETTINGS.dakuten ? "on" : "off"}`,
+		`Doubles: ${SETTINGS.doubledConsonants ? "on" : "off"}`,
+		`Combo: ${SETTINGS.comboKana ? "on" : "off"}`,
+	];
+	if (!isHiragana) {
+		settingsParts.push(
+			`Small Vowels: ${SETTINGS.smallVowels ? "on" : "off"}`,
+		);
+		settingsParts.push(
+			`Vowel Length: ${SETTINGS.vowelLength ? "on" : "off"}`,
+		);
+	}
+	const settingsStr = settingsParts.join(" | ");
 
-  const text = `
+	const text = `
 Asobimashou! 遊びましょう！ (Let's Play!)
 Card: ${SETTINGS.card} | Type: ${type}
 Settings: ${settingsStr}
@@ -927,26 +955,26 @@ Time: ${GAME.timer}s | Average: ${average.toFixed(2)}s
 
 Check it out at: ${location.href}
   `.trim();
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.querySelector("#result").appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-  }
+	try {
+		await navigator.clipboard.writeText(text);
+	} catch {
+		const ta = document.createElement("textarea");
+		ta.value = text;
+		document.querySelector("#result").appendChild(ta);
+		ta.select();
+		document.execCommand("copy");
+		ta.remove();
+	}
 
-  // Change the button text to "Copied!" for 1.5 seconds
-  document.querySelector("#share").innerHTML =
-    '<i class="bi-share"></i> Copied!';
+	// Change the button text to "Copied!" for 1.5 seconds
+	document.querySelector("#share").innerHTML =
+		'<i class="bi-share"></i> Copied!';
 
-  // Reset the button text after 1.5 seconds
-  setTimeout(() => {
-    document.querySelector("#share").innerHTML =
-      '<i class="bi-share"></i> Share';
-  }, 1_500);
+	// Reset the button text after 1.5 seconds
+	setTimeout(() => {
+		document.querySelector("#share").innerHTML =
+			'<i class="bi-share"></i> Share';
+	}, 1_500);
 });
 
 /* Answer input handling */
@@ -958,31 +986,31 @@ Check it out at: ${location.href}
  * @returns {void}
  */
 function skipQuestion() {
-  const id = document.querySelector("#question-id").value;
-  const card = cards[SETTINGS.card][id];
-  const jisho = "https://jisho.org/word/" + card.kanji;
-  const means = card.meaning.split(", ")[0].trim();
-  const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
-  const question = document
-    .querySelector("#question")
-    .childNodes[0].nodeValue.trim();
-  const romaji = wanakana.toRomaji(question);
+	const id = document.querySelector("#question-id").value;
+	const card = cards[SETTINGS.card][id];
+	const jisho = "https://jisho.org/word/" + card.kanji;
+	const means = card.meaning.split(", ")[0].trim();
+	const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
+	const question = document
+		.querySelector("#question")
+		.childNodes[0].nodeValue.trim();
+	const romaji = wanakana.toRomaji(question);
 
-  document
-    .querySelector("#review-table")
-    .insertAdjacentHTML(
-      "beforeend",
-      `<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
-      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-      `<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
-    );
-  GAME.skipped++;
+	document
+		.querySelector("#review-table")
+		.insertAdjacentHTML(
+			"beforeend",
+			`<tr><th><i class="d-none">❌（${card.kanji}）</i>` +
+				`<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+				`<td class="text-danger">${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
+		);
+	GAME.skipped++;
 
-  const answerEl = document.querySelector("#answer");
-  answerEl.value = "";
-  answerEl.classList.remove("is-valid");
+	const answerEl = document.querySelector("#answer");
+	answerEl.value = "";
+	answerEl.classList.remove("is-valid");
 
-  nextQuestion();
+	nextQuestion();
 }
 
 /**
@@ -994,30 +1022,30 @@ function skipQuestion() {
  * @returns {void}
  */
 function showToast(htmlContent, className = "", duration = 4000) {
-  const container = document.querySelector("#toast-container");
-  if (!container) return;
+	const container = document.querySelector("#toast-container");
+	if (!container) return;
 
-  // Clear any existing toasts to avoid cluttering the viewport
-  container.innerHTML = "";
+	// Clear any existing toasts to avoid cluttering the viewport
+	container.innerHTML = "";
 
-  const toast = document.createElement("div");
-  toast.className = "custom-toast" + (className ? " " + className : "");
-  toast.innerHTML = htmlContent;
+	const toast = document.createElement("div");
+	toast.className = "custom-toast" + (className ? " " + className : "");
+	toast.innerHTML = htmlContent;
 
-  container.appendChild(toast);
+	container.appendChild(toast);
 
-  // Force reflow to ensure the transition is animated correctly
-  void toast.offsetHeight;
-  toast.classList.add("show");
+	// Force reflow to ensure the transition is animated correctly
+	void toast.offsetHeight;
+	toast.classList.add("show");
 
-  // Auto-fade and remove the toast after duration
-  setTimeout(() => {
-    toast.classList.remove("show");
-    // Listen for transition completion to remove the element from DOM
-    toast.addEventListener("transitionend", () => {
-      toast.remove();
-    });
-  }, duration);
+	// Auto-fade and remove the toast after duration
+	setTimeout(() => {
+		toast.classList.remove("show");
+		// Listen for transition completion to remove the element from DOM
+		toast.addEventListener("transitionend", () => {
+			toast.remove();
+		});
+	}, duration);
 }
 
 /**
@@ -1029,11 +1057,11 @@ function showToast(htmlContent, className = "", duration = 4000) {
  * @returns {void}
  */
 function showApostropheToast(romaji, kana) {
-  const html = `
+	const html = `
     <i class="bi-lightbulb-fill text-warning"></i>
     <span>Tip: Use an apostrophe (') for 'n' followed by a vowel/y (e.g., <strong>${romaji}</strong> &rarr; <strong>${kana}</strong>).</span>
   `;
-  showToast(html, "toast-apostrophe");
+	showToast(html, "toast-apostrophe");
 }
 
 /**
@@ -1043,11 +1071,11 @@ function showApostropheToast(romaji, kana) {
  * @returns {void}
  */
 function showVowelLengthToast() {
-  const html = `
+	const html = `
     <i class="bi-lightbulb-fill text-warning"></i>
     <span>Tip: For the vowel lengthening character (ー), duplicate the preceding vowel (e.g., write <strong>ii</strong> for <strong>iー</strong>).</span>
   `;
-  showToast(html, "toast-vowel-length");
+	showToast(html, "toast-vowel-length");
 }
 
 /**
@@ -1058,113 +1086,113 @@ function showVowelLengthToast() {
  * @returns {void}
  */
 document.querySelector("#answer").addEventListener("keyup", (event) => {
-  const answerEl = document.querySelector("#answer");
-  const answer = answerEl.value;
+	const answerEl = document.querySelector("#answer");
+	const answer = answerEl.value;
 
-  // Immediately remove is-valid when starting to type a new answer
-  if (answer.length > 0) {
-    answerEl.classList.remove("is-valid");
-  }
+	// Immediately remove is-valid when starting to type a new answer
+	if (answer.length > 0) {
+		answerEl.classList.remove("is-valid");
+	}
 
-  /* Space key: skip the current question */
-  if (answer.indexOf(" ") > -1) return skipQuestion();
+	/* Space key: skip the current question */
+	if (answer.indexOf(" ") > -1) return skipQuestion();
 
-  const id = document.querySelector("#question-id").value;
-  const card = cards[SETTINGS.card][id];
-  const options = { customKanaMapping: { dzu: "づ" } };
-  const question = document
-    .querySelector("#question")
-    .childNodes[0].nodeValue.trim();
-  const q = wanakana.toHiragana(question, options);
-  const a = wanakana.toHiragana(answer, options);
+	const id = document.querySelector("#question-id").value;
+	const card = cards[SETTINGS.card][id];
+	const options = { customKanaMapping: { dzu: "づ" } };
+	const question = document
+		.querySelector("#question")
+		.childNodes[0].nodeValue.trim();
+	const q = wanakana.toHiragana(question, options);
+	const a = wanakana.toHiragana(answer, options);
 
-  // Validate spelling prefix
-  if (isInputValidPrefix(answer, question)) {
-    answerEl.classList.remove("is-invalid");
-  } else {
-    // Re-trigger shake animation
-    answerEl.classList.remove("is-invalid");
-    void answerEl.offsetHeight; // trigger reflow
-    answerEl.classList.add("is-invalid");
-  }
+	// Validate spelling prefix
+	if (isInputValidPrefix(answer, question)) {
+		answerEl.classList.remove("is-invalid");
+	} else {
+		// Re-trigger shake animation
+		answerEl.classList.remove("is-invalid");
+		void answerEl.offsetHeight; // trigger reflow
+		answerEl.classList.add("is-invalid");
+	}
 
-  if (q !== a) {
-    // Check if the user typed a hyphen '-' or the vowel lengthening character 'ー'
-    if (answer.includes("-") || answer.includes("ー") || a.includes("ー")) {
-      showVowelLengthToast();
-      return;
-    }
+	if (q !== a) {
+		// Check if the user typed a hyphen '-' or the vowel lengthening character 'ー'
+		if (answer.includes("-") || answer.includes("ー") || a.includes("ー")) {
+			showVowelLengthToast();
+			return;
+		}
 
-    // Check if the user gets the answer incorrect on a card containing the vowel lengthening character 'ー'
-    const cardHasVowelLength =
-      (card.kanji && card.kanji.includes("ー")) ||
-      (card.hiragana &&
-        (Array.isArray(card.hiragana)
-          ? card.hiragana.join("")
-          : card.hiragana
-        ).includes("ー"));
+		// Check if the user gets the answer incorrect on a card containing the vowel lengthening character 'ー'
+		const cardHasVowelLength =
+			(card.kanji && card.kanji.includes("ー")) ||
+			(card.hiragana &&
+				(Array.isArray(card.hiragana)
+					? card.hiragana.join("")
+					: card.hiragana
+				).includes("ー"));
 
-    if (cardHasVowelLength && !isInputValidPrefix(answer, question)) {
-      showVowelLengthToast();
-      return;
-    }
+		if (cardHasVowelLength && !isInputValidPrefix(answer, question)) {
+			showVowelLengthToast();
+			return;
+		}
 
-    // Check if the user missed an apostrophe for 'n' followed by a vowel or 'y'
-    const romajiCorrect = wanakana.toRomaji(q);
-    if (romajiCorrect.includes("'")) {
-      const normalizedAnswer = answer.toLowerCase().replace(/[’‘']/g, "");
-      const normalizedCorrect = romajiCorrect
-        .toLowerCase()
-        .replace(/[’‘']/g, "");
-      if (normalizedAnswer === normalizedCorrect) {
-        showApostropheToast(romajiCorrect, q);
-      } else {
-        return;
-      }
-    } else {
-      return;
-    }
-  }
+		// Check if the user missed an apostrophe for 'n' followed by a vowel or 'y'
+		const romajiCorrect = wanakana.toRomaji(q);
+		if (romajiCorrect.includes("'")) {
+			const normalizedAnswer = answer.toLowerCase().replace(/[’‘']/g, "");
+			const normalizedCorrect = romajiCorrect
+				.toLowerCase()
+				.replace(/[’‘']/g, "");
+			if (normalizedAnswer === normalizedCorrect) {
+				showApostropheToast(romajiCorrect, q);
+			} else {
+				return;
+			}
+		} else {
+			return;
+		}
+	}
 
-  const jisho = "https://jisho.org/word/" + card.kanji;
-  const means = card.meaning.split(", ")[0].trim();
-  const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
-  const romaji = wanakana.toRomaji(question);
+	const jisho = "https://jisho.org/word/" + card.kanji;
+	const means = card.meaning.split(", ")[0].trim();
+	const meaning = means.match(/\(((?!\)).)*$/) ? means + ")" : means;
+	const romaji = wanakana.toRomaji(question);
 
-  document
-    .querySelector("#review-table")
-    .insertAdjacentHTML(
-      "beforeend",
-      `<tr><th><i class="d-none">（${card.kanji}）</i>` +
-      `<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
-      `<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
-    );
-  GAME.answered++;
+	document
+		.querySelector("#review-table")
+		.insertAdjacentHTML(
+			"beforeend",
+			`<tr><th><i class="d-none">（${card.kanji}）</i>` +
+				`<a href="${jisho}" target="_blank">${question}</a>‎</th>` +
+				`<td>${romaji}‎</td><td>${meaning}‎‎</td></tr>`,
+		);
+	GAME.answered++;
 
-  // Trigger success visual feedback animation
-  answerEl.classList.remove("is-valid");
-  void answerEl.offsetHeight; // trigger reflow
-  answerEl.classList.add("is-valid");
+	// Trigger success visual feedback animation
+	answerEl.classList.remove("is-valid");
+	void answerEl.offsetHeight; // trigger reflow
+	answerEl.classList.add("is-valid");
 
-  // Remove the success visual feedback after the animation finishes
-  setTimeout(() => {
-    answerEl.classList.remove("is-valid");
-  }, 250);
+	// Remove the success visual feedback after the animation finishes
+	setTimeout(() => {
+		answerEl.classList.remove("is-valid");
+	}, 250);
 
-  nextQuestion();
+	nextQuestion();
 });
 
 /* Skip button: same action as pressing Space */
 document.querySelector("#skip").addEventListener("click", () => {
-  skipQuestion();
-  document.querySelector("#answer").focus();
+	skipQuestion();
+	document.querySelector("#answer").focus();
 });
 
 document.querySelector("#answer").addEventListener("keydown", (e) => {
-  if (e.key === "Tab") {
-    e.preventDefault();
-    document.querySelector("#stop").click();
-  }
+	if (e.key === "Tab") {
+		e.preventDefault();
+		document.querySelector("#stop").click();
+	}
 });
 
 /**
@@ -1173,11 +1201,11 @@ document.querySelector("#answer").addEventListener("keydown", (e) => {
  * @returns {void}
  */
 function showOfflineToast() {
-  const html = `
+	const html = `
     <i class="bi-wifi-off text-danger"></i>
     <span>Offline. <br class="d-block d-sm-none">Running from cache.</span>
   `;
-  showToast(html, "toast-offline");
+	showToast(html, "toast-offline");
 }
 
 /**
@@ -1186,11 +1214,11 @@ function showOfflineToast() {
  * @returns {void}
  */
 function showOnlineToast() {
-  const html = `
+	const html = `
     <i class="bi-wifi text-success"></i>
     <span>Back online! <br class="d-block d-sm-none">Connection restored.</span>
   `;
-  showToast(html, "toast-online");
+	showToast(html, "toast-online");
 }
 
 /**
@@ -1199,11 +1227,11 @@ function showOnlineToast() {
  * @returns {void}
  */
 function showCacheSuccessToast() {
-  const html = `
+	const html = `
     <i class="bi-cloud-check-fill text-success"></i>
     <span>Content cached! <br class="d-block d-sm-none">Ready for offline use.</span>
   `;
-  showToast(html, "toast-cached");
+	showToast(html, "toast-cached");
 }
 
 /**
@@ -1212,11 +1240,11 @@ function showCacheSuccessToast() {
  * @returns {void}
  */
 function showCacheUpdateToast() {
-  const html = `
+	const html = `
     <i class="bi-arrow-clockwise text-primary"></i>
     <span>Cache updated! <br class="d-block d-sm-none">Reload the page to see changes.</span>
   `;
-  showToast(html, "toast-updated", 6000);
+	showToast(html, "toast-updated", 6000);
 }
 
 /**
@@ -1226,23 +1254,23 @@ function showCacheUpdateToast() {
  * @returns {void}
  */
 function toggleOfflineBadge(isOffline) {
-  const badge = document.getElementById("offline-badge");
-  if (!badge) return;
+	const badge = document.getElementById("offline-badge");
+	if (!badge) return;
 
-  if (isOffline) {
-    badge.classList.remove("d-none");
-    // Force reflow
-    void badge.offsetHeight;
-    badge.classList.add("show");
-  } else {
-    badge.classList.remove("show");
-    // Use setTimeout corresponding to transition duration (0.3s)
-    setTimeout(() => {
-      if (!badge.classList.contains("show")) {
-        badge.classList.add("d-none");
-      }
-    }, 300);
-  }
+	if (isOffline) {
+		badge.classList.remove("d-none");
+		// Force reflow
+		void badge.offsetHeight;
+		badge.classList.add("show");
+	} else {
+		badge.classList.remove("show");
+		// Use setTimeout corresponding to transition duration (0.3s)
+		setTimeout(() => {
+			if (!badge.classList.contains("show")) {
+				badge.classList.add("d-none");
+			}
+		}, 300);
+	}
 }
 
 // Expose cache notifications and badge toggle globally
@@ -1252,13 +1280,13 @@ window.toggleOfflineBadge = toggleOfflineBadge;
 
 // Monitor connection transitions
 window.addEventListener("online", () => {
-  toggleOfflineBadge(false);
-  showOnlineToast();
+	toggleOfflineBadge(false);
+	showOnlineToast();
 });
 
 window.addEventListener("offline", () => {
-  toggleOfflineBadge(true);
-  showOfflineToast();
+	toggleOfflineBadge(true);
+	showOfflineToast();
 });
 
 // Initialize connection state badge on load
