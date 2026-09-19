@@ -1,0 +1,40 @@
+{
+  "name": "asobimashou",
+  "version": "1.0.0",
+  "description": "Japanese Hiragana and Katakana reading practice web app with vocabulary drills and offline support",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "wanakana": "^5.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^24.13.4",
+    "@vitest/coverage-v8": "^3.0.7",
+    "bootstrap": "^5.3.3",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.2",
+    "eslint-plugin-jsdoc": "^50.6.3",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.2",
+    "typescript": "^5.8.2",
+    "vite": "^6.4.3",
+    "vite-plugin-pwa": "^0.21.1",
+    "vitest": "^3.0.7",
+    "workbox-window": "^7.3.0"
+  }
+}
