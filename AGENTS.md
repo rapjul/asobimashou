@@ -8,21 +8,22 @@ important gotchas discovered during development.
 
 ## Project Overview
 
-A vanilla HTML/CSS/JS PWA for practising Japanese Hiragana and Katakana reading.
-No build step. No framework. Served directly via `npx serve .` (or `npm run dev`).
+A modern TypeScript PWA for practising Japanese Hiragana and Katakana reading.
+Built with Vite, tested with Vitest and Playwright.
 
 **Tech stack**
 
-| Layer         | Technology                             |
-| ------------- | -------------------------------------- |
-| Structure     | HTML5 (`index.html`, `offline.html`)   |
-| Style         | Vanilla CSS (`assets/css/style.css`)   |
-| Logic         | Vanilla JS (`assets/js/script.js`)     |
-| IME           | WanaKana (`assets/js/wanakana.min.js`) |
-| UI components | Bootstrap 5 (local copy)               |
-| PWA           | Service Worker (`serviceWorker.js`)    |
-| SW register   | `assets/js/sw-register.js`             |
-| Vocab data    | `assets/js/cards.js`                   |
+| Layer         | Technology                                          |
+| ------------- | --------------------------------------------------- |
+| Build & Dev   | Vite (`vite.config.ts`)                             |
+| Structure     | HTML5 (`index.html`)                                |
+| Style         | Vanilla CSS (`assets/css/style.css`)                |
+| Logic         | TypeScript (`src/main.ts`, `src/ui/`, `src/logic/`) |
+| IME           | WanaKana (`wanakana` npm package)                   |
+| UI components | Bootstrap 5 (`bootstrap` npm package)               |
+| PWA & SW      | Vite PWA & Workbox (`virtual:pwa-register`)         |
+| Vocab data    | JSON (`src/data/jlpt.json`, `src/data/random.json`) |
+| Testing       | Vitest (Unit) & Playwright (E2E)                    |
 
 ---
 
@@ -30,14 +31,13 @@ No build step. No framework. Served directly via `npx serve .` (or `npm run dev`
 
 ### Code style
 
-- **Indentation**: 2 spaces for all file types (HTML, CSS, JS, JSON, YAML).
-  Markdown uses 4 spaces. Enforced by `.editorconfig`.
+- **Indentation**: Tabs (width 4) for HTML, JS, TS, and Shell scripts.
+  4 spaces for Markdown. 2 spaces for CSS, JSON, and YAML.
+  Enforced by `.editorconfig` and Prettier.
 - **Line endings**: LF (Unix). Enforced by `.editorconfig`.
 - **Comments**: Every function, method, parameter, and type must have a JSDoc
   comment. This is a hard project rule — do not omit them.
-- **CSS variables**: All theme colors must be defined as CSS custom properties
-  in `:root` (light mode) and `body.bg-dark` (dark mode). Never hard-code hex
-  values directly in selectors.
+- **CSS variables**: All theme colors must be defined as CSS custom properties in `:root` (light mode) and `body.bg-dark` (dark mode). Never hard-code hex values directly in selectors.
 
 ### Commit style
 
@@ -146,7 +146,7 @@ Chromium/Edge but died after one tick on Safari.
 | JS / CSS / fonts / images | Stale-while-revalidate |
 
 **Network-first for HTML**: Every navigation hits the network first. On
-success the cache is refreshed; on failure the cached shell or `./offline.html`
+success the cache is refreshed; on failure the cached app shell (`index.html`)
 is served. Guarantees Safari never indefinitely serves a stale page.
 
 **Stale-while-revalidate for static assets**: The cache is served immediately
@@ -194,11 +194,11 @@ so bumping it is sufficient.
 
 **Offline fallback order** (navigation, no network):
 
-1. Try to match the exact URL in cache
-2. Fall back to `./offline.html`
+1. Return the precached `index.html` application shell
+2. Serve cached static assets and fonts via Workbox runtime handlers
 
-**PWA guarantee**: All assets listed in `toCache` are pre-fetched during the
-SW `install` event, so the app is fully playable offline from the first visit.
+**PWA guarantee**: All application assets and data chunks are precached during the
+SW `install` event via Vite PWA / Workbox, so the app is fully playable offline from the first visit.
 
 **Practical effects**:
 
@@ -246,18 +246,16 @@ than the default behaviour.
 
 ---
 
-### 8. Indentation: 2-space spaces throughout
+### 8. Indentation: Tabs for HTML/JS/TS/Shell, 4 spaces for Markdown, 2 spaces for CSS/JSON/YAML
 
-**Decision**: 2-space indentation with LF endings for all source files (HTML,
-CSS, JS, JSON, YAML). Markdown uses 4 spaces for list indentation.
+**Decision**: Literal tab indentation (`\t` at 4-column display width) for HTML, JS, TS,
+and Shell scripts. 4 spaces for Markdown files. 2 spaces for CSS, JSON, and YAML files.
+All enforced by `.editorconfig` and Prettier.
 
-**Why spaces over tabs**: The entire codebase predated this decision and was
-already written with spaces. Switching to tabs would produce a noisy, semantically
-empty diff. Web tooling (Prettier, ESLint defaults) also prefers spaces.
-
-**Why 2 over 4 spaces in JS**: Reduces horizontal pressure given Bootstrap's
-deeply nested HTML structure and the long selector chains in CSS. Consistent
-with the HTML and CSS files.
+**Rationale**: Hard tabs allow individual developers to display indentation at their preferred
+width in their editor without modifying file bytes, while 4 spaces in Markdown conforms to
+standard CommonMark/GFM list syntax, and 2 spaces in JSON and CSS keeps data structures
+and selectors compact.
 
 ---
 
@@ -336,16 +334,30 @@ Card objects have at minimum `hiragana` and `romaji` properties.
 ## Development Workflow
 
 ```bash
-# Start local server
-npx serve .
+# Start local dev server
+npm run dev
 
-# Verify timer (agent-browser)
-agent-browser open http://localhost:<port>
-agent-browser click @<start-button-ref>
-agent-browser wait 3000
-agent-browser eval "document.getElementById('time').innerText"
-# Expect: "3" (or higher)
+# Run unit tests and coverage
+npm run test:coverage
+
+# Run Playwright E2E tests
+npm run test:e2e
+
+# Build and preview production PWA
+npm run build
+npm run preview
 ```
 
-Bump `CACHE_NAME` in `serviceWorker.js` after any change to cached assets to
-invalidate Safari's SW cache on next visit.
+### Architectural Decision Records (ADRs)
+
+Detailed architectural decision records are documented in `./docs/adrs/`:
+
+- `0001-use-typescript-for-application-logic.md`
+- `0002-adopt-vite-build-and-dev-tool.md`
+- `0003-extract-vocabulary-into-json-with-integrity-tests.md`
+- `0004-migrate-service-worker-to-vite-pwa.md`
+- `0005-use-vitest-and-playwright-for-testing.md`
+- `0006-requestanimationframe-performance-now-timer.md`
+- `0007-semantic-css-custom-properties-for-theming.md`
+- `0008-transient-toast-notifications-for-romaji-hints.md`
+- `0009-client-side-session-csv-export.md`
