@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "update", "refactor/**", "feat/**"]
+  pull_request:
+    branches: ["main", "update"]
+
+jobs:
+  test:
+    name: Lint, Typecheck, and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code formatting
+        run: npx prettier --check .
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run TypeScript typecheck
+        run: npm run typecheck
+
+      - name: Run Vitest with coverage
+        run: npm run test:coverage
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run Playwright E2E tests
+        run: npm run test:e2e
