@@ -11,4 +11,4 @@ assets/js/bootstrap.bundle.min.js
 assets/fonts/
 *.min.js
 *.min.css
-
+.github/workflows/pullfrog.yml
