@@ -8,18 +8,41 @@ test.describe("Gameplay Loop & Automated CSV Download Verification", () => {
 		await page.goto("/");
 		await page.locator("#game-round-length").selectOption("10");
 		await page.locator("#start").click();
-		for (let card = 0; card < 10; card++) {
-			await page.locator("#skip").click();
+		await expect(page.locator("#game")).not.toHaveClass(/d-none/);
+		await expect(page.locator("#answer")).toBeFocused();
+
+		const firstKana = await page
+			.locator("#question")
+			.evaluate((element) => element.firstChild?.textContent ?? "");
+		await page.locator("#answer").fill(firstKana);
+		await page.locator("#answer").dispatchEvent("keyup", { key: "a" });
+		await expect(page.locator("#score")).toContainText("1/1");
+
+		await page.locator("#skip").click();
+		await expect(page.locator("#score")).toContainText("1/2");
+		for (let total = 3; total < 10; total++) {
+			await page.locator("#answer").press("Space");
+			await expect(page.locator("#score")).toContainText(`1/${total}`);
 		}
+		await page.locator("#answer").press("Space");
 		await expect(page.locator("#result")).toBeVisible();
-		await expect(page.locator("#stats-skipped")).toHaveText("10");
+		await expect(page.locator("#stats-answered")).toHaveText("1");
+		await expect(page.locator("#stats-skipped")).toHaveText("9");
 
 		await page.locator("#restart").click();
 		await expect(page.locator("#start")).toBeEnabled();
 		await page.locator("#game-round-length").selectOption("unlimited");
 		await page.locator("#start").click();
-		for (let card = 0; card < 10; card++) {
-			await page.locator("#skip").click();
+		await expect(page.locator("#game")).not.toHaveClass(/d-none/);
+		await expect(page.locator("#question")).not.toBeEmpty();
+		await expect(page.locator("#answer")).toBeFocused();
+		await expect(page.locator("body")).toHaveClass(/keyboard-open/);
+		await expect(page.locator("#score")).toContainText("0/0");
+		await page.locator("#skip").click();
+		await expect(page.locator("#score")).toContainText("0/1");
+		for (let total = 2; total <= 10; total++) {
+			await page.locator("#answer").press("Space");
+			await expect(page.locator("#score")).toContainText(`0/${total}`);
 		}
 		await expect(page.locator("#game")).toBeVisible();
 		await expect(page.locator("#result")).toHaveClass(/d-none/);

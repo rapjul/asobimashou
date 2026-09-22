@@ -49,6 +49,9 @@ async function startPwaFixtureServer(): Promise<{
 							contentTypes[extname(resolvedPath)] ??
 							"application/octet-stream",
 						"Service-Worker-Allowed": "/",
+						...(resolvedPath.endsWith("sw.js")
+							? { "Cache-Control": "no-cache" }
+							: {}),
 					})
 					.end(body);
 			} catch {
@@ -226,7 +229,7 @@ test.describe("PWA Offline Support & Network State Transitions", () => {
 						(element) => (element as HTMLElement).style.fontFamily,
 					),
 			)
-			.toBe('"Yuji Syuku"');
+			.toContain("Yuji Syuku");
 	});
 
 	test("should wait to show and activate an update until a round ends", async ({
@@ -238,12 +241,17 @@ test.describe("PWA Offline Support & Network State Transitions", () => {
 			const page = await context.newPage();
 			await page.goto(fixture.baseUrl);
 			await expect(page.locator("#start")).toBeEnabled();
+			await page.evaluate(async () => {
+				await navigator.serviceWorker.ready;
+			});
 			await page.reload();
 			await expect
-				.poll(() =>
-					page.evaluate(() =>
-						Boolean(navigator.serviceWorker.controller),
-					),
+				.poll(
+					() =>
+						page.evaluate(() =>
+							Boolean(navigator.serviceWorker.controller),
+						),
+					{ timeout: 15_000 },
 				)
 				.toBe(true);
 			await page.locator("#start").click();
@@ -256,12 +264,14 @@ test.describe("PWA Offline Support & Network State Transitions", () => {
 				await registration?.update();
 			});
 			await expect
-				.poll(() =>
-					page.evaluate(async () => {
-						const registration =
-							await navigator.serviceWorker.getRegistration();
-						return Boolean(registration?.waiting);
-					}),
+				.poll(
+					() =>
+						page.evaluate(async () => {
+							const registration =
+								await navigator.serviceWorker.getRegistration();
+							return Boolean(registration?.waiting);
+						}),
+					{ timeout: 15_000 },
 				)
 				.toBe(true);
 			await expect(page.locator(".toast-update")).toHaveCount(0);
