@@ -10,14 +10,14 @@ describe("Card Filtering & Question Preparation", () => {
 	const baseSettings: GameSettings = {
 		card: "JLPT",
 		kana: "Hiragana",
-		number: 10,
-		meaning: true,
+		roundLength: 20,
+		showKanji: false,
 		dakuten: true,
 		doubledConsonants: true,
 		comboKana: true,
 		smallVowels: true,
 		vowelLength: true,
-		font: "sans-serif",
+		font: "system-ui",
 		theme: "system",
 	};
 

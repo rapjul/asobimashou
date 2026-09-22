@@ -261,8 +261,8 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
 #option-wrapper.collapsed {
   border-color: inherit;
   opacity: 1;
-  max-height: 284px;
-  height: 284px;
+  max-height: 334px;
+  height: 334px;
 }
 
 .form-select:focus {
@@ -335,14 +335,14 @@ body.bg-dark #option-wrapper {
 
 /* Options scroll container for paginated settings */
 #options-scroll-container {
-  height: 230px;
+  height: 280px;
   overflow: hidden;
   scroll-behavior: smooth;
   width: 100%;
 }
 
 .options-page {
-  height: 230px;
+  height: 280px;
   box-sizing: border-box;
   padding: 10px 12px;
   display: flex;

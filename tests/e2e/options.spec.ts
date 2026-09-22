@@ -8,6 +8,10 @@ test.describe("Options Panel & Theme Configuration", () => {
 
 		const optionBtn = page.locator("#option");
 		await expect(optionBtn).toBeVisible();
+		await expect(page.locator('.game-card[value="JLPT"]')).toHaveClass(
+			/active/,
+		);
+		await expect(page.locator("#game-round-length")).toHaveValue("20");
 		await optionBtn.click();
 
 		const optionWrapper = page.locator("#option-wrapper");
@@ -48,5 +52,119 @@ test.describe("Options Panel & Theme Configuration", () => {
 		const lightBtn = page.locator('.game-theme[value="light"]');
 		await lightBtn.click();
 		await expect(body).toHaveClass(/bg-light/);
+	});
+
+	test("should restore legacy options and persist a selected round length", async ({
+		page,
+	}) => {
+		await page.addInitScript(() => {
+			localStorage.setItem(
+				"SETTINGS",
+				JSON.stringify({
+					type: "game-katakana",
+					kanji: true,
+					card: "JLPT",
+					font: "Klee One",
+				}),
+			);
+		});
+		await page.goto("/");
+		await expect(page.locator("#game-katakana")).toHaveClass(/active/);
+		await expect(page.locator("#game-kanji")).toHaveClass(/active/);
+		await expect(page.locator("#game-font")).toHaveValue("Klee One");
+		await expect(page.locator('.game-card[value="JLPT"]')).toHaveClass(
+			/active/,
+		);
+
+		await page.locator("#option").click();
+		await page.locator("#game-hiragana").click();
+		await page.locator("#game-kanji").click();
+		await page.locator('.game-card[value="Random"]').click();
+		await page.selectOption("#game-font", "Noto Serif JP");
+		await expect
+			.poll(() =>
+				page.evaluate(() => {
+					const settings = JSON.parse(
+						localStorage.getItem("SETTINGS") || "{}",
+					);
+					return [
+						settings.kana,
+						settings.showKanji,
+						settings.card,
+						settings.font,
+					];
+				}),
+			)
+			.toEqual(["Hiragana", false, "Random", "Noto Serif JP"]);
+		await page.locator("#game-katakana").click();
+		await page.locator("#options-btn-more").click();
+		const filterOptions: Array<[string, string]> = [
+			["game-dakuten", "dakuten"],
+			["game-tsu", "doubledConsonants"],
+			["game-combo", "comboKana"],
+			["game-smallvowel", "smallVowels"],
+			["game-vowellength", "vowelLength"],
+		];
+		for (const [id, key] of filterOptions) {
+			await page.locator(`#${id}`).click();
+			await expect
+				.poll(() =>
+					page.evaluate((settingKey) => {
+						const settings = JSON.parse(
+							localStorage.getItem("SETTINGS") || "{}",
+						);
+						return settings[settingKey];
+					}, key),
+				)
+				.toBe(false);
+		}
+
+		const roundLength = page.locator("#game-round-length");
+		await expect(roundLength).toHaveValue("20");
+		await expect(roundLength.locator("option")).toHaveCount(8);
+		for (const value of ["10", "20", "50", "100", "150", "200", "250"]) {
+			await roundLength.selectOption(value);
+			await expect
+				.poll(() =>
+					page.evaluate(
+						() =>
+							JSON.parse(localStorage.getItem("SETTINGS") || "{}")
+								.roundLength,
+					),
+				)
+				.toBe(Number(value));
+		}
+		await roundLength.selectOption("unlimited");
+		expect(
+			await page.evaluate(
+				() =>
+					JSON.parse(localStorage.getItem("SETTINGS") || "{}")
+						.roundLength,
+			),
+		).toBeNull();
+	});
+
+	test("should fit the round length setting on a narrow screen", async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 320, height: 568 });
+		await page.goto("/");
+		await page.locator("#option").click();
+		await expect(page.locator("#option-wrapper")).toHaveClass(/collapsed/);
+		await expect(page.locator("#game-round-length")).toBeVisible();
+		await page.locator("#game-round-length").selectOption("250");
+	});
+
+	test("should follow system theme changes only in system mode", async ({
+		page,
+	}) => {
+		await page.emulateMedia({ colorScheme: "light" });
+		await page.goto("/");
+		await page.emulateMedia({ colorScheme: "dark" });
+		await expect(page.locator("body")).toHaveClass(/bg-dark/);
+		await page.locator("#option").click();
+		await page.locator('.game-theme[value="light"]').click();
+		await page.emulateMedia({ colorScheme: "light" });
+		await expect(page.locator("body")).toHaveClass(/bg-light/);
 	});
 });

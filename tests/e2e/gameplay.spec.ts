@@ -2,6 +2,31 @@ import { test, expect } from "@playwright/test";
 import * as fs from "node:fs";
 
 test.describe("Gameplay Loop & Automated CSV Download Verification", () => {
+	test("should stop at the selected round length and keep unlimited rounds open", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		await page.locator("#game-round-length").selectOption("10");
+		await page.locator("#start").click();
+		for (let card = 0; card < 10; card++) {
+			await page.locator("#skip").click();
+		}
+		await expect(page.locator("#result")).toBeVisible();
+		await expect(page.locator("#stats-skipped")).toHaveText("10");
+
+		await page.locator("#restart").click();
+		await expect(page.locator("#start")).toBeEnabled();
+		await page.locator("#game-round-length").selectOption("unlimited");
+		await page.locator("#start").click();
+		for (let card = 0; card < 10; card++) {
+			await page.locator("#skip").click();
+		}
+		await expect(page.locator("#game")).toBeVisible();
+		await expect(page.locator("#result")).toHaveClass(/d-none/);
+		await page.locator("#stop").click();
+		await expect(page.locator("#stats-skipped")).toHaveText("10");
+	});
+
 	test("should start game, answer cards, skip card, end game, and download valid CSV", async ({
 		page,
 	}) => {

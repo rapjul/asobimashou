@@ -147,7 +147,7 @@ export class GameController {
 		const questionEl = document.querySelector("#question");
 		if (questionEl) {
 			questionEl.innerHTML = `${questionKana}<rt>${
-				this.settings.meaning ? kanji : ""
+				this.settings.showKanji ? kanji : ""
 			}</rt>`;
 		}
 
@@ -200,7 +200,7 @@ export class GameController {
 		this.state.history.push(item);
 		this.state.skipped++;
 
-		this.nextQuestion();
+		this.advanceOrFinish();
 	}
 
 	/**
@@ -300,6 +300,23 @@ export class GameController {
 			}, 250);
 		}
 
+		this.advanceOrFinish();
+	}
+
+	/**
+	 * Advances to another question or finishes a round at its configured length.
+	 *
+	 * @returns {void}
+	 */
+	private advanceOrFinish(): void {
+		const total = this.state.answered + this.state.skipped;
+		if (
+			this.settings.roundLength !== null &&
+			total >= this.settings.roundLength
+		) {
+			this.stopGame();
+			return;
+		}
 		this.nextQuestion();
 	}
 

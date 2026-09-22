@@ -1,4 +1,5 @@
 import type { Card, DeckType, KanaType } from "./card";
+import type { FontFamily, RoundLength } from "../constants/game-options";
 
 /**
  * Filter and gameplay configuration options saved by the player.
@@ -15,14 +16,14 @@ export interface GameSettings {
 	kana: KanaType;
 
 	/**
-	 * Target number of cards to complete in a round.
+	 * Number of cards in a round, or null for an unlimited round.
 	 */
-	number: number;
+	roundLength: RoundLength;
 
 	/**
-	 * Whether to display the card English meaning beneath the word.
+	 * Whether to display the card's Kanji as ruby text above the Kana.
 	 */
-	meaning: boolean;
+	showKanji: boolean;
 
 	/**
 	 * Whether to include Dakuten and Handakuten (voiced) characters.
@@ -52,7 +53,7 @@ export interface GameSettings {
 	/**
 	 * Currently active font family name.
 	 */
-	font: string;
+	font: FontFamily;
 
 	/**
 	 * Theme mode preference: 'system', 'dark', or 'light'.

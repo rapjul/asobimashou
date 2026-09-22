@@ -1,5 +1,6 @@
 import type { GameSettings } from "../types";
-import { applyTheme, resolveIsDark } from "./theme";
+import { FONT_OPTIONS, ROUND_LENGTHS } from "../constants/game-options";
+import { applyTheme, resolveIsDark, systemDarkMQ } from "./theme";
 import { showFontOfflineToast } from "./toasts";
 
 /**
@@ -8,16 +9,105 @@ import { showFontOfflineToast } from "./toasts";
 export const SETTINGS_DEFAULT: GameSettings = {
 	card: "JLPT",
 	kana: "Hiragana",
-	number: 10,
-	meaning: true,
+	roundLength: 20,
+	showKanji: false,
 	dakuten: true,
 	doubledConsonants: true,
 	comboKana: true,
 	smallVowels: true,
 	vowelLength: true,
-	font: "sans-serif",
+	font: "Noto Sans JP",
 	theme: "system",
 };
+
+/**
+ * Validates a stored round length and maps the select's sentinel to null.
+ *
+ * @param {unknown} value - The value read from persistent storage.
+ * @returns {GameSettings["roundLength"]} A supported round length.
+ */
+function normalizeRoundLength(value: unknown): GameSettings["roundLength"] {
+	if (value === null) return null;
+	return (
+		ROUND_LENGTHS.find((length) => length === value) ??
+		SETTINGS_DEFAULT.roundLength
+	);
+}
+
+/**
+ * Converts the legacy game type identifier into the current Kana mode.
+ *
+ * @param {unknown} value - A stored legacy or current Kana mode.
+ * @returns {GameSettings["kana"]} The normalized Kana mode.
+ */
+function normalizeKana(value: unknown): GameSettings["kana"] {
+	if (value === "Hiragana" || value === "Katakana" || value === "Mixed") {
+		return value;
+	}
+	if (value === "game-katakana") return "Katakana";
+	if (value === "game-mixed") return "Mixed";
+	return SETTINGS_DEFAULT.kana;
+}
+
+/**
+ * Validates stored settings and migrates the legacy option names.
+ *
+ * @param {unknown} value - Parsed data from localStorage.
+ * @returns {GameSettings} Normalized active settings.
+ */
+function normalizeSettings(value: unknown): GameSettings {
+	const stored =
+		typeof value === "object" && value !== null
+			? (value as Record<string, unknown>)
+			: {};
+	const theme = stored.theme;
+	const font = stored.font;
+	const card = stored.card;
+	const themeValue =
+		theme === "system" || theme === "dark" || theme === "light"
+			? theme
+			: SETTINGS_DEFAULT.theme;
+	const legacyKanji = stored.kanji;
+	const showKanji =
+		typeof stored.showKanji === "boolean"
+			? stored.showKanji
+			: typeof legacyKanji === "boolean"
+				? legacyKanji
+				: SETTINGS_DEFAULT.showKanji;
+
+	return {
+		...SETTINGS_DEFAULT,
+		card:
+			card === "JLPT" || card === "Random" ? card : SETTINGS_DEFAULT.card,
+		kana: normalizeKana(stored.kana ?? stored.type),
+		roundLength: normalizeRoundLength(stored.roundLength),
+		showKanji,
+		dakuten:
+			typeof stored.dakuten === "boolean"
+				? stored.dakuten
+				: SETTINGS_DEFAULT.dakuten,
+		doubledConsonants:
+			typeof stored.doubledConsonants === "boolean"
+				? stored.doubledConsonants
+				: SETTINGS_DEFAULT.doubledConsonants,
+		comboKana:
+			typeof stored.comboKana === "boolean"
+				? stored.comboKana
+				: SETTINGS_DEFAULT.comboKana,
+		smallVowels:
+			typeof stored.smallVowels === "boolean"
+				? stored.smallVowels
+				: SETTINGS_DEFAULT.smallVowels,
+		vowelLength:
+			typeof stored.vowelLength === "boolean"
+				? stored.vowelLength
+				: SETTINGS_DEFAULT.vowelLength,
+		font:
+			FONT_OPTIONS.find((option) => option.value === font)?.value ??
+			SETTINGS_DEFAULT.font,
+		theme: themeValue,
+	};
+}
 
 /**
  * Interactive help text descriptions for each option element.
@@ -30,6 +120,7 @@ export const HELP_TEXTS: Record<string, string> = {
 	'.game-theme[value="dark"]': "Use a comfortable <wbr>dark theme.",
 	"#game-kanji":
 		"Show or hide Kanji characters as <wbr>ruby text <wbr>(Furigana) <wbr>above the Kana.",
+	"#game-round-length": "Choose how many cards to complete in a round.",
 	"#game-hiragana":
 		"Practice reading standard Hiragana characters <wbr>(あいうえお).",
 	"#game-mixed":
@@ -64,8 +155,7 @@ export function loadSettings(): GameSettings {
 	try {
 		const raw = localStorage.getItem("SETTINGS");
 		if (raw) {
-			const parsed = JSON.parse(raw);
-			return { ...SETTINGS_DEFAULT, ...parsed };
+			return normalizeSettings(JSON.parse(raw));
 		}
 	} catch {
 		// Ignore JSON parse errors
@@ -136,9 +226,58 @@ export function closeOptions(): void {
  * @returns {void}
  */
 export function initOptionsUI(settings: GameSettings): void {
+	populateSettingsSelects();
 	// Sync UI state from settings
 	changeFont(settings.font);
 	applyTheme(resolveIsDark(settings.theme));
+	document
+		.querySelectorAll<HTMLButtonElement>(".game-theme")
+		.forEach((btn) =>
+			btn.classList.toggle("active", btn.value === settings.theme),
+		);
+	document
+		.querySelectorAll<HTMLButtonElement>(".game-card")
+		.forEach((btn) =>
+			btn.classList.toggle("active", btn.value === settings.card),
+		);
+	document
+		.querySelectorAll<HTMLButtonElement>(".game-type")
+		.forEach((btn) =>
+			btn.classList.toggle(
+				"active",
+				normalizeKana(btn.id) === settings.kana,
+			),
+		);
+
+	const syncToggle = (id: string, enabled: boolean): void => {
+		const btn = document.getElementById(id);
+		if (!btn) return;
+		btn.classList.toggle("active", enabled);
+		btn.classList.toggle("text-decoration-line-through", !enabled);
+		btn.querySelector("span")?.classList.toggle(
+			"text-decoration-line-through",
+			!enabled,
+		);
+	};
+	syncToggle("game-kanji", settings.showKanji);
+	syncToggle("game-dakuten", settings.dakuten);
+	syncToggle("game-tsu", settings.doubledConsonants);
+	syncToggle("game-combo", settings.comboKana);
+	syncToggle("game-smallvowel", settings.smallVowels);
+	syncToggle("game-vowellength", settings.vowelLength);
+
+	const roundLengthSelect =
+		document.querySelector<HTMLSelectElement>("#game-round-length");
+	if (roundLengthSelect) {
+		roundLengthSelect.value =
+			settings.roundLength?.toString() ?? "unlimited";
+	}
+	updateConditionalTogglesVisibility(settings.kana);
+
+	// Apply system theme changes only while System is the selected mode.
+	systemDarkMQ.addEventListener("change", (event) => {
+		if (settings.theme === "system") applyTheme(event.matches);
+	});
 
 	const optionBtn = document.querySelector("#option");
 	const optionWrapper = document.querySelector("#option-wrapper");
@@ -168,7 +307,18 @@ export function initOptionsUI(settings: GameSettings): void {
 
 	if (btnMore && scrollContainer) {
 		btnMore.addEventListener("click", () => {
-			scrollContainer.scrollTo({ top: 230, behavior: "smooth" });
+			const extraPage = document.querySelector<HTMLElement>(
+				"#options-page-extra",
+			);
+			if (extraPage) {
+				scrollContainer.scrollTo({
+					top:
+						extraPage.getBoundingClientRect().top -
+						scrollContainer.getBoundingClientRect().top +
+						scrollContainer.scrollTop,
+					behavior: "smooth",
+				});
+			}
 		});
 	}
 
@@ -205,7 +355,9 @@ export function initOptionsUI(settings: GameSettings): void {
 	const fontSelect = document.querySelector<HTMLSelectElement>("#game-font");
 	if (fontSelect) {
 		fontSelect.addEventListener("change", () => {
-			settings.font = fontSelect.value;
+			settings.font =
+				FONT_OPTIONS.find((option) => option.value === fontSelect.value)
+					?.value ?? settings.font;
 			changeFont(settings.font);
 			saveSettings(settings);
 		});
@@ -241,6 +393,55 @@ export function initOptionsUI(settings: GameSettings): void {
 			});
 		});
 
+	// Kana mode buttons.
+	document
+		.querySelectorAll<HTMLButtonElement>(".game-type")
+		.forEach((btn) => {
+			btn.addEventListener("click", () => {
+				settings.kana = normalizeKana(btn.id);
+				document.querySelectorAll(".game-type").forEach((item) => {
+					item.classList.toggle("active", item === btn);
+				});
+				updateConditionalTogglesVisibility(settings.kana);
+				saveSettings(settings);
+			});
+		});
+
+	// Kanji visibility button.
+	document.querySelector("#game-kanji")?.addEventListener("click", (evt) => {
+		settings.showKanji = !settings.showKanji;
+		syncToggle("game-kanji", settings.showKanji);
+		(evt.currentTarget as HTMLElement).blur();
+		saveSettings(settings);
+	});
+
+	// Phonetic filter buttons.
+	const filterControls: Array<[string, keyof GameSettings]> = [
+		["game-dakuten", "dakuten"],
+		["game-tsu", "doubledConsonants"],
+		["game-combo", "comboKana"],
+		["game-smallvowel", "smallVowels"],
+		["game-vowellength", "vowelLength"],
+	];
+	filterControls.forEach(([id, settingKey]) => {
+		document.getElementById(id)?.addEventListener("click", () => {
+			const enabled = !settings[settingKey] as boolean;
+			(settings[settingKey] as boolean) = enabled;
+			syncToggle(id, enabled);
+			saveSettings(settings);
+		});
+	});
+
+	// Round length selector.
+	roundLengthSelect?.addEventListener("change", () => {
+		settings.roundLength = normalizeRoundLength(
+			roundLengthSelect.value === "unlimited"
+				? null
+				: Number(roundLengthSelect.value),
+		);
+		saveSettings(settings);
+	});
+
 	// Close when clicking outside
 	document.addEventListener("click", (evt) => {
 		const target = evt.target as Node;
@@ -260,4 +461,51 @@ export function initOptionsUI(settings: GameSettings): void {
 			closeOptions();
 		}
 	});
+}
+
+/**
+ * Builds select options from the shared supported option definitions.
+ *
+ * @returns {void}
+ */
+function populateSettingsSelects(): void {
+	const fontSelect = document.querySelector<HTMLSelectElement>("#game-font");
+	fontSelect?.replaceChildren(
+		...FONT_OPTIONS.map((option) => {
+			const element = document.createElement("option");
+			element.value = option.value;
+			element.textContent = option.label;
+			return element;
+		}),
+	);
+
+	const roundLengthSelect =
+		document.querySelector<HTMLSelectElement>("#game-round-length");
+	roundLengthSelect?.replaceChildren(
+		...[
+			{ value: "unlimited", label: "Unlimited" },
+			...ROUND_LENGTHS.map((length) => ({
+				value: String(length),
+				label: `${length} cards`,
+			})),
+		].map((option) => {
+			const element = document.createElement("option");
+			element.value = option.value;
+			element.textContent = option.label;
+			return element;
+		}),
+	);
+}
+
+/**
+ * Shows Katakana-specific filters only when their Kana mode is relevant.
+ *
+ * @param {GameSettings["kana"]} kana - The active Kana mode.
+ * @returns {void}
+ */
+function updateConditionalTogglesVisibility(kana: GameSettings["kana"]): void {
+	const hiraganaOnly = kana === "Hiragana";
+	document
+		.querySelectorAll("#game-smallvowel, #game-vowellength")
+		.forEach((btn) => btn.classList.toggle("d-none", hiraganaOnly));
 }
