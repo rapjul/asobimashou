@@ -132,83 +132,31 @@ Chromium/Edge but died after one tick on Safari.
 
 - The apostrophe and vowel lengthening rules are genuine Romaji constraints, but enforcing them strictly as errors blocks the flow of learning Kana. Toasts keep the focus on practice while providing passive instruction.
 
-**Implementation files**: `assets/js/script.js` (`showApostropheToast`, `showVowelLengthToast`), `assets/css/style.css` (`.custom-toast`, `#toast-container`), `index.html` (`#toast-container`).
+**Implementation files**: `src/ui/game-controller.ts`, `src/ui/toasts.ts`, `assets/css/style.css` (`.custom-toast`, `#toast-container`), and `index.html` (`#toast-container`).
 
 ---
 
-### 4. Service worker fetch strategy: network-first + stale-while-revalidate
+### 4. Service worker caching and update lifecycle
 
 **Strategies in use**:
 
-| Request type              | Strategy               |
-| ------------------------- | ---------------------- |
-| HTML (`navigate`)         | Network-first          |
-| JS / CSS / fonts / images | Stale-while-revalidate |
+| Request type                | Strategy                                                        |
+| --------------------------- | --------------------------------------------------------------- |
+| HTML (`navigate`)           | Serve the precached `index.html` application shell              |
+| Built JS / CSS / JSON / img | Precache during service worker installation                     |
+| Font files                  | Workbox `CacheFirst`; selected optional fonts are cached on use |
 
-**Network-first for HTML**: Every navigation hits the network first. On
-success the cache is refreshed; on failure the cached app shell (`index.html`)
-is served. Guarantees Safari never indefinitely serves a stale page.
+Vite PWA generates a Workbox precache manifest from the production build. The
+new worker installs the build assets before it can activate, and Workbox serves
+the precached application shell for offline navigation. Workbox removes
+outdated precache entries when the new worker activates; do not maintain a
+separate manual cache version.
 
-**Stale-while-revalidate for static assets**: The cache is served immediately
-(fast load), then a background fetch updates the cache entry for the next visit.
-Users always get a responsive load and always get fresh assets on the following
-visit — no manual version bump required for routine edits.
+Bundled optional Japanese fonts are cached in `fonts-cache` when selected while online. Offline, cached optional fonts remain available, uncached optional fonts are disabled, and system fonts stay available. A saved uncached font falls back to `system-ui` with a notice; reconnecting restores the saved font choice.
 
-**How updates are loaded**:
-Because static assets use stale-while-revalidate, when an update is deployed:
+With `registerType: "prompt"`, a new worker waits for an explicit reload. The app shows a persistent Reload notice at home or after the current round reaches its result screen. Starting a round hides the notice; an update does not interrupt active play.
 
-1. On the **first load/visit**, the browser immediately renders the page using the _stale_ (old) cached JS/CSS files.
-2. Simultaneously, the Service Worker triggers a background fetch to get the _new_ JS/CSS files and updates the cache.
-3. The user must **reload the page** (typically after a brief moment for the background fetch to finish) to load and execute the new version.
-
-**Flow for a cached static asset**:
-
-```
-Request arrives
-  ↓
-Cache hit? → respond immediately from cache
-           → background: fetch network → update cache (silent, non-blocking)
-           → if network fails AND cache existed: console.warn in SW scope
-Cache miss? → fetch network → cache → serve (same as before)
-```
-
-**Offline warning**: When the background revalidation fetch fails and a cached
-copy was already served, the SW emits:
-
-```
-[asobimashou SW] Offline — serving stale cache for: <url>
-```
-
-This is visible in the browser's **DevTools → Console** (with "All contexts"
-or "Service Worker" selected). It does not interrupt the user experience.
-
-**When to still bump `CACHE_NAME`**: Stale-while-revalidate keeps cache
-entries fresh automatically for files that already exist in the cache. You must
-still bump `CACHE_NAME` (e.g. `offline-v6`) when:
-
-- A file is **deleted or renamed** — the old cache entry would otherwise linger.
-- A **hard reset** of all caches is needed (e.g. emergency rollback).
-
-The `activate` event purges any cache whose name does not match `CACHE_NAME`,
-so bumping it is sufficient.
-
-**Offline fallback order** (navigation, no network):
-
-1. Return the precached `index.html` application shell
-2. Serve cached static assets and fonts via Workbox runtime handlers
-
-**PWA guarantee**: All application assets and data chunks are precached during the
-SW `install` event via Vite PWA / Workbox, so the app is fully playable offline from the first visit.
-
-**Practical effects**:
-
-| Scenario                              | What happens                                                                                                                                   |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| You update `script.js` or `style.css` | First visit serves the stale cached version while fetching the update in the background; a subsequent page reload executes the updated version |
-| User is fully offline                 | Cached assets are served instantly; SW logs a `console.warn` per asset in the browser's DevTools                                               |
-| First ever visit (nothing cached yet) | Every asset is fetched from the network and cached; subsequent visits are fast                                                                 |
-| You delete or rename a cached file    | Old cache entry lingers until `CACHE_NAME` is bumped, and the SW reactivates                                                                   |
-| You need a forced hard reset          | Bump `CACHE_NAME` — the `activate` event purges all older caches on next visit                                                                 |
+After a successful service worker install, the app shell, compiled code, vocabulary chunks, and declared static images are available offline. Optional Japanese fonts become available offline after the player selects them while online.
 
 ---
 
@@ -228,7 +176,7 @@ does not execute.
 
 ### 6. Tab key as End Game shortcut (for Desktop only)
 
-**Decision**: Keep the `Tab` keydown on `#answer` → `#stop.click()` shortcut.
+**Decision**: Keep the `Tab` keydown on `#answer` as an End Game shortcut.
 
 **Context**: The shortcut is intentional for desktop use; iOS users should use the on-screen
 End button.
@@ -295,39 +243,31 @@ Safari aggressively throttles `setInterval` — it can fire once and then die
 silently without throwing an error. **Never rely on `setInterval` for game
 state timing.** Use `requestAnimationFrame` + `performance.now()` instead.
 
-### Service worker cache persistence in Safari
+### Service worker updates during gameplay
 
-Safari does not automatically clear the SW cache when `CACHE_NAME` changes.
-The old SW keeps serving the old cache until **all tabs** for the origin are
-closed and reopened. There is no JS API to force this faster.
+The app leaves an updated worker waiting while a round is active. It displays a
+persistent Reload notice at home or after the result screen; do not switch the
+registration to automatic activation, because that can interrupt an active
+round. To reset PWA state during development, clear site data for the local
+origin in the browser's developer tools.
 
-To manually clear during development:
+### Answer input and WanaKana conversion
 
-> Safari → Settings → Privacy → Manage Website Data → Remove
-
-### WanaKana `bind` on `#answer`
-
-WanaKana is bound to the answer input. `agent-browser fill` sets `.value`
-directly, bypassing the IME layer. To test the answer comparison in automation,
-manually dispatch a `keyup` event after setting `.value` to trigger the handler:
+The answer handler converts typed Romaji with WanaKana on `keyup`.
+`agent-browser fill` sets `.value` directly and does not fire that handler. To
+test answer comparison in automation, dispatch `keyup` after setting `.value`:
 
 ```js
 answerInput.value = "tenin";
 answerInput.dispatchEvent(new KeyboardEvent("keyup", { key: "n" }));
 ```
 
-### `cards.js` structure
+### Vocabulary JSON structure
 
-`cards.js` exports a global `cards` object. The first two lines enable the
-Start button:
-
-```js
-const startBtn = document.getElementById("start");
-startBtn.disabled = false;
-```
-
-The deck key used at runtime is `SETTINGS.card` (e.g. `"Random"`, `"JLPT"`).
-Card objects have at minimum `hiragana` and `romaji` properties.
+The selected deck is loaded dynamically from `src/data/jlpt.json` or
+`src/data/random.json` according to `SETTINGS.card`. Cards contain `kanji`,
+`hiragana` (a string or an array of alternate readings), and `meaning` fields.
+Romaji is derived from the selected Hiragana reading at runtime.
 
 ---
 
@@ -348,6 +288,9 @@ npm run build
 npm run preview
 ```
 
+Vitest coverage includes `src/logic/**/*.ts` only. UI coverage is exercised by
+Playwright but is not included in the V8 unit coverage report.
+
 ### Architectural Decision Records (ADRs)
 
 Detailed architectural decision records are documented in `./docs/adrs/`:
@@ -361,3 +304,4 @@ Detailed architectural decision records are documented in `./docs/adrs/`:
 - `0007-semantic-css-custom-properties-for-theming.md`
 - `0008-transient-toast-notifications-for-romaji-hints.md`
 - `0009-client-side-session-csv-export.md`
+- `0010-preserve-player-choices-and-finish-rounds-safely.md`

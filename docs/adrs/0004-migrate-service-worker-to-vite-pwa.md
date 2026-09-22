@@ -6,35 +6,43 @@ consulted: []
 informed: []
 ---
 
-# Migrate Service Worker to Vite PWA and Workbox Runtime Caching
+# Use Vite PWA and Workbox for Offline Support
 
 ## Context and Problem Statement
 
-The legacy manual service worker (`serviceWorker.js` and `assets/js/sw-register.js`) relied on hand-maintained asset lists (`toCache`) and manual version bumps (`offline-v7`). Adding or renaming files risked cache staleness or breaking offline capabilities if developer updates were missed.
+The legacy service worker relied on a hand-maintained asset list and manual cache-version changes. That made builds fragile when files were added, renamed, or removed, and did not provide a safe update flow for an active game session.
 
 ## Decision Drivers
 
-- Automatic precaching asset manifest generation on build.
-- Granular runtime caching strategies for static bundles and web fonts.
-- Standards-compliant PWA manifest generation and lifecycle event hooks.
+- Generate a production precache manifest from the built application.
+- Serve the application shell and compiled assets during offline use.
+- Cache optional font files when players select them.
+- Avoid reloading the page during an active round when an update arrives.
 
 ## Considered Options
 
-- Maintain manual vanilla service worker script
-- Adopt `vite-plugin-pwa` with Workbox-powered precaching and runtime caching
-- Remove service worker and rely solely on browser HTTP cache
+- Maintain a hand-written service worker and asset list.
+- Use `vite-plugin-pwa` with Workbox precaching and runtime caching.
+- Remove service worker support and rely on the browser HTTP cache.
 
 ## Decision Outcome
 
-Chosen option: "Adopt vite-plugin-pwa with Workbox", because it automates precache manifests for all generated assets during `vite build` and provides declarative runtime caching rules for web fonts.
+Chosen option: "Use `vite-plugin-pwa` with Workbox", because the build can generate its precache list from emitted files and provide the app shell and assets offline without maintaining a second inventory.
 
 ### Consequences
 
-- Good, because all built HTML, CSS, JS, and JSON assets are automatically precached without manual list editing.
-- Good, because font caching uses declarative `CacheFirst` strategies with maximum age expirations.
-- Good, because lifecycle updates are easily handled via `virtual:pwa-register`.
-- Bad, because Service Worker logic is managed through build tool plugins rather than a single raw file.
+- Good, because the production build precaches the HTML shell, compiled code, vocabulary chunks, and declared static images.
+- Good, because Workbox caches font requests and the app caches selected optional Japanese fonts for later offline use.
+- Good, because the app keeps a new worker waiting and prompts for reload at home or after an active round finishes.
+- Neutral, because the app's update prompt and offline-font behavior are managed through `virtual:pwa-register` and Cache Storage in addition to the generated worker.
+- Bad, because a selected optional font is not available offline until it has been selected while online and successfully cached.
 
 ### Confirmation
 
-Verified through automated Playwright offline tests in `tests/e2e/offline.spec.ts`.
+The generated manifest assets, offline font caching, and deferred service worker update lifecycle are verified in `tests/e2e/offline.spec.ts`.
+
+## More Information
+
+- Workbox precaches built application assets and serves the precached `index.html` for offline navigation.
+- The `fonts-cache` Cache Storage entry is populated when an optional font is selected online. Uncached optional fonts are disabled offline; system fonts remain selectable.
+- `registerType: "prompt"` prevents a waiting worker from activating until the player chooses Reload after reaching home or the result screen.

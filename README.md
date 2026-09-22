@@ -9,10 +9,11 @@
 
 ### Game Options
 
-- Four different fonts
+- Four bundled Japanese fonts plus system font choices; bundled fonts are cached for offline use after selection
 - Light and dark theme, auto-detected from system settings
 - Quiz Type: Hiragana, Katakana, or both
-- Word Bank: Random or JLPT N5-N4 words
+- Word Bank: JLPT N5-N4 by default, or the larger Random deck
+- Round length: 20 cards by default, with shorter, longer, and Unlimited options
 - Toggle: Dakuten (`ﾞ`) and Handakuten (`ﾟ`)
 - Toggle: Doubled consonants (`っ`)
 - Toggle: Combo Kana (`ゃ`, `ゅ`, `ょ`)
@@ -29,6 +30,7 @@
 - Touch-friendly
 - Clean and simple interface
 - Play offline (PWA)
+- Updates wait until the current round ends
 
 ### Results
 

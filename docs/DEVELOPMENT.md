@@ -72,12 +72,15 @@ npm run format
 Run unit tests and view coverage reports using Vitest:
 
 ```sh
-# Run unit tests in watch mode
+# Run unit tests once
 npm run test
 
 # Run unit tests once with coverage breakdown
 npm run test:coverage
 ```
+
+The V8 coverage report includes only `src/logic/**/*.ts`. Playwright tests
+exercise UI and browser flows separately and do not contribute to that report.
 
 ### End-to-End Browser Testing
 

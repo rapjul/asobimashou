@@ -36,4 +36,4 @@ Chosen option: "Floating transient toast notifications", because toasts provide 
 
 ### Confirmation
 
-Verified by toast display assertions in `tests/e2e/offline.spec.ts` and `src/ui/toasts.ts`.
+Verified by toast behavior in `src/ui/toasts.ts`, game-answer handling in `src/ui/game-controller.ts`, and Playwright assertions in `tests/e2e/gameplay.spec.ts` and `tests/e2e/offline.spec.ts`.
