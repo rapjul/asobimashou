@@ -34,6 +34,25 @@ export function showToast(
 }
 
 /**
+ * Escapes text inserted into the small HTML templates used by toast messages.
+ *
+ * @param {string} text - Untrusted text to include in a toast.
+ * @returns {string} HTML-safe text.
+ */
+function escapeHTML(text: string): string {
+	return text.replace(/[&<>"']/g, (character) => {
+		const replacements: Record<string, string> = {
+			"&": "&amp;",
+			"<": "&lt;",
+			">": "&gt;",
+			'"': "&quot;",
+			"'": "&#39;",
+		};
+		return replacements[character] ?? character;
+	});
+}
+
+/**
  * Displays a toast reminding the player about the Romaji apostrophe rule.
  *
  * @param {string} romaji - Correct Romaji with apostrophe.
@@ -43,7 +62,7 @@ export function showToast(
 export function showApostropheToast(romaji: string, kana: string): void {
 	const html = `
     <i class="bi-info-circle text-info"></i>
-    <span><strong>Tip:</strong> Type <code>'</code> for <strong>${kana}</strong> (e.g. <code>${romaji}</code>).</span>
+		<span><strong>Tip:</strong> Type <code>'</code> for <strong>${escapeHTML(kana)}</strong> (e.g. <code>${escapeHTML(romaji)}</code>).</span>
   `;
 	showToast(html, "toast-apostrophe");
 }
@@ -70,7 +89,7 @@ export function showVowelLengthToast(): void {
 export function showFontOfflineToast(fontName: string): void {
 	const html = `
     <i class="bi-fonts text-warning"></i>
-    <span>Offline: <strong>${fontName}</strong> is not cached. Falling back to system font.</span>
+		<span>Offline: <strong>${escapeHTML(fontName)}</strong> is not cached. Falling back to system font.</span>
   `;
 	showToast(html, "toast-font-fallback");
 }

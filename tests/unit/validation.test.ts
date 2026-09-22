@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
 	generateRomajiSpellings,
+	isInputValidAnswer,
 	isInputValidPrefix,
 } from "../../src/logic/validation";
 
@@ -19,6 +20,16 @@ describe("Romaji Validation & Spelling Generation", () => {
 	it("should handle vowel lengthening mark (ー)", () => {
 		const spellings = generateRomajiSpellings("ノート");
 		expect(spellings).toContain("nooto");
+		expect(isInputValidAnswer("nooto", "ノート")).toBe(true);
+		expect(isInputValidAnswer("no-to", "ノート")).toBe(false);
+	});
+
+	it("should accept complete alternate readings and Kana answers", () => {
+		expect(isInputValidAnswer("shi", "し")).toBe(true);
+		expect(isInputValidAnswer("si", "し")).toBe(true);
+		expect(isInputValidAnswer("し", "し")).toBe(true);
+		expect(isInputValidAnswer("tenin", "てんいん")).toBe(true);
+		expect(isInputValidAnswer("ten'in", "てんいん")).toBe(true);
 	});
 
 	it("should recognize valid prefixes as true", () => {

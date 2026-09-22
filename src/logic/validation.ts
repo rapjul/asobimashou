@@ -167,3 +167,28 @@ export function isInputValidPrefix(input: string, targetKana: string): boolean {
 		spelling.toLowerCase().startsWith(cleanInput),
 	);
 }
+
+/**
+ * Checks whether input is a complete accepted Kana or Romaji spelling.
+ *
+ * @param {string} input - The user's complete answer.
+ * @param {string} targetKana - The displayed Japanese reading.
+ * @returns {boolean} True when the input exactly matches an accepted answer.
+ */
+export function isInputValidAnswer(input: string, targetKana: string): boolean {
+	const options = { customKanaMapping: { dzu: "づ" } };
+	if (
+		wanakana.toHiragana(input, options) ===
+		wanakana.toHiragana(targetKana, options)
+	) {
+		return true;
+	}
+
+	const romajiInput = wanakana
+		.toRomaji(input, { customRomajiMapping: CUSTOM_ROMAJI_MAPPING })
+		.toLowerCase()
+		.replace(/[’‘]/g, "'");
+	return generateRomajiSpellings(targetKana).some(
+		(spelling) => spelling.toLowerCase() === romajiInput,
+	);
+}

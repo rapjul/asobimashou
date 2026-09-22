@@ -1,7 +1,11 @@
 import type { Card, GameSettings, GameState, ReviewItem } from "../types";
 import { formatQuestion, getFilteredCardIndices } from "../logic/filters";
 import { CardQueue } from "../logic/deduplication";
-import { isInputValidPrefix } from "../logic/validation";
+import {
+	isInputValidAnswer,
+	isInputValidPrefix,
+	CUSTOM_ROMAJI_MAPPING,
+} from "../logic/validation";
 import {
 	generateSessionCSV,
 	formatShareSummary,
@@ -20,6 +24,8 @@ export class GameController {
 	private cardQueue = new CardQueue(15);
 	private timerHandle: number | null = null;
 	private gameStartTime: number | null = null;
+	private isStarting = false;
+	private restartTimeout: number | null = null;
 
 	/**
 	 * Initializes the GameController.
@@ -61,7 +67,26 @@ export class GameController {
 	 * @returns {Promise<void>}
 	 */
 	public async startGame(): Promise<void> {
-		await this.loadDeck();
+		if (this.isStarting || this.state.isRunning) return;
+		this.isStarting = true;
+		const startBtn = document.querySelector<HTMLButtonElement>("#start");
+		if (startBtn) startBtn.disabled = true;
+		this.deck = [];
+		try {
+			await this.loadDeck();
+			if (this.deck.length === 0) {
+				throw new Error("The selected vocabulary deck is empty.");
+			}
+		} catch {
+			this.isStarting = false;
+			if (startBtn) startBtn.disabled = false;
+			showToast(
+				'<i class="bi-exclamation-circle text-danger"></i> Unable to load vocabulary. Please try again.',
+				"toast-load-error",
+			);
+			return;
+		}
+		this.isStarting = false;
 		this.cardQueue.clear();
 
 		this.state = {
@@ -75,7 +100,7 @@ export class GameController {
 			isRunning: true,
 		};
 
-		if (this.timerHandle) {
+		if (this.timerHandle !== null) {
 			cancelAnimationFrame(this.timerHandle);
 			this.timerHandle = null;
 		}
@@ -101,9 +126,6 @@ export class GameController {
 
 		const reviewTable = document.querySelector("#review-table");
 		if (reviewTable) reviewTable.innerHTML = "";
-
-		const startBtn = document.querySelector<HTMLButtonElement>("#start");
-		if (startBtn) startBtn.disabled = true;
 
 		document.querySelector("#game")?.classList.remove("d-none");
 		document.querySelector("#menu")?.classList.add("slide-up");
@@ -136,19 +158,21 @@ export class GameController {
 		const card = this.deck[chosenIndex]!;
 		this.state.currentCard = card;
 
-		const { questionKana, kanji } = formatQuestion(card, this.settings);
+		const { questionKana, kanji, selectedReading } = formatQuestion(
+			card,
+			this.settings,
+		);
 		this.state.currentKana = questionKana;
-
-		const readings = Array.isArray(card.hiragana)
-			? card.hiragana
-			: [card.hiragana];
-		this.state.currentRomaji = readings.map((r) => wanakana.toRomaji(r));
+		this.state.currentRomaji = [wanakana.toRomaji(selectedReading)];
 
 		const questionEl = document.querySelector("#question");
 		if (questionEl) {
-			questionEl.innerHTML = `${questionKana}<rt>${
-				this.settings.showKanji ? kanji : ""
-			}</rt>`;
+			const rubyText = document.createElement("rt");
+			rubyText.textContent = this.settings.showKanji ? kanji : "";
+			questionEl.replaceChildren(
+				document.createTextNode(questionKana),
+				rubyText,
+			);
 		}
 
 		const questionIdEl =
@@ -221,8 +245,22 @@ export class GameController {
 		const options = { customKanaMapping: { dzu: "づ" } };
 		const qHiragana = wanakana.toHiragana(this.state.currentKana, options);
 		const aHiragana = wanakana.toHiragana(input, options);
+		const isKanaAnswer = qHiragana === aHiragana;
+		const isCorrect =
+			isKanaAnswer || isInputValidAnswer(input, this.state.currentKana);
+		const cleanInputRomaji = wanakana
+			.toRomaji(input, { customRomajiMapping: CUSTOM_ROMAJI_MAPPING })
+			.toLowerCase()
+			.replace(/[’‘]/g, "'");
+		const romajiTarget = wanakana
+			.toRomaji(qHiragana, { customRomajiMapping: CUSTOM_ROMAJI_MAPPING })
+			.toLowerCase();
+		const missingApostrophe =
+			romajiTarget.includes("'") &&
+			cleanInputRomaji === romajiTarget.replace(/'/g, "");
+		const isValidPrefix = isInputValidPrefix(input, this.state.currentKana);
 
-		if (isInputValidPrefix(input, this.state.currentKana)) {
+		if (isValidPrefix || isCorrect) {
 			answerEl?.classList.remove("is-invalid");
 		} else {
 			answerEl?.classList.remove("is-invalid");
@@ -230,44 +268,22 @@ export class GameController {
 			answerEl?.classList.add("is-invalid");
 		}
 
-		if (qHiragana !== aHiragana) {
-			// Vowel length toasts
-			if (
-				input.includes("-") ||
-				input.includes("ー") ||
-				aHiragana.includes("ー")
-			) {
-				showVowelLengthToast();
-				return;
+		if (isCorrect) {
+			if (missingApostrophe) {
+				showApostropheToast(romajiTarget, qHiragana);
 			}
-			const cardHasVowel =
-				this.state.currentCard.kanji.includes("ー") ||
-				this.state.currentKana.includes("ー");
-			if (
-				cardHasVowel &&
-				!isInputValidPrefix(input, this.state.currentKana)
-			) {
-				showVowelLengthToast();
-				return;
-			}
-
-			// Romaji apostrophe toast
-			const romajiTarget = wanakana.toRomaji(qHiragana);
-			if (romajiTarget.includes("'")) {
-				const cleanTyped = input.toLowerCase().replace(/['’‘]/g, "");
-				const cleanTarget = romajiTarget
-					.toLowerCase()
-					.replace(/['’‘]/g, "");
-				if (cleanTyped === cleanTarget) {
-					showApostropheToast(romajiTarget, qHiragana);
-					this.recordAnswer(input, true);
-				}
-			}
+			this.recordAnswer(input, true);
 			return;
 		}
 
-		// Correct answer entered
-		this.recordAnswer(input, true);
+		if (input.includes("-") || input.includes("ー")) {
+			showVowelLengthToast();
+			return;
+		}
+		const cardHasVowel =
+			this.state.currentCard.kanji.includes("ー") ||
+			this.state.currentKana.includes("ー");
+		if (cardHasVowel && !isValidPrefix) showVowelLengthToast();
 	}
 
 	/**
@@ -327,7 +343,7 @@ export class GameController {
 	 */
 	public stopGame(): void {
 		this.state.isRunning = false;
-		if (this.timerHandle) {
+		if (this.timerHandle !== null) {
 			cancelAnimationFrame(this.timerHandle);
 			this.timerHandle = null;
 		}
@@ -372,16 +388,25 @@ export class GameController {
 
 		table.innerHTML = "";
 		for (const item of this.state.history) {
-			const statusIcon = item.isCorrect
-				? '<i class="bi-check-lg text-success"></i>'
-				: '<i class="bi-x-lg text-danger"></i>';
 			const jisho = `https://jisho.org/word/${encodeURIComponent(item.kanji)}`;
 			const row = document.createElement("tr");
-			row.innerHTML = `
-        <th>${statusIcon} <a href="${jisho}" target="_blank" rel="noopener noreferrer">${item.kana}</a></th>
-        <td class="${item.isCorrect ? "text-success" : "text-danger"}">${item.romaji}</td>
-        <td>${item.meaning}</td>
-      `;
+			const heading = document.createElement("th");
+			const statusIcon = document.createElement("i");
+			statusIcon.className = item.isCorrect
+				? "bi-check-lg text-success"
+				: "bi-x-lg text-danger";
+			const link = document.createElement("a");
+			link.href = jisho;
+			link.target = "_blank";
+			link.rel = "noopener noreferrer";
+			link.textContent = item.kana;
+			heading.append(statusIcon, " ", link);
+			const romaji = document.createElement("td");
+			romaji.className = item.isCorrect ? "text-success" : "text-danger";
+			romaji.textContent = item.romaji;
+			const meaning = document.createElement("td");
+			meaning.textContent = item.meaning;
+			row.append(heading, romaji, meaning);
 			table.appendChild(row);
 		}
 	}
@@ -462,18 +487,56 @@ export class GameController {
 	public restart(): void {
 		document.querySelector("#menu")?.classList.remove("slide-up");
 		const result = document.querySelector("#result");
-		if (result) {
-			result.classList.remove("slide-in");
-			result.addEventListener(
-				"transitionend",
-				() => {
-					result.classList.add("d-none");
-					const startBtn =
-						document.querySelector<HTMLButtonElement>("#start");
-					if (startBtn) startBtn.disabled = false;
-				},
-				{ once: true },
-			);
-		}
+		if (!result) return;
+		result.classList.remove("slide-in");
+		let isReset = false;
+		let transitionEndHandler: EventListener | null = null;
+		const finishReset = (): void => {
+			if (isReset) return;
+			isReset = true;
+			if (transitionEndHandler) {
+				result.removeEventListener(
+					"transitionend",
+					transitionEndHandler,
+				);
+			}
+			if (this.restartTimeout !== null) {
+				window.clearTimeout(this.restartTimeout);
+				this.restartTimeout = null;
+			}
+			result.classList.add("d-none");
+			document.querySelector("#game")?.classList.add("d-none");
+			const timeEl = document.querySelector("#time");
+			if (timeEl) {
+				const clockIcon = document.createElement("i");
+				clockIcon.className = "bi-clock";
+				timeEl.replaceChildren(
+					document.createTextNode("0 "),
+					clockIcon,
+				);
+			}
+			const scoreEl = document.querySelector("#score");
+			if (scoreEl) {
+				const scoreIcon = document.createElement("i");
+				scoreIcon.className = "bi-check-circle";
+				scoreEl.replaceChildren(
+					scoreIcon,
+					document.createTextNode(" 0/0"),
+				);
+			}
+			const startBtn =
+				document.querySelector<HTMLButtonElement>("#start");
+			if (startBtn) startBtn.disabled = false;
+		};
+		transitionEndHandler = (event) => {
+			if (
+				event.target === result &&
+				(event as TransitionEvent).propertyName === "top"
+			) {
+				finishReset();
+			}
+		};
+		result.addEventListener("transitionend", transitionEndHandler);
+		this.restartTimeout = window.setTimeout(finishReset, 850);
 	}
 }

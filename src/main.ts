@@ -8,6 +8,63 @@ import {
 } from "./ui/toasts";
 import { registerSW } from "virtual:pwa-register";
 
+/**
+ * Updates layout measurements and keyboard-aware compact styles.
+ *
+ * @returns {void}
+ */
+function updateViewportHeight(): void {
+	const visualViewport = window.visualViewport;
+	const viewportHeight = visualViewport?.height ?? window.innerHeight;
+	const offsetTop = visualViewport?.offsetTop ?? 0;
+	document.documentElement.style.setProperty(
+		"--visual-viewport-height",
+		`${viewportHeight}px`,
+	);
+	document.documentElement.style.setProperty(
+		"--visual-viewport-offset-y",
+		`${offsetTop}px`,
+	);
+	const isInputFocused = document.activeElement?.id === "answer";
+	const isViewportShort = viewportHeight < window.innerHeight * 0.85;
+	document.body.classList.toggle(
+		"keyboard-open",
+		isViewportShort || isInputFocused,
+	);
+}
+
+/**
+ * Prevents body scrolling behind the game while the mobile keyboard is open.
+ *
+ * @param {TouchEvent} event - The touch movement event.
+ * @returns {void}
+ */
+function preventKeyboardBodyScroll(event: TouchEvent): void {
+	if (!document.body.classList.contains("keyboard-open")) return;
+	if (
+		event.target instanceof Element &&
+		event.target.closest("#review-wrapper")
+	) {
+		return;
+	}
+	event.preventDefault();
+}
+
+window.visualViewport?.addEventListener("resize", updateViewportHeight);
+window.visualViewport?.addEventListener("scroll", updateViewportHeight);
+window.addEventListener("resize", updateViewportHeight);
+document.body.addEventListener("touchmove", preventKeyboardBodyScroll, {
+	passive: false,
+});
+const answerInput = document.querySelector<HTMLInputElement>("#answer");
+answerInput?.addEventListener("focus", () =>
+	window.setTimeout(updateViewportHeight, 100),
+);
+answerInput?.addEventListener("blur", () =>
+	window.setTimeout(updateViewportHeight, 100),
+);
+updateViewportHeight();
+
 // Register Service Worker updates via Vite PWA
 registerSW({
 	immediate: true,
