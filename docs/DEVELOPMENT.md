@@ -79,8 +79,7 @@ npm run test
 npm run test:coverage
 ```
 
-The V8 coverage report includes only `src/logic/**/*.ts`. Playwright tests
-exercise UI and browser flows separately and do not contribute to that report.
+The V8 coverage report includes runtime TypeScript under `src/`, including application startup and UI modules. Type-only declarations and the logic re-export barrel are excluded; Playwright separately verifies browser behavior across engines.
 
 ### End-to-End Browser Testing
 

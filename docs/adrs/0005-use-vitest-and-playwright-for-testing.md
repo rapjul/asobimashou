@@ -31,7 +31,7 @@ Chosen option: "Use Vitest for unit testing and Playwright for E2E testing", bec
 ### Consequences
 
 - Good, because unit tests run in milliseconds and coverage reports identify untested logic modules (`npm run test:coverage`).
-- Neutral, because V8 coverage includes only `src/logic/**/*.ts`; UI and browser behavior are verified by Playwright without being included in the coverage percentages.
+- Good, because V8 coverage includes runtime TypeScript under `src/`, including application startup and UI modules; Playwright separately verifies browser behavior across engines.
 - Good, because Playwright automates comprehensive user flows: gameplay answering, skipping, timer metrics, CSV export downloads, options modal pagination, theme switching, and network disconnections.
 - Bad, because browser binaries must be downloaded in CI and development environments (`npx playwright install`).
 

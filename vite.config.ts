@@ -79,7 +79,7 @@ export default defineConfig({
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html"],
-			include: ["src/logic/**/*.ts"],
+			include: ["src/**/*.ts"],
 			exclude: ["src/types/**", "src/**/*.d.ts", "src/logic/index.ts"],
 			thresholds: {
 				lines: 85,

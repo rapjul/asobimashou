@@ -288,8 +288,7 @@ npm run build
 npm run preview
 ```
 
-Vitest coverage includes `src/logic/**/*.ts` only. UI coverage is exercised by
-Playwright but is not included in the V8 unit coverage report.
+Vitest V8 coverage includes runtime TypeScript under `src/`, including application startup and UI modules. Type-only declarations and the logic re-export barrel are excluded; Playwright separately verifies browser behavior across engines.
 
 ### Architectural Decision Records (ADRs)
 
