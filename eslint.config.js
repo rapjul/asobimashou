@@ -2,10 +2,32 @@ import js from "@eslint/js";
 import globals from "globals";
 import prettierConfig from "eslint-config-prettier";
 import jsdoc from "eslint-plugin-jsdoc";
+import tseslint from "typescript-eslint";
 
 export default [
 	js.configs.recommended,
 	jsdoc.configs["flat/recommended"],
+	...tseslint.configs.recommended.map((config) => ({
+		...config,
+		files: ["**/*.ts"],
+	})),
+	{
+		...jsdoc.configs["flat/recommended-typescript"],
+		files: ["**/*.ts"],
+	},
+	{
+		files: ["**/*.ts"],
+		settings: {
+			jsdoc: {
+				mode: "typescript",
+			},
+		},
+		rules: {
+			"jsdoc/no-defaults": "off",
+			"jsdoc/no-types": "off",
+			"jsdoc/tag-lines": "off",
+		},
+	},
 	prettierConfig,
 	{
 		languageOptions: {
@@ -44,7 +66,6 @@ export default [
 			"coverage/**",
 			"node_modules/**",
 			"assets/js/bootstrap.bundle.min.js",
-			"assets/js/script.js",
 			"playwright-report/**",
 			"test-results/**",
 		],

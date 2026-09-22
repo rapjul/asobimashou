@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { createHash } from "node:crypto";
 import jlptData from "../../src/data/jlpt.json";
 import randomData from "../../src/data/random.json";
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe("Vocabulary Data Parity & Schema Integrity", () => {
 	it("should contain the exact count of JLPT (607) and Random (13803) items totaling 14410", () => {
@@ -40,20 +36,15 @@ describe("Vocabulary Data Parity & Schema Integrity", () => {
 		}
 	});
 
-	it("should match exactly with cards from the original cards.js file if present", () => {
-		const originalCardsPath = path.resolve(
-			__dirname,
-			"../../assets/js/cards.js",
+	it("should preserve the original deck contents", () => {
+		const digest = (data: unknown): string =>
+			createHash("sha256").update(JSON.stringify(data)).digest("hex");
+
+		expect(digest(jlptData)).toBe(
+			"0e683e3b27598e8d5447c63d0b785926cf8317173174916fb0d00f687b7ef718",
 		);
-		if (fs.existsSync(originalCardsPath)) {
-			const content = fs.readFileSync(originalCardsPath, "utf-8");
-			const match = content.match(/const cards = ({[\s\S]*});/);
-			if (match && match[1]) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, no-eval
-				const originalCards = eval(`(${match[1]})`);
-				expect(jlptData).toEqual(originalCards.JLPT);
-				expect(randomData).toEqual(originalCards.Random);
-			}
-		}
+		expect(digest(randomData)).toBe(
+			"9208c695245e7afcc70dbba761d7632aa4eb4113307a2b45669515199a6e1738",
+		);
 	});
 });

@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: ["main", "update"]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Lint, Typecheck, and Test
