@@ -26,14 +26,17 @@ export class GameController {
 	private gameStartTime: number | null = null;
 	private isStarting = false;
 	private restartTimeout: number | null = null;
+	private onRoundEnd: () => void;
 
 	/**
 	 * Initializes the GameController.
 	 *
 	 * @param {GameSettings} settings - The active game settings.
+	 * @param {() => void} onRoundEnd - Called after an active round ends.
 	 */
-	constructor(settings: GameSettings) {
+	constructor(settings: GameSettings, onRoundEnd: () => void = () => {}) {
 		this.settings = settings;
+		this.onRoundEnd = onRoundEnd;
 		this.state = {
 			currentCard: null,
 			currentKana: "",
@@ -44,6 +47,15 @@ export class GameController {
 			history: [],
 			isRunning: false,
 		};
+	}
+
+	/**
+	 * Reports whether a round is starting or currently active.
+	 *
+	 * @returns {boolean} True while deck loading or gameplay is active.
+	 */
+	public get isSessionActive(): boolean {
+		return this.isStarting || this.state.isRunning;
 	}
 
 	/**
@@ -342,6 +354,7 @@ export class GameController {
 	 * @returns {void}
 	 */
 	public stopGame(): void {
+		const wasRunning = this.state.isRunning;
 		this.state.isRunning = false;
 		if (this.timerHandle !== null) {
 			cancelAnimationFrame(this.timerHandle);
@@ -375,6 +388,7 @@ export class GameController {
 			result.classList.add("slide-in");
 		}
 		document.querySelector("#game")?.classList.add("d-none");
+		if (wasRunning) this.onRoundEnd();
 	}
 
 	/**

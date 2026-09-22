@@ -5,7 +5,7 @@ export default defineConfig({
 	base: "./",
 	plugins: [
 		VitePWA({
-			registerType: "autoUpdate",
+			registerType: "prompt",
 			injectRegister: "auto",
 			devOptions: {
 				enabled: true,
@@ -26,19 +26,19 @@ export default defineConfig({
 						purpose: "any",
 					},
 					{
-						src: "assets/images/icon-192.png",
+						src: "assets/images/icons/icon-192.png",
 						sizes: "192x192",
 						type: "image/png",
 						purpose: "any",
 					},
 					{
-						src: "assets/images/icon-512.png",
+						src: "assets/images/icons/icon-512.png",
 						sizes: "512x512",
 						type: "image/png",
 						purpose: "any",
 					},
 					{
-						src: "assets/images/icon-512.png",
+						src: "assets/images/icons/icon-512.png",
 						sizes: "512x512",
 						type: "image/png",
 						purpose: "maskable",

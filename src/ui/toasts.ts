@@ -23,12 +23,14 @@ export function showToast(
 	void toast.offsetHeight;
 	toast.classList.add("show");
 
-	setTimeout(() => {
-		toast.classList.remove("show");
+	if (duration > 0) {
 		setTimeout(() => {
-			toast.remove();
-		}, 300);
-	}, duration);
+			toast.classList.remove("show");
+			setTimeout(() => {
+				toast.remove();
+			}, 300);
+		}, duration);
+	}
 
 	return toast;
 }
@@ -89,7 +91,7 @@ export function showVowelLengthToast(): void {
 export function showFontOfflineToast(fontName: string): void {
 	const html = `
     <i class="bi-fonts text-warning"></i>
-		<span>Offline: <strong>${escapeHTML(fontName)}</strong> is not cached. Falling back to system font.</span>
+		<span>Offline: <strong>${escapeHTML(fontName)}</strong> has not been cached yet. Choose a system font or reconnect.</span>
   `;
 	showToast(html, "toast-font-fallback");
 }

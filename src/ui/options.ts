@@ -2,6 +2,27 @@ import type { GameSettings } from "../types";
 import { FONT_OPTIONS, ROUND_LENGTHS } from "../constants/game-options";
 import { applyTheme, resolveIsDark, systemDarkMQ } from "./theme";
 import { showFontOfflineToast } from "./toasts";
+const FONT_CACHE_NAME = "fonts-cache";
+
+const OPTIONAL_FONT_URLS: Partial<Record<GameSettings["font"], string>> = {
+	// prettier-ignore
+	"Klee One": new URL(
+		"../../assets/fonts/klee-one.woff2",
+		import.meta.url,
+	).href,
+	"Noto Sans JP": new URL(
+		"../../assets/fonts/noto-sans-jp.woff2",
+		import.meta.url,
+	).href,
+	"Noto Serif JP": new URL(
+		"../../assets/fonts/noto-serif-jp.woff2",
+		import.meta.url,
+	).href,
+	"Yuji Syuku": new URL(
+		"../../assets/fonts/yuji-syuku.woff2",
+		import.meta.url,
+	).href,
+};
 
 /**
  * Default game settings configuration.
@@ -183,20 +204,110 @@ export function saveSettings(settings: GameSettings): void {
  * @param {string} font - Chosen font name.
  * @returns {void}
  */
-export function changeFont(font: string): void {
+export function changeFont(font: GameSettings["font"]): void {
 	const select = document.querySelector<HTMLSelectElement>("#game-font");
 	if (select) {
 		select.value = font;
 	}
+	const fontUrl = OPTIONAL_FONT_URLS[font];
+	if (!fontUrl) {
+		applyFontFamily(font);
+		return;
+	}
+	if (navigator.onLine) {
+		applyFontFamily(font);
+		void cacheSelectedFont(fontUrl);
+		return;
+	}
+	void applyCachedFontOrFallback(font, fontUrl);
+}
+
+/**
+ * Applies a font after confirming it is cached when the browser is offline.
+ *
+ * @param {GameSettings["font"]} font - The selected font family.
+ * @param {string} fontUrl - The emitted asset URL for the font.
+ * @returns {Promise<void>}
+ */
+async function applyCachedFontOrFallback(
+	font: GameSettings["font"],
+	fontUrl: string,
+): Promise<void> {
+	if (await isFontCached(fontUrl)) {
+		applyFontFamily(font);
+		return;
+	}
+	applyFontFamily("system-ui");
+	showFontOfflineToast(font);
+}
+
+/**
+ * Applies a font family to every themed text element.
+ *
+ * @param {GameSettings["font"]} font - The font family to apply.
+ * @returns {void}
+ */
+function applyFontFamily(font: GameSettings["font"]): void {
 	document
 		.querySelectorAll<HTMLElement>(".game-font-change")
-		.forEach((el) => {
-			el.style.fontFamily = font;
+		.forEach((element) => {
+			element.style.fontFamily = font;
 		});
+}
 
-	if (!navigator.onLine && font !== "sans-serif") {
-		showFontOfflineToast(font);
+/**
+ * Returns whether the selected font asset exists in the persistent font cache.
+ *
+ * @param {string} fontUrl - The emitted font asset URL.
+ * @returns {Promise<boolean>} True if Cache Storage contains the font.
+ */
+async function isFontCached(fontUrl: string): Promise<boolean> {
+	if (!("caches" in window)) return false;
+	try {
+		const cache = await caches.open(FONT_CACHE_NAME);
+		const absoluteUrl = new URL(fontUrl, document.baseURI).toString();
+		return Boolean(await cache.match(absoluteUrl));
+	} catch {
+		return false;
 	}
+}
+
+/**
+ * Fetches and saves a selected optional font for later offline use.
+ *
+ * @param {string} fontUrl - The emitted font asset URL.
+ * @returns {Promise<void>}
+ */
+async function cacheSelectedFont(fontUrl: string): Promise<void> {
+	if (!("caches" in window)) return;
+	try {
+		const absoluteUrl = new URL(fontUrl, document.baseURI).toString();
+		const response = await fetch(absoluteUrl);
+		if (!response.ok) return;
+		const cache = await caches.open(FONT_CACHE_NAME);
+		await cache.put(absoluteUrl, response.clone());
+	} catch {
+		// Keep the font selectable online if caching is unavailable.
+	}
+}
+
+/**
+ * Disables only uncached optional fonts while offline and restores choices online.
+ *
+ * @param {GameSettings} settings - The active game settings reference.
+ * @returns {Promise<void>}
+ */
+async function updateFontAvailability(settings: GameSettings): Promise<void> {
+	const select = document.querySelector<HTMLSelectElement>("#game-font");
+	if (!select) return;
+	for (const option of Array.from(select.options)) {
+		const fontUrl =
+			OPTIONAL_FONT_URLS[option.value as GameSettings["font"]];
+		option.disabled = Boolean(
+			fontUrl && !navigator.onLine && !(await isFontCached(fontUrl)),
+		);
+	}
+	changeFont(settings.font);
 }
 
 /**
@@ -228,7 +339,13 @@ export function closeOptions(): void {
 export function initOptionsUI(settings: GameSettings): void {
 	populateSettingsSelects();
 	// Sync UI state from settings
-	changeFont(settings.font);
+	void updateFontAvailability(settings);
+	window.addEventListener("online", () => {
+		void updateFontAvailability(settings);
+	});
+	window.addEventListener("offline", () => {
+		void updateFontAvailability(settings);
+	});
 	applyTheme(resolveIsDark(settings.theme));
 	document
 		.querySelectorAll<HTMLButtonElement>(".game-theme")

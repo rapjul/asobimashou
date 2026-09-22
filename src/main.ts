@@ -65,18 +65,52 @@ answerInput?.addEventListener("blur", () =>
 );
 updateViewportHeight();
 
-// Register Service Worker updates via Vite PWA
-registerSW({
+let gameController: GameController | null = null;
+let updateWaiting = false;
+let updateNotice: HTMLElement | null = null;
+let activateWaitingUpdate: (
+	reloadPage?: boolean,
+) => Promise<void> = async () => {};
+
+/**
+ * Shows the waiting update only when no round is starting or active.
+ *
+ * @returns {void}
+ */
+function showWaitingUpdate(): void {
+	if (!updateWaiting || gameController?.isSessionActive || updateNotice) {
+		return;
+	}
+	updateNotice = showToast(
+		'<i class="bi-arrow-clockwise text-primary"></i> <span>Update ready. Reload when you are ready.</span> <button type="button" class="btn btn-sm btn-primary ms-2">Reload</button>',
+		"toast-update",
+		0,
+	);
+	const reloadButton =
+		updateNotice?.querySelector<HTMLButtonElement>("button");
+	reloadButton?.addEventListener("click", () => {
+		void activateWaitingUpdate(true);
+	});
+}
+
+/**
+ * Removes a waiting update notice while the player begins a round.
+ *
+ * @returns {void}
+ */
+function hideWaitingUpdate(): void {
+	updateNotice?.remove();
+	updateNotice = null;
+}
+
+// Register updates as prompts so an active round is never reloaded.
+activateWaitingUpdate = registerSW({
 	immediate: true,
 	onNeedRefresh() {
-		// New version available
-		showToast(
-			'<i class="bi-arrow-clockwise text-primary"></i> <span>New update available! Reload to update.</span>',
-			"toast-update",
-		);
+		updateWaiting = true;
+		showWaitingUpdate();
 	},
 	onOfflineReady() {
-		// App ready for offline use
 		showToast(
 			'<i class="bi-check-circle text-success"></i> <span>App ready to work offline!</span>',
 			"toast-offline-ready",
@@ -99,7 +133,8 @@ window.addEventListener("offline", () => {
 toggleOfflineBadge(!navigator.onLine);
 
 const settings = loadSettings();
-const game = new GameController(settings);
+const game = new GameController(settings, showWaitingUpdate);
+gameController = game;
 
 // Initialize UI controllers and options panel
 initOptionsUI(settings);
@@ -113,7 +148,8 @@ if (startBtn) {
 
 // Bind Start button
 startBtn?.addEventListener("click", () => {
-	game.startGame();
+	hideWaitingUpdate();
+	void game.startGame().then(showWaitingUpdate);
 });
 
 // Bind Answer input keyup
