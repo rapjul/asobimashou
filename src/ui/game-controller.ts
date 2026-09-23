@@ -24,6 +24,9 @@ export class GameController {
 	private cardQueue = new CardQueue(15);
 	private timerHandle: number | null = null;
 	private gameStartTime: number | null = null;
+	private hiddenAt: number | null = null;
+	private hiddenDurationMs = 0;
+	private visibilityListener: (() => void) | null = null;
 	private isStarting = false;
 	private hasCompletedSession = false;
 	private restartTimeout: number | null = null;
@@ -125,14 +128,16 @@ export class GameController {
 		}
 
 		this.gameStartTime = performance.now();
+		this.hiddenDurationMs = 0;
+		this.hiddenAt = document.hidden ? this.gameStartTime : null;
+		this.visibilityListener = () => this.handleVisibilityChange();
+		document.addEventListener("visibilitychange", this.visibilityListener);
 		const timeEl = document.querySelector("#time");
 
 		// Monotonic requestAnimationFrame timer loop
 		const tickLoop = () => {
 			if (!this.state.isRunning || this.gameStartTime === null) return;
-			const elapsed = Math.floor(
-				(performance.now() - this.gameStartTime) / 1000,
-			);
+			const elapsed = this.getElapsedSeconds();
 			if (elapsed !== this.state.timer) {
 				this.state.timer = elapsed;
 				if (timeEl) {
@@ -247,6 +252,55 @@ export class GameController {
 		this.state.skipped++;
 
 		this.advanceOrFinish();
+	}
+
+	/**
+	 * Pauses or resumes active-time accounting when page visibility changes.
+	 *
+	 * @returns {void}
+	 */
+	private handleVisibilityChange(): void {
+		if (!this.state.isRunning) return;
+		const now = performance.now();
+		if (document.hidden) {
+			if (this.hiddenAt === null) this.hiddenAt = now;
+			return;
+		}
+		if (this.hiddenAt !== null) {
+			this.hiddenDurationMs += now - this.hiddenAt;
+			this.hiddenAt = null;
+		}
+		this.updateElapsedTime();
+	}
+
+	/**
+	 * Returns the number of visible seconds elapsed in the current round.
+	 *
+	 * @returns {number} Whole seconds excluding hidden-page intervals.
+	 */
+	private getElapsedSeconds(): number {
+		if (this.gameStartTime === null) return this.state.timer;
+		const hiddenNow =
+			this.hiddenAt === null ? 0 : performance.now() - this.hiddenAt;
+		const elapsed =
+			performance.now() -
+			this.gameStartTime -
+			this.hiddenDurationMs -
+			hiddenNow;
+		return Math.floor(Math.max(0, elapsed) / 1000);
+	}
+
+	/**
+	 * Updates stored elapsed time and its visible clock label.
+	 *
+	 * @returns {void}
+	 */
+	private updateElapsedTime(): void {
+		const elapsed = this.getElapsedSeconds();
+		if (elapsed === this.state.timer) return;
+		this.state.timer = elapsed;
+		const timeEl = document.querySelector("#time");
+		if (timeEl) timeEl.innerHTML = `${elapsed} <i class="bi-clock"></i>`;
 	}
 
 	/**
@@ -366,7 +420,16 @@ export class GameController {
 	public stopGame(): void {
 		const wasRunning = this.state.isRunning;
 		if (!wasRunning) return;
+		this.updateElapsedTime();
 		this.state.isRunning = false;
+		if (this.visibilityListener) {
+			document.removeEventListener(
+				"visibilitychange",
+				this.visibilityListener,
+			);
+			this.visibilityListener = null;
+		}
+		this.hiddenAt = null;
 		if (this.timerHandle !== null) {
 			cancelAnimationFrame(this.timerHandle);
 			this.timerHandle = null;

@@ -248,6 +248,47 @@ describe("Game session controller", () => {
 		expect(cancelFrame).toHaveBeenCalledWith(1);
 	});
 
+	it("excludes hidden intervals and finalizes time when stopped in the background", async () => {
+		let now = 1000;
+		let hidden = false;
+		const frames: FrameRequestCallback[] = [];
+		vi.stubGlobal("performance", { now: () => now });
+		vi.stubGlobal(
+			"requestAnimationFrame",
+			(callback: FrameRequestCallback) => {
+				frames.push(callback);
+				return frames.length;
+			},
+		);
+		vi.stubGlobal("cancelAnimationFrame", vi.fn());
+		Object.defineProperty(document, "hidden", {
+			configurable: true,
+			get: () => hidden,
+		});
+		const game = new GameController({ ...baseSettings, roundLength: null });
+		useDeck(game, [sampleCards[0]!]);
+
+		await game.startGame();
+		now = 4000;
+		hidden = true;
+		document.dispatchEvent(new Event("visibilitychange"));
+		now = 9000;
+		hidden = false;
+		document.dispatchEvent(new Event("visibilitychange"));
+		expect(document.querySelector("#time")!.textContent).toContain("3");
+		now = 10500;
+		hidden = true;
+		document.dispatchEvent(new Event("visibilitychange"));
+		now = 15500;
+		game.stopGame();
+
+		expect(document.querySelector("#stats-timer")!.textContent).toBe("4 s");
+		hidden = false;
+		now = 20000;
+		document.dispatchEvent(new Event("visibilitychange"));
+		expect(document.querySelector("#stats-timer")!.textContent).toBe("4 s");
+	});
+
 	it("resets to Home when the result transition completes", async () => {
 		const game = new GameController(baseSettings);
 		useDeck(game, [sampleCards[0]!]);

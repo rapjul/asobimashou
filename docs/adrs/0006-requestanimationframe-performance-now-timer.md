@@ -31,9 +31,10 @@ Chosen option: "requestAnimationFrame loop driven by performance.now()", because
 ### Consequences
 
 - Good, because timer throttling on Safari is completely avoided.
-- Good, because clock elapsed time is exact and monotonic.
-- Bad, because the animation frame loop stops when the browser tab is hidden or backgrounded (which naturally pauses practice sessions).
+- Good, because `performance.now()` provides monotonic elapsed-time measurements.
+- Good, because hidden-page intervals are excluded from the practice timer, including when the round ends before the page becomes visible again.
+- Neutral, because animation frames pause in background tabs while visibility events separately account for paused time.
 
 ### Confirmation
 
-Confirmed in `src/ui/game-controller.ts` and automated gameplay verification in `tests/e2e/gameplay.spec.ts`.
+Confirmed in `src/ui/game-controller.ts` and unit tests for hidden, resumed, and stopped-hidden rounds; gameplay timing is also exercised in `tests/e2e/gameplay.spec.ts`.
