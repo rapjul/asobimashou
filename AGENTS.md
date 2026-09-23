@@ -300,3 +300,4 @@ Detailed architectural decision records are documented in `./docs/adrs/`:
 - `0008-transient-toast-notifications-for-romaji-hints.md`
 - `0009-client-side-session-csv-export.md`
 - `0010-preserve-player-choices-and-finish-rounds-safely.md`
+- `0011-manage-collapsed-surfaces-with-inert-and-honor-share-cancellation.md`
