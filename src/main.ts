@@ -170,7 +170,14 @@ document.querySelector("#answer")?.addEventListener("keydown", (evt) => {
 // Bind Skip button
 document.querySelector("#skip")?.addEventListener("click", () => {
 	game.skipQuestion();
-	document.querySelector<HTMLInputElement>("#answer")?.focus();
+	if (game.isSessionActive) {
+		document.querySelector<HTMLInputElement>("#answer")?.focus();
+	}
+});
+
+// Bind Review button
+document.querySelector("#review")?.addEventListener("click", () => {
+	game.reviewResults();
 });
 
 // Bind End button
@@ -194,3 +201,5 @@ document.querySelector("#copy")?.addEventListener("click", () => {
 document.querySelector("#restart")?.addEventListener("click", () => {
 	game.restart();
 });
+
+document.body.classList.remove("preload");

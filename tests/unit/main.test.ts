@@ -14,6 +14,7 @@ interface MainMocks {
 		handleInput: ReturnType<typeof vi.fn>;
 		skipQuestion: ReturnType<typeof vi.fn>;
 		stopGame: ReturnType<typeof vi.fn>;
+		reviewResults: ReturnType<typeof vi.fn>;
 		exportCSV: ReturnType<typeof vi.fn>;
 		shareResults: ReturnType<typeof vi.fn>;
 		copyTable: ReturnType<typeof vi.fn>;
@@ -55,6 +56,7 @@ async function bootMain(): Promise<MainMocks> {
 		handleInput: vi.fn(),
 		skipQuestion: vi.fn(),
 		stopGame: vi.fn(),
+		reviewResults: vi.fn(),
 		exportCSV: vi.fn(),
 		shareResults: vi.fn(),
 		copyTable: vi.fn(),
@@ -131,6 +133,7 @@ describe("Application startup and browser event wiring", () => {
 
 	it("initializes the app and binds start, answer, skip, stop, result, and Home actions", async () => {
 		const mocks = await bootMain();
+		expect(document.body.classList.contains("preload")).toBe(false);
 		expect(mocks.initOptionsUI).toHaveBeenCalledOnce();
 		expect(
 			document.querySelector<HTMLButtonElement>("#start")!.disabled,
@@ -159,6 +162,13 @@ describe("Application startup and browser event wiring", () => {
 		document.querySelector<HTMLButtonElement>("#skip")!.click();
 		expect(mocks.game.skipQuestion).toHaveBeenCalledOnce();
 		expect(document.activeElement).toBe(answer);
+		mocks.game.isSessionActive = false;
+		answer.blur();
+		document.querySelector<HTMLButtonElement>("#skip")!.click();
+		expect(document.activeElement).not.toBe(answer);
+		document.querySelector<HTMLButtonElement>("#review")!.disabled = false;
+		document.querySelector<HTMLButtonElement>("#review")!.click();
+		expect(mocks.game.reviewResults).toHaveBeenCalledOnce();
 		document.querySelector<HTMLButtonElement>("#stop")!.click();
 		document.querySelector<HTMLButtonElement>("#export-csv")!.click();
 		document.querySelector<HTMLButtonElement>("#share")!.click();

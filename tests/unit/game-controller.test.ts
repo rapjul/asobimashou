@@ -78,6 +78,23 @@ describe("Game session controller", () => {
 		).toBe(false);
 		expect(onRoundEnd).toHaveBeenCalledOnce();
 		expect(game.isSessionActive).toBe(false);
+		expect(document.activeElement).toBe(
+			document.querySelector("#result-heading"),
+		);
+		expect(
+			document.querySelector<HTMLButtonElement>("#review")!.disabled,
+		).toBe(false);
+		game.restart();
+		const transition = new Event("transitionend");
+		Object.defineProperty(transition, "propertyName", { value: "top" });
+		document.querySelector("#result")!.dispatchEvent(transition);
+		game.reviewResults();
+		expect(
+			document.querySelector("#result")!.classList.contains("d-none"),
+		).toBe(false);
+		expect(document.activeElement).toBe(
+			document.querySelector("#result-heading"),
+		);
 	});
 
 	it("finishes after the configured number of skips and records each row", async () => {
@@ -131,6 +148,9 @@ describe("Game session controller", () => {
 		expect(
 			document.querySelector(".toast-load-error")!.textContent,
 		).toContain("Unable to load vocabulary");
+		expect(
+			document.querySelector<HTMLButtonElement>("#review")!.disabled,
+		).toBe(true);
 
 		const game = new GameController(baseSettings);
 		const internals = game as unknown as { deck: Card[] };
@@ -182,6 +202,28 @@ describe("Game session controller", () => {
 		);
 	});
 
+	it("preserves the last review after a new deck fails to load", async () => {
+		const game = new GameController({ ...baseSettings, roundLength: null });
+		useDeck(game, [sampleCards[0]!]);
+		await game.startGame();
+		game.skipQuestion();
+		game.stopGame();
+		game.restart();
+		const transition = new Event("transitionend");
+		Object.defineProperty(transition, "propertyName", { value: "top" });
+		document.querySelector("#result")!.dispatchEvent(transition);
+
+		vi.spyOn(game, "loadDeck").mockRejectedValue(new Error("offline"));
+		await game.startGame();
+		expect(
+			document.querySelector<HTMLButtonElement>("#review")!.disabled,
+		).toBe(false);
+		game.reviewResults();
+		expect(document.querySelector("#review-table")!.textContent).toContain(
+			"rain",
+		);
+	});
+
 	it("updates elapsed time from the monotonic clock and cancels its frame", async () => {
 		let now = 1000;
 		const frames: FrameRequestCallback[] = [];
@@ -226,6 +268,7 @@ describe("Game session controller", () => {
 		expect(
 			document.querySelector<HTMLButtonElement>("#start")!.disabled,
 		).toBe(false);
+		expect(document.activeElement).toBe(document.querySelector("#start"));
 	});
 
 	it("exports CSV and uses clipboard fallbacks for sharing and copying", async () => {

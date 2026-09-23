@@ -25,6 +25,7 @@ export class GameController {
 	private timerHandle: number | null = null;
 	private gameStartTime: number | null = null;
 	private isStarting = false;
+	private hasCompletedSession = false;
 	private restartTimeout: number | null = null;
 	private onRoundEnd: () => void;
 
@@ -80,7 +81,11 @@ export class GameController {
 	 */
 	public async startGame(): Promise<void> {
 		if (this.isStarting || this.state.isRunning) return;
+		const reviewButton =
+			document.querySelector<HTMLButtonElement>("#review");
+		const hadCompletedSession = this.hasCompletedSession;
 		this.isStarting = true;
+		if (reviewButton) reviewButton.disabled = true;
 		const startBtn = document.querySelector<HTMLButtonElement>("#start");
 		if (startBtn) startBtn.disabled = true;
 		this.deck = [];
@@ -91,6 +96,7 @@ export class GameController {
 			}
 		} catch {
 			this.isStarting = false;
+			if (reviewButton) reviewButton.disabled = !hadCompletedSession;
 			if (startBtn) startBtn.disabled = false;
 			showToast(
 				'<i class="bi-exclamation-circle text-danger"></i> Unable to load vocabulary. Please try again.',
@@ -99,6 +105,7 @@ export class GameController {
 			return;
 		}
 		this.isStarting = false;
+		this.hasCompletedSession = false;
 		this.cardQueue.clear();
 
 		this.state = {
@@ -138,6 +145,9 @@ export class GameController {
 
 		const reviewTable = document.querySelector("#review-table");
 		if (reviewTable) reviewTable.innerHTML = "";
+		const result = document.querySelector("#result");
+		result?.classList.add("d-none");
+		result?.classList.remove("slide-in");
 
 		document.querySelector("#game")?.classList.remove("d-none");
 		document.querySelector("#menu")?.classList.add("slide-up");
@@ -355,20 +365,43 @@ export class GameController {
 	 */
 	public stopGame(): void {
 		const wasRunning = this.state.isRunning;
+		if (!wasRunning) return;
 		this.state.isRunning = false;
 		if (this.timerHandle !== null) {
 			cancelAnimationFrame(this.timerHandle);
 			this.timerHandle = null;
 		}
 
+		this.hasCompletedSession = true;
+		const reviewButton =
+			document.querySelector<HTMLButtonElement>("#review");
+		if (reviewButton) reviewButton.disabled = false;
+		this.showResults();
+		this.onRoundEnd();
+	}
+
+	/**
+	 * Reopens the most recently completed session's result screen.
+	 *
+	 * @returns {void}
+	 */
+	public reviewResults(): void {
+		if (!this.hasCompletedSession || this.isSessionActive) return;
+		this.showResults();
+	}
+
+	/**
+	 * Renders the current session summary and moves focus to its heading.
+	 *
+	 * @returns {void}
+	 */
+	private showResults(): void {
 		const total = this.state.answered + this.state.skipped;
 		const average = total > 0 ? this.state.timer / total : 0;
-
 		const statsAnswered = document.querySelector("#stats-answered");
 		const statsSkipped = document.querySelector("#stats-skipped");
 		const statsTimer = document.querySelector("#stats-timer");
 		const statsAverage = document.querySelector("#stats-average");
-
 		if (statsAnswered)
 			statsAnswered.textContent = this.state.answered.toString();
 		if (statsSkipped)
@@ -378,7 +411,6 @@ export class GameController {
 			statsAverage.textContent =
 				total > 0 ? `${average.toFixed(2)} s/card` : "N/A";
 		}
-
 		this.populateReviewTable();
 
 		const result = document.querySelector("#result");
@@ -388,7 +420,7 @@ export class GameController {
 			result.classList.add("slide-in");
 		}
 		document.querySelector("#game")?.classList.add("d-none");
-		if (wasRunning) this.onRoundEnd();
+		document.querySelector<HTMLElement>("#result-heading")?.focus();
 	}
 
 	/**
@@ -541,6 +573,7 @@ export class GameController {
 			const startBtn =
 				document.querySelector<HTMLButtonElement>("#start");
 			if (startBtn) startBtn.disabled = false;
+			startBtn?.focus();
 		};
 		transitionEndHandler = (event) => {
 			if (
