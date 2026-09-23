@@ -32,6 +32,13 @@ describe("Romaji Validation & Spelling Generation", () => {
 		expect(isInputValidAnswer("ten'in", "てんいん")).toBe(true);
 	});
 
+	it("requires a clear ん spelling before n-row Kana", () => {
+		expect(isInputValidAnswer("ona", "おんな")).toBe(false);
+		expect(isInputValidAnswer("onna", "おんな")).toBe(true);
+		expect(isInputValidAnswer("on'na", "おんな")).toBe(true);
+		expect(isInputValidAnswer("tenin", "てんいん")).toBe(true);
+	});
+
 	it("should recognize valid prefixes as true", () => {
 		expect(isInputValidPrefix("g", "がっこう")).toBe(true);
 		expect(isInputValidPrefix("gak", "がっこう")).toBe(true);

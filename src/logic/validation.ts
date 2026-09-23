@@ -100,7 +100,15 @@ export function generateRomajiSpellings(kanaStr: string): string[] {
 			i += 1;
 		} else {
 			if (ROMAJI_ALTERNATIVES[char]) {
-				segments.push(ROMAJI_ALTERNATIVES[char]);
+				const alternatives = ROMAJI_ALTERNATIVES[char];
+				const nextKanaStartsWithN = /[なにぬねのナニヌネノ]/.test(
+					nextChar,
+				);
+				segments.push(
+					(char === "ん" || char === "ン") && nextKanaStartsWithN
+						? alternatives.filter((spelling) => spelling !== "n")
+						: alternatives,
+				);
 			} else {
 				segments.push([wanakana.toRomaji(char)]);
 			}
