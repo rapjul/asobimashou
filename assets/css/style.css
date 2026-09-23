@@ -37,6 +37,11 @@
   --offline-badge-bg: rgba(253, 126, 20, 0.1);
   --offline-badge-border: rgba(253, 126, 20, 0.3);
   --offline-badge-color: #d9480f;
+
+  /* Option wrapper border colors (light mode) */
+  --opt-border-1: #6c757d;
+  --opt-border-2: #adb5bd;
+  --opt-border-3: #495057;
 }
 
 html {
@@ -97,6 +102,11 @@ body.bg-dark {
   --offline-badge-bg: rgba(255, 159, 67, 0.15);
   --offline-badge-border: rgba(255, 159, 67, 0.4);
   --offline-badge-color: #ff9f43;
+
+  /* Option wrapper border colors (dark mode) */
+  --opt-border-1: #adb5bd;
+  --opt-border-2: #6c757d;
+  --opt-border-3: #dee2e6;
 }
 
 body {
@@ -256,28 +266,6 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
 .form-select:focus {
   border-color: var(--input-focus-border) !important;
   box-shadow: none !important;
-}
-
-/*
- * Option Wrapper Border System
- * Uses variables to ensure consistent border colors across all groups.
- */
-#option-wrapper {
-  /* Group 1 */
-  --opt-border-1: #6c757d;
-  /* Group 2 */
-  --opt-border-2: #adb5bd;
-  /* Group 3 */
-  --opt-border-3: #495057;
-}
-
-body.bg-dark #option-wrapper {
-  /* Group 1 */
-  --opt-border-1: #adb5bd;
-  /* Group 2 */
-  --opt-border-2: #6c757d;
-  /* Group 3 */
-  --opt-border-3: #dee2e6;
 }
 
 /* Apply group borders */

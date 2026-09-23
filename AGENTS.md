@@ -115,6 +115,9 @@ Chromium/Edge but died after one tick on Safari.
 | `--toast-border`       | rgba(0…, 0.1)    | rgba(255…, 0.15) | Toast notification border       |
 | `--toast-color`        | `#212529`        | `#f8f9fa`        | Toast notification text         |
 | `--toast-shadow`       | rgba(0…, 0.15)   | rgba(0…, 0.4)    | Toast notification drop shadow  |
+| `--opt-border-1`       | `#6c757d`        | `#adb5bd`        | Option group 1 border           |
+| `--opt-border-2`       | `#adb5bd`        | `#6c757d`        | Option group 2 border           |
+| `--opt-border-3`       | `#495057`        | `#dee2e6`        | Option group 3 border           |
 
 **Rule**: When adding new styled elements, define variables in `:root` and
 `body.bg-dark` first, then reference them in the selector.
