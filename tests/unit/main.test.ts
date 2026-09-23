@@ -217,12 +217,21 @@ describe("Application startup and browser event wiring", () => {
 			bubbles: true,
 			cancelable: true,
 		});
+		Object.defineProperty(outsideMove, "touches", { value: { length: 1 } });
 		document.body.dispatchEvent(outsideMove);
 		expect(outsideMove.defaultPrevented).toBe(true);
+		const pinchMove = new Event("touchmove", {
+			bubbles: true,
+			cancelable: true,
+		});
+		Object.defineProperty(pinchMove, "touches", { value: { length: 2 } });
+		document.body.dispatchEvent(pinchMove);
+		expect(pinchMove.defaultPrevented).toBe(false);
 		const reviewMove = new Event("touchmove", {
 			bubbles: true,
 			cancelable: true,
 		});
+		Object.defineProperty(reviewMove, "touches", { value: { length: 1 } });
 		document.querySelector("#review-wrapper")!.dispatchEvent(reviewMove);
 		expect(reviewMove.defaultPrevented).toBe(false);
 		answer.blur();

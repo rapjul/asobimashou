@@ -34,13 +34,14 @@ function updateViewportHeight(): void {
 }
 
 /**
- * Prevents body scrolling behind the game while the mobile keyboard is open.
+ * Blocks one-finger body scrolling while the keyboard is open but allows pinch gestures.
  *
  * @param {TouchEvent} event - The touch movement event.
  * @returns {void}
  */
 function preventKeyboardBodyScroll(event: TouchEvent): void {
 	if (!document.body.classList.contains("keyboard-open")) return;
+	if (event.touches.length > 1) return;
 	if (
 		event.target instanceof Element &&
 		event.target.closest("#review-wrapper")
