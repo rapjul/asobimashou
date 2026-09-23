@@ -399,7 +399,10 @@ test.describe("Options Panel & Theme Configuration", () => {
 			]) {
 				await expectFullyReachable(page, selector);
 			}
-			await page.locator("#options-btn-more").focus();
+			await page.mouse.move(0, 0);
+			const moreButton = page.locator("#options-btn-more");
+			await moreButton.focus();
+			await expect(moreButton).toBeFocused();
 			await expect(page.locator("#option-help")).toContainText(
 				"Configure advanced filters",
 			);
