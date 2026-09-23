@@ -43,3 +43,7 @@ Chosen option: "Header-first card rows with RFC 4180 escaping and a client-side 
 ### Confirmation
 
 Confirmed in `src/logic/export.ts`, `src/ui/game-controller.ts`, `tests/unit/export.test.ts`, `tests/unit/game-controller.test.ts`, and `tests/e2e/gameplay.spec.ts`. The current CSV prefix follows OWASP's Excel-resistant guidance; the TSV apostrophe prefix is a best-effort guard, and spreadsheet applications may handle either differently or remove prefixes when saving and reopening files.
+
+## Kana Pace Definition
+
+`Seconds per Kana Character` divides response time by the number of Unicode code points in the selected Kana reading after NFC normalization. Each Kana code point counts once, including small Kana and the prolonged sound mark `ー`; therefore `きゃ` counts as two characters rather than one mora, and `きょうー` counts as four. Canonically decomposed Kana such as `か` followed by a combining dakuten normalizes to one code point and counts once. This defines a character-based pace metric, not a mora-based metric.

@@ -73,6 +73,46 @@ describe("CSV Export & Share Text Formatting", () => {
 		expect(csv.split("\r\n")).toHaveLength(4);
 	});
 
+	it("should count NFC-normalized Kana code points for per-character pace", () => {
+		const history: ReviewItem[] = [
+			{
+				kanji: "女",
+				kana: "きゃ",
+				romaji: "kya",
+				userAnswer: "kya",
+				meaning: "woman",
+				isCorrect: true,
+				isSkipped: false,
+				responseTimeMs: 1000,
+			},
+			{
+				kanji: "画",
+				kana: "か\u3099",
+				romaji: "ga",
+				userAnswer: "ga",
+				meaning: "stroke",
+				isCorrect: true,
+				isSkipped: false,
+				responseTimeMs: 1000,
+			},
+		];
+		const state: GameState = {
+			currentCard: null,
+			currentKana: "",
+			currentRomaji: [],
+			answered: 2,
+			skipped: 0,
+			timer: 2,
+			history,
+			isRunning: false,
+		};
+
+		const [, yoon, decomposedDakuten] =
+			generateSessionCSV(state).split("\r\n");
+		expect(yoon?.endsWith(",1.00,0.50")).toBe(true);
+		expect(decomposedDakuten?.endsWith(",1.00,1.00")).toBe(true);
+	});
+
 	it("should guard against division by zero when session is stopped immediately with 0 cards", () => {
 		const emptyState: GameState = {
 			currentCard: null,
