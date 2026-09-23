@@ -155,6 +155,40 @@ test.describe("Options Panel & Theme Configuration", () => {
 		await page.locator("#game-round-length").selectOption("250");
 	});
 
+	test("should allow zoom and keep options and game controls reachable", async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 320, height: 568 });
+		await page.goto("/");
+		const viewport = await page
+			.locator('meta[name="viewport"]')
+			.getAttribute("content");
+		expect(viewport).not.toMatch(/maximum-scale\s*=\s*1(?:\D|$)/i);
+		expect(viewport).not.toMatch(
+			/user-scalable\s*=\s*0|user-scalable\s*=\s*no/i,
+		);
+
+		await page.addStyleTag({
+			content: "html { font-size: 200% !important; }",
+		});
+		await page.locator("#option").click();
+		await page.locator("#game-round-length").scrollIntoViewIfNeeded();
+		await expect(page.locator("#game-round-length")).toBeVisible();
+		await page.locator("#start").scrollIntoViewIfNeeded();
+		await page.locator("#start").click();
+		const answerFontSize = await page
+			.locator("#answer")
+			.evaluate((input) =>
+				Number.parseFloat(getComputedStyle(input).fontSize),
+			);
+		expect(answerFontSize).toBeGreaterThanOrEqual(16);
+		await page.locator("#skip").scrollIntoViewIfNeeded();
+		await expect(page.locator("#skip")).toBeVisible();
+		await page.locator("#stop").click();
+		await page.locator("#restart").scrollIntoViewIfNeeded();
+		await expect(page.locator("#restart")).toBeVisible();
+	});
+
 	test("should follow system theme changes only in system mode", async ({
 		page,
 	}) => {

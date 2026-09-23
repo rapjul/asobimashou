@@ -163,19 +163,6 @@ body {
   .centering-wrapper {
     padding-bottom: 6vh;
   }
-
-  #game {
-    overflow-y: hidden;
-  }
-}
-
-/* On desktop, keep everything locked and perfectly centered */
-@media (min-width: 769px) and (min-height: 601px) {
-  #menu,
-  #game,
-  #result {
-    overflow-y: hidden;
-  }
 }
 
 #stats-row {
@@ -261,8 +248,9 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
 #option-wrapper.collapsed {
   border-color: inherit;
   opacity: 1;
-  max-height: 334px;
-  height: 334px;
+  max-height: min(334px, 55dvh);
+  height: min(334px, 55dvh);
+  overflow-y: auto;
 }
 
 .form-select:focus {
@@ -335,14 +323,16 @@ body.bg-dark #option-wrapper {
 
 /* Options scroll container for paginated settings */
 #options-scroll-container {
-  height: 280px;
-  overflow: hidden;
+  height: min(280px, 45dvh);
+  overflow-x: hidden;
+  overflow-y: auto;
   scroll-behavior: smooth;
   width: 100%;
 }
 
 .options-page {
-  height: 280px;
+  min-height: 280px;
+  height: auto;
   box-sizing: border-box;
   padding: 10px 12px;
   display: flex;
