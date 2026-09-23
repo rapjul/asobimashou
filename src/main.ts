@@ -68,6 +68,11 @@ updateViewportHeight();
 let gameController: GameController | null = null;
 let updateWaiting = false;
 let updateNotice: HTMLElement | null = null;
+/**
+ * Placeholder for the service worker's waiting-update activation callback.
+ *
+ * @returns {Promise<void>} Resolves after the update activation is requested.
+ */
 let activateWaitingUpdate: (
 	reloadPage?: boolean,
 ) => Promise<void> = async () => {};

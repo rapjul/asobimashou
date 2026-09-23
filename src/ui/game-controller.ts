@@ -173,11 +173,17 @@ export class GameController {
 		this.gameStartTime = performance.now();
 		this.hiddenDurationMs = 0;
 		this.hiddenAt = document.hidden ? this.gameStartTime : null;
+		/**
+		 * Records each visibility change for active-time accounting.
+		 *
+		 * @returns {void}
+		 */
 		this.visibilityListener = () => this.handleVisibilityChange();
 		document.addEventListener("visibilitychange", this.visibilityListener);
 		const timeEl = document.querySelector("#time");
 
 		// Monotonic requestAnimationFrame timer loop
+		/** Refreshes the display from the monotonic elapsed-time clock. */
 		const tickLoop = () => {
 			if (!this.state.isRunning || this.gameStartTime === null) return;
 			const elapsed = this.getElapsedSeconds();
@@ -670,6 +676,7 @@ export class GameController {
 		result.classList.remove("slide-in");
 		let isReset = false;
 		let transitionEndHandler: EventListener | null = null;
+		/** Completes the reset after the slide-out transition or its fallback. */
 		const finishReset = (): void => {
 			if (isReset) return;
 			isReset = true;
@@ -708,6 +715,12 @@ export class GameController {
 			if (startBtn) startBtn.disabled = false;
 			startBtn?.focus();
 		};
+		/**
+		 * Completes the reset when the result panel finishes sliding out.
+		 *
+		 * @param {Event} event - Transition event from the result panel.
+		 * @returns {void}
+		 */
 		transitionEndHandler = (event) => {
 			if (
 				event.target === result &&

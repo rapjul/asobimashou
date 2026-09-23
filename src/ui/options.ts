@@ -413,6 +413,13 @@ export function initOptionsUI(settings: GameSettings): void {
 			),
 		);
 
+	/**
+	 * Syncs a toggle button's visual state with its saved setting.
+	 *
+	 * @param {string} id - DOM id of the toggle button.
+	 * @param {boolean} enabled - Whether the saved option is enabled.
+	 * @returns {void}
+	 */
 	const syncToggle = (id: string, enabled: boolean): void => {
 		const btn = document.getElementById(id);
 		if (!btn) return;
@@ -498,11 +505,13 @@ export function initOptionsUI(settings: GameSettings): void {
 
 	Object.entries(HELP_TEXTS).forEach(([selector, text]) => {
 		document.querySelectorAll(selector).forEach((el) => {
+			/** Displays the help text for the currently focused option. */
 			const show = () => {
 				if (helpEl) {
 					helpEl.innerHTML = `<span class="text-center w-100">${text}</span>`;
 				}
 			};
+			/** Restores the default help text when an option loses focus. */
 			const hide = () => {
 				if (helpEl) {
 					helpEl.textContent = defaultHelpText;

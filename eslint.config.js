@@ -61,6 +61,23 @@ export default [
 		},
 	},
 	{
+		files: ["src/**/*.ts"],
+		rules: {
+			"jsdoc/require-jsdoc": [
+				"warn",
+				{
+					require: {
+						FunctionDeclaration: true,
+						MethodDefinition: true,
+						ClassDeclaration: true,
+						ArrowFunctionExpression: true,
+						FunctionExpression: false,
+					},
+				},
+			],
+		},
+	},
+	{
 		ignores: [
 			"dist/**",
 			"dev-dist/**",
