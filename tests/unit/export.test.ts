@@ -63,17 +63,17 @@ describe("CSV Export & Share Text Formatting", () => {
 		const [header, correct, skipped, smallKanaAndLongVowel] =
 			csv.split("\r\n");
 		expect(header).toBe(
-			"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
+			"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Mora",
 		);
 		expect(correct).toBe("Correct,駅,えき,eki,eki,station,1.25,0.63");
 		expect(skipped).toBe('Skipped,雨,あめ,ame,,"rain, shower",4.32,');
 		expect(smallKanaAndLongVowel).toBe(
-			"Correct,今日,きょうー,kyouu,kyouu,today,4.00,1.00",
+			"Correct,今日,きょうー,kyouu,kyouu,today,4.00,1.33",
 		);
 		expect(csv.split("\r\n")).toHaveLength(4);
 	});
 
-	it("should count NFC-normalized Kana code points for per-character pace", () => {
+	it("should count mora in NFC-normalized Kana readings", () => {
 		const history: ReviewItem[] = [
 			{
 				kanji: "女",
@@ -95,6 +95,36 @@ describe("CSV Export & Share Text Formatting", () => {
 				isSkipped: false,
 				responseTimeMs: 1000,
 			},
+			{
+				kanji: "女",
+				kana: "ふぁ",
+				romaji: "fa",
+				userAnswer: "fa",
+				meaning: "fa",
+				isCorrect: true,
+				isSkipped: false,
+				responseTimeMs: 1000,
+			},
+			{
+				kanji: "女",
+				kana: "ぁ",
+				romaji: "a",
+				userAnswer: "a",
+				meaning: "small vowel",
+				isCorrect: true,
+				isSkipped: false,
+				responseTimeMs: 1000,
+			},
+			{
+				kanji: "女",
+				kana: "っんー",
+				romaji: "n",
+				userAnswer: "n",
+				meaning: "mora units",
+				isCorrect: true,
+				isSkipped: false,
+				responseTimeMs: 3000,
+			},
 		];
 		const state: GameState = {
 			currentCard: null,
@@ -107,9 +137,18 @@ describe("CSV Export & Share Text Formatting", () => {
 			isRunning: false,
 		};
 
-		const [, yoon, decomposedDakuten] =
-			generateSessionCSV(state).split("\r\n");
-		expect(yoon?.endsWith(",1.00,0.50")).toBe(true);
+		const [
+			,
+			yoon,
+			decomposedDakuten,
+			digraphWithSmallVowel,
+			standaloneSmallVowel,
+			moraUnits,
+		] = generateSessionCSV(state).split("\r\n");
+		expect(yoon?.endsWith(",1.00,1.00")).toBe(true);
+		expect(digraphWithSmallVowel?.endsWith(",1.00,1.00")).toBe(true);
+		expect(standaloneSmallVowel?.endsWith(",1.00,1.00")).toBe(true);
+		expect(moraUnits?.endsWith(",3.00,1.00")).toBe(true);
 		expect(decomposedDakuten?.endsWith(",1.00,1.00")).toBe(true);
 	});
 
@@ -127,7 +166,7 @@ describe("CSV Export & Share Text Formatting", () => {
 
 		const csv = generateSessionCSV(emptyState);
 		expect(csv).toBe(
-			"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
+			"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Mora",
 		);
 
 		const share = formatShareSummary(emptyState);

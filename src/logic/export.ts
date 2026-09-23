@@ -1,5 +1,31 @@
 import type { CSVRecordRow, GameState, ReviewItem } from "../types";
 
+/** Small Kana that combine with a preceding full-size Kana into one mora. */
+const SMALL_COMBINING_KANA = new Set("ゃゅょぁぃぅぇぉャュョァィゥェォ");
+
+/**
+ * Counts mora in a normalized Japanese Kana reading.
+ *
+ * @param {string} kana - Kana reading to count.
+ * @returns {number} Number of mora, including standalone small Kana.
+ */
+function countKanaMora(kana: string): number {
+	let count = 0;
+	let previousKanaCanCombine = false;
+	for (const character of Array.from(kana.normalize("NFC"))) {
+		if (previousKanaCanCombine && SMALL_COMBINING_KANA.has(character)) {
+			previousKanaCanCombine = false;
+			continue;
+		}
+		count++;
+		previousKanaCanCombine =
+			/^[\u3041-\u3096\u30a1-\u30fa]$/u.test(character) &&
+			!SMALL_COMBINING_KANA.has(character) &&
+			!"っんッン".includes(character);
+	}
+	return count;
+}
+
 /**
  * Escapes a string field according to RFC 4180 CSV specifications.
  *
@@ -62,19 +88,17 @@ function escapeSpreadsheetTSVField(field: string): string {
  */
 export function generateSessionCSV(state: GameState): string {
 	const lines: string[] = [
-		"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
+		"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Mora",
 	];
 
 	for (const item of state.history) {
 		const status = item.isCorrect ? "Correct" : "Skipped";
 		const responseTimeSeconds = item.responseTimeMs / 1000;
-		const kanaCharacterCount = Array.from(
-			item.kana.normalize("NFC"),
-		).length;
-		const secondsPerKanaCharacter =
-			item.isSkipped || kanaCharacterCount === 0
+		const moraCount = countKanaMora(item.kana);
+		const secondsPerMora =
+			item.isSkipped || moraCount === 0
 				? ""
-				: (responseTimeSeconds / kanaCharacterCount).toFixed(2);
+				: (responseTimeSeconds / moraCount).toFixed(2);
 		const row: CSVRecordRow = [
 			escapeSpreadsheetCSVField(status),
 			escapeSpreadsheetCSVField(item.kanji),
@@ -83,7 +107,7 @@ export function generateSessionCSV(state: GameState): string {
 			escapeSpreadsheetCSVField(item.userAnswer),
 			escapeSpreadsheetCSVField(item.meaning),
 			escapeSpreadsheetCSVField(responseTimeSeconds.toFixed(2)),
-			escapeSpreadsheetCSVField(secondsPerKanaCharacter),
+			escapeSpreadsheetCSVField(secondsPerMora),
 		];
 		lines.push(row.join(","));
 	}

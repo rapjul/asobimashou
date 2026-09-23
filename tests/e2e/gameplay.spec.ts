@@ -142,7 +142,7 @@ test.describe("Gameplay Loop & Automated CSV Download Verification", () => {
 			const csvContent = fs.readFileSync(filePath, "utf-8");
 			const csvRecords = csvContent.trim().split(/\r?\n/);
 			expect(csvRecords[0]).toBe(
-				"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
+				"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Mora",
 			);
 			expect(csvRecords).toHaveLength(3);
 			for (const record of csvRecords) {

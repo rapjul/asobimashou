@@ -108,7 +108,7 @@ export interface ReviewItem {
 
 /**
  * Tuple row representation of an exported CSV line for a review record:
- * [Status, Kanji, Kana, Romaji, UserAnswer, Meaning, ResponseTime, SecondsPerKanaCharacter]
+ * [Status, Kanji, Kana, Romaji, UserAnswer, Meaning, ResponseTime, SecondsPerMora]
  */
 export type CSVRecordRow = [
 	status: string,
@@ -118,7 +118,7 @@ export type CSVRecordRow = [
 	userAnswer: string,
 	meaning: string,
 	responseTimeSeconds: string,
-	secondsPerKanaCharacter: string,
+	secondsPerMora: string,
 ];
 
 /**
