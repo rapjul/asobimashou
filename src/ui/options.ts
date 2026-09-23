@@ -329,6 +329,12 @@ async function updateFontAvailability(settings: GameSettings): Promise<void> {
 	for (const option of Array.from(select.options)) {
 		const fontUrl =
 			OPTIONAL_FONT_URLS[option.value as GameSettings["font"]];
+		const pendingCache = fontUrl
+			? pendingFontCaches.get(
+					new URL(fontUrl, document.baseURI).toString(),
+				)
+			: undefined;
+		if (pendingCache) await pendingCache;
 		const wasCachedWhileOffline = Boolean(
 			fontUrl && !navigator.onLine && (await isFontCached(fontUrl)),
 		);

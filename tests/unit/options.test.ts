@@ -161,6 +161,69 @@ describe("Options and saved settings", () => {
 		).toContain("Yuji Syuku");
 	});
 
+	it("waits for a selected font cache write before disabling it offline", async () => {
+		const cachedFonts = new Set<string>();
+		let finishCacheWrite: (() => void) | undefined;
+		const cache = {
+			match: vi.fn(async (request: RequestInfo | URL) =>
+				cachedFonts.has(String(request))
+					? new Response("cached font")
+					: undefined,
+			),
+			put: vi.fn(async (request: RequestInfo | URL) => {
+				await new Promise<void>((resolve) => {
+					finishCacheWrite = resolve;
+				});
+				cachedFonts.add(String(request));
+			}),
+		};
+		const cacheStorage = {
+			open: vi.fn(async () => cache),
+		} as unknown as CacheStorage;
+		Object.defineProperty(window, "caches", {
+			configurable: true,
+			value: cacheStorage,
+		});
+		vi.stubGlobal("caches", cacheStorage);
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async (url: RequestInfo | URL) => new Response(String(url))),
+		);
+		Object.defineProperty(navigator, "onLine", {
+			configurable: true,
+			value: true,
+		});
+		const settings = {
+			...options.SETTINGS_DEFAULT,
+			font: "system-ui" as const,
+		};
+		options.initOptionsUI(settings);
+		const font = document.querySelector<HTMLSelectElement>("#game-font")!;
+		font.value = "Klee One";
+		font.dispatchEvent(new Event("change"));
+		await vi.waitFor(() => expect(cache.put).toHaveBeenCalledOnce());
+
+		Object.defineProperty(navigator, "onLine", {
+			configurable: true,
+			value: false,
+		});
+		window.dispatchEvent(new Event("offline"));
+		finishCacheWrite?.();
+
+		await vi.waitFor(() => {
+			expect(
+				font.querySelector<HTMLOptionElement>(
+					'option[value="Klee One"]',
+				)!.disabled,
+			).toBe(false);
+			expect(
+				document.querySelector<HTMLElement>(".game-font-change")!.style
+					.fontFamily,
+			).toContain("Klee One");
+		});
+		expect(document.querySelector(".toast-font-fallback")).toBeNull();
+	});
+
 	it("discards an offline font check that finishes after reconnection", async () => {
 		const cacheMatchResolver: {
 			current?: (response: Response | undefined) => void;
