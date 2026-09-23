@@ -37,6 +37,15 @@ describe("Romaji Validation & Spelling Generation", () => {
 		expect(isInputValidAnswer("onna", "おんな")).toBe(true);
 		expect(isInputValidAnswer("on'na", "おんな")).toBe(true);
 		expect(isInputValidAnswer("tenin", "てんいん")).toBe(true);
+		expect(isInputValidAnswer("banninn", "ばんにん")).toBe(true);
+	});
+
+	it("accepts valid n spellings and curly apostrophes while typing", () => {
+		expect(isInputValidPrefix("onna", "おんなのこ")).toBe(true);
+		expect(isInputValidPrefix("konni", "こんにちは")).toBe(true);
+		expect(isInputValidPrefix("ten’", "てんいん")).toBe(true);
+		expect(isInputValidPrefix("ten‘", "てんいん")).toBe(true);
+		expect(isInputValidPrefix("ona", "おんな")).toBe(false);
 	});
 
 	it("should recognize valid prefixes as true", () => {

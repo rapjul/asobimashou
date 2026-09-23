@@ -100,15 +100,7 @@ export function generateRomajiSpellings(kanaStr: string): string[] {
 			i += 1;
 		} else {
 			if (ROMAJI_ALTERNATIVES[char]) {
-				const alternatives = ROMAJI_ALTERNATIVES[char];
-				const nextKanaStartsWithN = /[なにぬねのナニヌネノ]/.test(
-					nextChar,
-				);
-				segments.push(
-					(char === "ん" || char === "ン") && nextKanaStartsWithN
-						? alternatives.filter((spelling) => spelling !== "n")
-						: alternatives,
-				);
+				segments.push(ROMAJI_ALTERNATIVES[char]);
 			} else {
 				segments.push([wanakana.toRomaji(char)]);
 			}
@@ -168,7 +160,10 @@ export function isInputValidPrefix(input: string, targetKana: string): boolean {
 	const romajiInput = wanakana.toRomaji(input, {
 		customRomajiMapping: CUSTOM_ROMAJI_MAPPING,
 	});
-	const cleanInput = romajiInput.toLowerCase().replace(/\s+/g, "");
+	const cleanInput = romajiInput
+		.toLowerCase()
+		.replace(/[’‘]/g, "'")
+		.replace(/\s+/g, "");
 	if (!cleanInput) return true;
 	const spellings = generateRomajiSpellings(targetKana);
 	return spellings.some((spelling) =>
