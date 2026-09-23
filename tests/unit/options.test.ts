@@ -62,13 +62,16 @@ describe("Options and saved settings", () => {
 	});
 
 	it("caches a chosen optional font online and restores font choices after reconnecting", async () => {
+		const cachedFonts = new Set<string>();
 		const cache = {
 			match: vi.fn(async (request: RequestInfo | URL) =>
-				String(request).includes("klee-one")
+				cachedFonts.has(String(request))
 					? new Response("cached font")
 					: undefined,
 			),
-			put: vi.fn(async () => {}),
+			put: vi.fn(async (request: RequestInfo | URL) => {
+				cachedFonts.add(String(request));
+			}),
 		};
 		const cacheStorage = {
 			open: vi.fn(async () => cache),
@@ -78,17 +81,42 @@ describe("Options and saved settings", () => {
 			value: cacheStorage,
 		});
 		vi.stubGlobal("caches", cacheStorage);
-		const fetchFont = vi.fn(async () => new Response("font asset"));
+		const fetchFont = vi.fn(
+			async (url: RequestInfo | URL) => new Response(String(url)),
+		);
 		vi.stubGlobal("fetch", fetchFont);
 		const settings = { ...options.SETTINGS_DEFAULT };
 		options.initOptionsUI(settings);
 		const font = document.querySelector<HTMLSelectElement>("#game-font")!;
 		font.value = "Klee One";
 		font.dispatchEvent(new Event("change"));
-		await vi.waitFor(() => expect(cache.put).toHaveBeenCalled());
-		expect(fetchFont).toHaveBeenCalled();
+		font.dispatchEvent(new Event("change"));
+		const kleeAsset = () =>
+			fetchFont.mock.calls.filter(([url]) =>
+				String(url).includes("klee-one"),
+			);
+		const kleeCacheWrites = () =>
+			cache.put.mock.calls.filter(([url]) =>
+				String(url).includes("klee-one"),
+			);
+		await vi.waitFor(() => expect(kleeCacheWrites()).toHaveLength(1));
+		expect(kleeAsset()).toHaveLength(1);
 
-		settings.font = "Noto Sans JP";
+		font.value = "system-ui";
+		font.dispatchEvent(new Event("change"));
+		font.value = "Klee One";
+		font.dispatchEvent(new Event("change"));
+		await vi.waitFor(() =>
+			expect(
+				cache.match.mock.calls.filter(([url]) =>
+					String(url).includes("klee-one"),
+				),
+			).toHaveLength(2),
+		);
+		expect(kleeAsset()).toHaveLength(1);
+		expect(kleeCacheWrites()).toHaveLength(1);
+
+		settings.font = "Yuji Syuku";
 		Object.defineProperty(navigator, "onLine", {
 			configurable: true,
 			value: false,
@@ -130,7 +158,7 @@ describe("Options and saved settings", () => {
 		expect(
 			document.querySelector<HTMLElement>(".game-font-change")!.style
 				.fontFamily,
-		).toContain("Noto Sans JP");
+		).toContain("Yuji Syuku");
 	});
 
 	it("syncs visible controls, saves changes, and navigates the options panel", () => {

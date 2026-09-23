@@ -3,6 +3,7 @@ import { FONT_OPTIONS, ROUND_LENGTHS } from "../constants/game-options";
 import { applyTheme, resolveIsDark, systemDarkMQ } from "./theme";
 import { showFontOfflineToast } from "./toasts";
 const FONT_CACHE_NAME = "fonts-cache";
+const pendingFontCaches = new Map<string, Promise<void>>();
 
 const OPTIONAL_FONT_URLS: Partial<Record<GameSettings["font"], string>> = {
 	// prettier-ignore
@@ -280,14 +281,28 @@ async function isFontCached(fontUrl: string): Promise<boolean> {
  */
 async function cacheSelectedFont(fontUrl: string): Promise<void> {
 	if (!("caches" in window)) return;
+	const absoluteUrl = new URL(fontUrl, document.baseURI).toString();
+	const pending = pendingFontCaches.get(absoluteUrl);
+	if (pending) {
+		await pending;
+		return;
+	}
+	const cacheRequest = (async (): Promise<void> => {
+		try {
+			const cache = await caches.open(FONT_CACHE_NAME);
+			if (await cache.match(absoluteUrl)) return;
+			const response = await fetch(absoluteUrl);
+			if (!response.ok) return;
+			await cache.put(absoluteUrl, response.clone());
+		} catch {
+			// Keep the font selectable online if caching is unavailable.
+		}
+	})();
+	pendingFontCaches.set(absoluteUrl, cacheRequest);
 	try {
-		const absoluteUrl = new URL(fontUrl, document.baseURI).toString();
-		const response = await fetch(absoluteUrl);
-		if (!response.ok) return;
-		const cache = await caches.open(FONT_CACHE_NAME);
-		await cache.put(absoluteUrl, response.clone());
-	} catch {
-		// Keep the font selectable online if caching is unavailable.
+		await cacheRequest;
+	} finally {
+		pendingFontCaches.delete(absoluteUrl);
 	}
 }
 

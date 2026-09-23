@@ -202,9 +202,11 @@ test.describe("PWA Offline Support & Network State Transitions", () => {
 			select.dispatchEvent(new Event("change", { bubbles: true }));
 		});
 		await expect(page.locator("#game-font")).toHaveValue("Yuji Syuku");
-		await expect(page.locator(".toast-font-fallback")).toContainText(
-			"has not been cached yet",
-		);
+		await expect(
+			page
+				.locator(".toast-font-fallback")
+				.filter({ hasText: "Offline: Yuji Syuku" }),
+		).toContainText("has not been cached yet");
 		await expect
 			.poll(() =>
 				page
