@@ -99,11 +99,16 @@ export interface ReviewItem {
 	 * Whether the user skipped this card.
 	 */
 	isSkipped: boolean;
+
+	/**
+	 * Active milliseconds spent on this card before answering or skipping.
+	 */
+	responseTimeMs: number;
 }
 
 /**
  * Tuple row representation of an exported CSV line for a review record:
- * [Status, Kanji, Kana, Romaji, UserAnswer, Meaning]
+ * [Status, Kanji, Kana, Romaji, UserAnswer, Meaning, ResponseTime, SecondsPerKanaCharacter]
  */
 export type CSVRecordRow = [
 	status: string,
@@ -112,6 +117,8 @@ export type CSVRecordRow = [
 	romaji: string,
 	userAnswer: string,
 	meaning: string,
+	responseTimeSeconds: string,
+	secondsPerKanaCharacter: string,
 ];
 
 /**

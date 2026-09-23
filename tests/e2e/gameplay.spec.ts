@@ -1,6 +1,30 @@
 import { test, expect } from "@playwright/test";
 import * as fs from "node:fs";
 
+/**
+ * Counts CSV fields while respecting quoted commas.
+ *
+ * @param {string} record - One single-line CSV record.
+ * @returns {number} Number of comma-separated fields.
+ */
+function countCSVColumns(record: string): number {
+	let columns = 1;
+	let inQuotes = false;
+	for (let index = 0; index < record.length; index++) {
+		const character = record[index];
+		if (character === '"') {
+			if (inQuotes && record[index + 1] === '"') {
+				index++;
+			} else {
+				inQuotes = !inQuotes;
+			}
+		} else if (character === "," && !inQuotes) {
+			columns++;
+		}
+	}
+	return columns;
+}
+
 test.describe("Gameplay Loop & Automated CSV Download Verification", () => {
 	test("should stop at the selected round length and keep unlimited rounds open", async ({
 		page,
@@ -116,17 +140,18 @@ test.describe("Gameplay Loop & Automated CSV Download Verification", () => {
 
 		if (filePath) {
 			const csvContent = fs.readFileSync(filePath, "utf-8");
-			expect(csvContent).toContain(
-				"# Asobimashou Practice Session Results",
+			const csvRecords = csvContent.trim().split(/\r?\n/);
+			expect(csvRecords[0]).toBe(
+				"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
 			);
-			expect(csvContent).toContain("# Total Cards,2");
-			expect(csvContent).toContain("# Answered,1");
-			expect(csvContent).toContain("# Skipped,1");
-			expect(csvContent).toContain(
-				"Status,Kanji,Kana,Romaji,Your Answer,Meaning",
-			);
-			expect(csvContent).toContain("Correct,");
-			expect(csvContent).toContain("Skipped,");
+			expect(csvRecords).toHaveLength(3);
+			for (const record of csvRecords) {
+				expect(countCSVColumns(record)).toBe(8);
+			}
+			expect(csvRecords[1]).toMatch(/^Correct,/);
+			expect(csvRecords[1]).toMatch(/,\d+\.\d{2},\d+\.\d{2}$/);
+			expect(csvRecords[2]).toMatch(/^Skipped,/);
+			expect(csvRecords[2]).toMatch(/,\d+\.\d{2},$/);
 		}
 
 		// Return to home

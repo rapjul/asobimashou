@@ -68,6 +68,7 @@ export class GameController {
 	private gameStartTime: number | null = null;
 	private hiddenAt: number | null = null;
 	private hiddenDurationMs = 0;
+	private questionStartActiveMs: number | null = null;
 	private visibilityListener: (() => void) | null = null;
 	private isStarting = false;
 	private hasCompletedSession = false;
@@ -260,6 +261,7 @@ export class GameController {
 			answerEl.classList.remove("is-invalid");
 		}
 
+		this.questionStartActiveMs = this.getActiveElapsedMilliseconds();
 		this.updateScoreDisplay();
 	}
 
@@ -283,7 +285,7 @@ export class GameController {
 	 * @returns {void}
 	 */
 	public skipQuestion(): void {
-		if (!this.state.currentCard) return;
+		if (!this.state.isRunning || !this.state.currentCard) return;
 
 		const item: ReviewItem = {
 			kanji: this.state.currentCard.kanji,
@@ -293,6 +295,7 @@ export class GameController {
 			meaning: this.state.currentCard.meaning,
 			isCorrect: false,
 			isSkipped: true,
+			responseTimeMs: this.getQuestionElapsedMilliseconds(),
 		};
 		this.state.history.push(item);
 		this.state.skipped++;
@@ -324,16 +327,36 @@ export class GameController {
 	 *
 	 * @returns {number} Whole seconds excluding hidden-page intervals.
 	 */
+	private getActiveElapsedMilliseconds(): number {
+		if (this.gameStartTime === null) return this.state.timer * 1000;
+		const now = performance.now();
+		const hiddenNow = this.hiddenAt === null ? 0 : now - this.hiddenAt;
+		return Math.max(
+			0,
+			now - this.gameStartTime - this.hiddenDurationMs - hiddenNow,
+		);
+	}
+
+	/**
+	 * Returns active time spent on the currently displayed card.
+	 *
+	 * @returns {number} Active milliseconds since the question appeared.
+	 */
+	private getQuestionElapsedMilliseconds(): number {
+		if (this.questionStartActiveMs === null) return 0;
+		return Math.max(
+			0,
+			this.getActiveElapsedMilliseconds() - this.questionStartActiveMs,
+		);
+	}
+
+	/**
+	 * Returns whole active seconds elapsed in the current round.
+	 *
+	 * @returns {number} Whole seconds excluding hidden-page intervals.
+	 */
 	private getElapsedSeconds(): number {
-		if (this.gameStartTime === null) return this.state.timer;
-		const hiddenNow =
-			this.hiddenAt === null ? 0 : performance.now() - this.hiddenAt;
-		const elapsed =
-			performance.now() -
-			this.gameStartTime -
-			this.hiddenDurationMs -
-			hiddenNow;
-		return Math.floor(Math.max(0, elapsed) / 1000);
+		return Math.floor(this.getActiveElapsedMilliseconds() / 1000);
 	}
 
 	/**
@@ -356,7 +379,7 @@ export class GameController {
 	 * @returns {void}
 	 */
 	public handleInput(input: string): void {
-		if (!this.state.currentCard) return;
+		if (!this.state.isRunning || !this.state.currentCard) return;
 
 		if (input.includes(" ")) {
 			this.skipQuestion();
@@ -416,7 +439,7 @@ export class GameController {
 	 * @returns {void}
 	 */
 	private recordAnswer(answer: string, isCorrect: boolean): void {
-		if (!this.state.currentCard) return;
+		if (!this.state.isRunning || !this.state.currentCard) return;
 
 		const item: ReviewItem = {
 			kanji: this.state.currentCard.kanji,
@@ -426,6 +449,7 @@ export class GameController {
 			meaning: this.state.currentCard.meaning,
 			isCorrect,
 			isSkipped: false,
+			responseTimeMs: this.getQuestionElapsedMilliseconds(),
 		};
 		this.state.history.push(item);
 		this.state.answered++;
@@ -468,6 +492,7 @@ export class GameController {
 		if (!wasRunning) return;
 		this.updateElapsedTime();
 		this.state.isRunning = false;
+		this.questionStartActiveMs = null;
 		if (this.visibilityListener) {
 			document.removeEventListener(
 				"visibilitychange",

@@ -14,7 +14,7 @@ describe("CSV Export & Share Text Formatting", () => {
 		expect(escapeCSVField('quote "test"')).toBe('"quote ""test"""');
 	});
 
-	it("should generate valid CSV structure with header metadata and rows", () => {
+	it("should put headers first and export eight columns per card", () => {
 		const history: ReviewItem[] = [
 			{
 				kanji: "駅",
@@ -24,6 +24,7 @@ describe("CSV Export & Share Text Formatting", () => {
 				meaning: "station",
 				isCorrect: true,
 				isSkipped: false,
+				responseTimeMs: 1250,
 			},
 			{
 				kanji: "雨",
@@ -33,6 +34,17 @@ describe("CSV Export & Share Text Formatting", () => {
 				meaning: "rain, shower",
 				isCorrect: false,
 				isSkipped: true,
+				responseTimeMs: 4321,
+			},
+			{
+				kanji: "今日",
+				kana: "きょうー",
+				romaji: "kyouu",
+				userAnswer: "kyouu",
+				meaning: "today",
+				isCorrect: true,
+				isSkipped: false,
+				responseTimeMs: 4000,
 			},
 		];
 
@@ -40,7 +52,7 @@ describe("CSV Export & Share Text Formatting", () => {
 			currentCard: null,
 			currentKana: "",
 			currentRomaji: [],
-			answered: 1,
+			answered: 2,
 			skipped: 1,
 			timer: 10,
 			history,
@@ -48,11 +60,17 @@ describe("CSV Export & Share Text Formatting", () => {
 		};
 
 		const csv = generateSessionCSV(state);
-		expect(csv).toContain("# Total Cards,2");
-		expect(csv).toContain("# Accuracy,50.0%");
-		expect(csv).toContain("Status,Kanji,Kana,Romaji,Your Answer,Meaning");
-		expect(csv).toContain("Correct,駅,えき,eki,eki,station");
-		expect(csv).toContain('Skipped,雨,あめ,ame,,"rain, shower"');
+		const [header, correct, skipped, smallKanaAndLongVowel] =
+			csv.split("\r\n");
+		expect(header).toBe(
+			"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
+		);
+		expect(correct).toBe("Correct,駅,えき,eki,eki,station,1.25,0.63");
+		expect(skipped).toBe('Skipped,雨,あめ,ame,,"rain, shower",4.32,');
+		expect(smallKanaAndLongVowel).toBe(
+			"Correct,今日,きょうー,kyouu,kyouu,today,4.00,1.00",
+		);
+		expect(csv.split("\r\n")).toHaveLength(4);
 	});
 
 	it("should guard against division by zero when session is stopped immediately with 0 cards", () => {
@@ -68,9 +86,9 @@ describe("CSV Export & Share Text Formatting", () => {
 		};
 
 		const csv = generateSessionCSV(emptyState);
-		expect(csv).not.toContain("NaN");
-		expect(csv).not.toContain("Infinity");
-		expect(csv).toContain("# Average Pace,0.00s/card");
+		expect(csv).toBe(
+			"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
+		);
 
 		const share = formatShareSummary(emptyState);
 		expect(share).not.toContain("NaN");
@@ -88,6 +106,7 @@ describe("CSV Export & Share Text Formatting", () => {
 				meaning: "station",
 				isCorrect: true,
 				isSkipped: false,
+				responseTimeMs: 2500,
 			},
 		];
 
@@ -116,6 +135,7 @@ describe("CSV Export & Share Text Formatting", () => {
 			meaning,
 			isCorrect: true,
 			isSkipped: false,
+			responseTimeMs: 0,
 		}));
 		const state: GameState = {
 			currentCard: null,

@@ -55,31 +55,26 @@ function escapeSpreadsheetTSVField(field: string): string {
 }
 
 /**
- * Generates an RFC 4180 compliant CSV string representing the session summary and card history.
+ * Generates an RFC 4180 compliant CSV card table with a header-first layout.
  *
  * @param {GameState} state - The final state of the game session.
  * @returns {string} Fully formatted CSV document string.
  */
 export function generateSessionCSV(state: GameState): string {
-	const total = state.answered + state.skipped;
-	const average = total > 0 ? (state.timer / total).toFixed(2) : "0.00";
-	const accuracy =
-		total > 0 ? ((state.answered / total) * 100).toFixed(1) : "0.0";
-
 	const lines: string[] = [
-		"# Asobimashou Practice Session Results",
-		`# Total Cards,${total}`,
-		`# Answered,${state.answered}`,
-		`# Skipped,${state.skipped}`,
-		`# Accuracy,${accuracy}%`,
-		`# Time Elapsed,${state.timer}s`,
-		`# Average Pace,${average}s/card`,
-		"",
-		"Status,Kanji,Kana,Romaji,Your Answer,Meaning",
+		"Status,Kanji,Kana,Romaji,Your Answer,Meaning,Response Time (s),Seconds per Kana Character",
 	];
 
 	for (const item of state.history) {
 		const status = item.isCorrect ? "Correct" : "Skipped";
+		const responseTimeSeconds = item.responseTimeMs / 1000;
+		const kanaCharacterCount = Array.from(
+			item.kana.normalize("NFC"),
+		).length;
+		const secondsPerKanaCharacter =
+			item.isSkipped || kanaCharacterCount === 0
+				? ""
+				: (responseTimeSeconds / kanaCharacterCount).toFixed(2);
 		const row: CSVRecordRow = [
 			escapeSpreadsheetCSVField(status),
 			escapeSpreadsheetCSVField(item.kanji),
@@ -87,6 +82,8 @@ export function generateSessionCSV(state: GameState): string {
 			escapeSpreadsheetCSVField(item.romaji),
 			escapeSpreadsheetCSVField(item.userAnswer),
 			escapeSpreadsheetCSVField(item.meaning),
+			escapeSpreadsheetCSVField(responseTimeSeconds.toFixed(2)),
+			escapeSpreadsheetCSVField(secondsPerKanaCharacter),
 		];
 		lines.push(row.join(","));
 	}

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GameController } from "@/ui/game-controller";
-import type { Card, GameSettings } from "@/types";
+import type { Card, GameSettings, GameState } from "@/types";
 import { mountAppDom, unmountAppDom } from "./helpers/app-dom";
 
 const baseSettings: GameSettings = {
@@ -34,6 +34,16 @@ function useDeck(controller: GameController, cards: Card[]): void {
 	vi.spyOn(controller, "loadDeck").mockImplementation(async () => {
 		internals.deck = cards;
 	});
+}
+
+/**
+ * Reads controller state for focused behavioral assertions.
+ *
+ * @param {GameController} controller - Session whose state is inspected.
+ * @returns {GameState} Current game state.
+ */
+function readGameState(controller: GameController): GameState {
+	return (controller as unknown as { state: GameState }).state;
 }
 
 describe("Game session controller", () => {
@@ -317,6 +327,62 @@ describe("Game session controller", () => {
 		now = 20000;
 		document.dispatchEvent(new Event("visibilitychange"));
 		expect(document.querySelector("#stats-timer")!.textContent).toBe("4 s");
+	});
+
+	it("times a card from display through valid answer, excluding hidden time", async () => {
+		let now = 1000;
+		let hidden = false;
+		vi.stubGlobal("performance", { now: () => now });
+		vi.stubGlobal(
+			"requestAnimationFrame",
+			vi.fn(() => 1),
+		);
+		vi.stubGlobal("cancelAnimationFrame", vi.fn());
+		Object.defineProperty(document, "hidden", {
+			configurable: true,
+			get: () => hidden,
+		});
+		const game = new GameController({ ...baseSettings, roundLength: null });
+		useDeck(game, [sampleCards[0]!]);
+
+		await game.startGame();
+		now = 2500;
+		game.handleInput("wrong");
+		hidden = true;
+		document.dispatchEvent(new Event("visibilitychange"));
+		now = 10000;
+		hidden = false;
+		expect(document.hidden).toBe(false);
+		document.dispatchEvent(new Event("visibilitychange"));
+		expect(
+			(game as unknown as { hiddenDurationMs: number }).hiddenDurationMs,
+		).toBe(7500);
+		now = 12500;
+		game.handleInput("ame");
+
+		expect(readGameState(game).history[0]?.responseTimeMs).toBe(4000);
+	});
+
+	it("records time to Skip and ignores input after a round finishes", async () => {
+		let now = 1000;
+		vi.stubGlobal("performance", { now: () => now });
+		vi.stubGlobal(
+			"requestAnimationFrame",
+			vi.fn(() => 1),
+		);
+		vi.stubGlobal("cancelAnimationFrame", vi.fn());
+		const game = new GameController({ ...baseSettings, roundLength: 10 });
+		useDeck(game, [sampleCards[0]!]);
+
+		await game.startGame();
+		now = 2345;
+		game.skipQuestion();
+		expect(readGameState(game).history[0]?.responseTimeMs).toBe(1345);
+		game.stopGame();
+		game.handleInput("ame");
+		game.skipQuestion();
+		expect(readGameState(game).history).toHaveLength(1);
+		expect(readGameState(game).skipped).toBe(1);
 	});
 
 	it("resets to Home when the result transition completes", async () => {
