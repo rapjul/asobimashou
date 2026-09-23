@@ -79,6 +79,7 @@ export function showVowelLengthToast(): void {
     <i class="bi-exclamation-circle text-warning"></i>
     <span><strong>Hint:</strong> Prolonged vowels (ー) are written by doubling the vowel (e.g. <code>oo</code> or <code>ii</code>), not with <code>-</code>.</span>
   `;
+	document.querySelector(".toast-vowel-length")?.remove();
 	showToast(html, "toast-vowel-length");
 }
 

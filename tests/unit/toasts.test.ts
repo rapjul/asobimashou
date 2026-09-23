@@ -64,6 +64,24 @@ describe("Toast and connectivity notices", () => {
 		expect(document.querySelector(".temporary")).toBeNull();
 	});
 
+	it("replaces repeated vowel-length hints without stacking notices", () => {
+		vi.useFakeTimers();
+		toasts.showVowelLengthToast();
+		const firstToast = document.querySelector(".toast-vowel-length")!;
+		vi.advanceTimersByTime(3000);
+
+		toasts.showVowelLengthToast();
+		const currentToast = document.querySelector(".toast-vowel-length")!;
+		expect(currentToast).not.toBe(firstToast);
+		expect(document.querySelectorAll(".toast-vowel-length")).toHaveLength(
+			1,
+		);
+		vi.advanceTimersByTime(1001);
+		expect(currentToast.classList.contains("show")).toBe(true);
+		vi.advanceTimersByTime(2999);
+		expect(currentToast.classList.contains("show")).toBe(false);
+	});
+
 	it("toggles the persistent offline badge safely when it is absent", () => {
 		vi.useFakeTimers();
 		const badge = document.querySelector("#offline-badge")!;
