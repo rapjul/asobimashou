@@ -19,6 +19,42 @@ export function escapeCSVField(field: string): string {
 }
 
 /**
+ * Protects spreadsheet CSV cells from being interpreted as formulas.
+ *
+ * @param {string} field - The text value to serialize.
+ * @returns {string} An RFC 4180 escaped cell with a spreadsheet text prefix when needed.
+ */
+function escapeSpreadsheetCSVField(field: string): string {
+	const startsWithFormula = /^\s*[=+\-@＝＋－＠]/u.test(field);
+	const startsWithControl = /^[\t\r\n]/u.test(field);
+	const protectedCell = startsWithFormula || startsWithControl;
+	const value = protectedCell ? `\t${field}` : field;
+	const escaped = value.replace(/"/g, '""');
+	if (
+		protectedCell ||
+		value.includes(",") ||
+		value.includes('"') ||
+		value.includes("\t") ||
+		value.includes("\n") ||
+		value.includes("\r")
+	) {
+		return `"${escaped}"`;
+	}
+	return escaped;
+}
+
+/**
+ * Protects a tab-separated cell from formula interpretation and structural separators.
+ *
+ * @param {string} field - The text value to serialize.
+ * @returns {string} A spreadsheet text value with embedded row and column separators neutralized.
+ */
+function escapeSpreadsheetTSVField(field: string): string {
+	const value = field.replace(/[\t\r\n]/g, " ");
+	return /^\s*[=+\-@＝＋－＠]/u.test(value) ? `'${value}` : value;
+}
+
+/**
  * Generates an RFC 4180 compliant CSV string representing the session summary and card history.
  *
  * @param {GameState} state - The final state of the game session.
@@ -45,12 +81,12 @@ export function generateSessionCSV(state: GameState): string {
 	for (const item of state.history) {
 		const status = item.isCorrect ? "Correct" : "Skipped";
 		const row: CSVRecordRow = [
-			escapeCSVField(status),
-			escapeCSVField(item.kanji),
-			escapeCSVField(item.kana),
-			escapeCSVField(item.romaji),
-			escapeCSVField(item.userAnswer),
-			escapeCSVField(item.meaning),
+			escapeSpreadsheetCSVField(status),
+			escapeSpreadsheetCSVField(item.kanji),
+			escapeSpreadsheetCSVField(item.kana),
+			escapeSpreadsheetCSVField(item.romaji),
+			escapeSpreadsheetCSVField(item.userAnswer),
+			escapeSpreadsheetCSVField(item.meaning),
 		];
 		lines.push(row.join(","));
 	}
@@ -88,7 +124,16 @@ export function formatTableTSV(history: ReviewItem[]): string {
 	const header = "Status\tKanji\tKana\tRomaji\tYour Answer\tMeaning";
 	const rows = history.map((item) => {
 		const status = item.isCorrect ? "Correct" : "Skipped";
-		return `${status}\t${item.kanji}\t${item.kana}\t${item.romaji}\t${item.userAnswer}\t${item.meaning}`;
+		return [
+			status,
+			item.kanji,
+			item.kana,
+			item.romaji,
+			item.userAnswer,
+			item.meaning,
+		]
+			.map(escapeSpreadsheetTSVField)
+			.join("\t");
 	});
 	return [header, ...rows].join("\n");
 }

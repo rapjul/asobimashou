@@ -32,8 +32,10 @@ Chosen option: "RFC 4180 compliant escaping with client-side blob download trigg
 
 - Good, because data exports succeed offline without server dependencies.
 - Good, because Japanese text and fields containing special characters are escaped properly according to standards.
+- Good, because spreadsheet-oriented CSV and TSV output prefixes cells that could be interpreted as formulas.
+- Neutral, because formula-protection prefixes and TSV separator cleanup can affect programmatic imports or differ between spreadsheet applications; there is no universal sanitization strategy.
 - Good, because CSV downloads are verified by automated Playwright E2E tests.
 
 ### Confirmation
 
-Confirmed in `src/logic/export.ts`, `tests/unit/export.test.ts`, and `tests/e2e/gameplay.spec.ts`.
+Confirmed in `src/logic/export.ts`, `tests/unit/export.test.ts`, and `tests/e2e/gameplay.spec.ts`. The current CSV prefix follows OWASP's Excel-resistant guidance; the TSV apostrophe prefix is a best-effort guard, and spreadsheet applications may handle either differently or remove prefixes when saving and reopening files.

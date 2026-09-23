@@ -96,4 +96,58 @@ describe("CSV Export & Share Text Formatting", () => {
 			"Status\tKanji\tKana\tRomaji\tYour Answer\tMeaning\nCorrect\t駅\tえき\teki\teki\tstation",
 		);
 	});
+
+	it("should prevent formulas and embedded separators in spreadsheet exports", () => {
+		const riskyMeanings = [
+			"=1+1",
+			"+SUM(A1:A2)",
+			'-ian, "Italian"',
+			"@SUM(A1:A2)",
+			"\t=1+1",
+			"\r=1+1",
+			"\n=1+1",
+			"＝1+1",
+		];
+		const history: ReviewItem[] = riskyMeanings.map((meaning) => ({
+			kanji: "駅",
+			kana: "えき",
+			romaji: "eki",
+			userAnswer: "eki",
+			meaning,
+			isCorrect: true,
+			isSkipped: false,
+		}));
+		const state: GameState = {
+			currentCard: null,
+			currentKana: "",
+			currentRomaji: [],
+			answered: history.length,
+			skipped: 0,
+			timer: 0,
+			history,
+			isRunning: false,
+		};
+
+		const csv = generateSessionCSV(state);
+		for (const meaning of riskyMeanings) {
+			expect(csv).toContain(`"\t${meaning.replace(/"/g, '""')}"`);
+		}
+		const embeddedTab = generateSessionCSV({
+			...state,
+			history: [{ ...history[0]!, meaning: "left\tright" }],
+			answered: 1,
+		});
+		expect(embeddedTab).toContain('"left\tright"');
+
+		const tsv = formatTableTSV(history);
+		expect(tsv).toContain("' =1+1");
+		expect(tsv).toContain('\'-ian, "Italian"');
+		for (const meaning of riskyMeanings) {
+			const singleLineMeaning = meaning.replace(/[\t\r\n]/g, " ");
+			expect(tsv).toContain(`eki\teki\t'${singleLineMeaning}`);
+		}
+		expect(tsv).not.toContain("\t\t=1+1");
+		expect(tsv).not.toContain("\r");
+		expect(tsv).not.toContain("\n=1+1");
+	});
 });
