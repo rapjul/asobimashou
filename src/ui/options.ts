@@ -347,10 +347,11 @@ async function updateFontAvailability(settings: GameSettings): Promise<void> {
  * @returns {void}
  */
 export function closeOptions(): void {
-	const wrapper = document.querySelector("#option-wrapper");
-	const btn = document.querySelector("#option");
+	const wrapper = document.querySelector<HTMLElement>("#option-wrapper");
+	const btn = document.querySelector<HTMLButtonElement>("#option");
 	const menuGroup = document.querySelector("#main-menu-group");
 	if (wrapper?.classList.contains("collapsed")) {
+		const shouldRestoreFocus = wrapper.contains(document.activeElement);
 		btn?.classList.remove("active");
 		wrapper.classList.remove("collapsed");
 		menuGroup?.classList.remove("expanded");
@@ -358,6 +359,7 @@ export function closeOptions(): void {
 			"#options-scroll-container",
 		);
 		if (scrollContainer) scrollContainer.scrollTop = 0;
+		if (shouldRestoreFocus) btn?.focus();
 	}
 }
 

@@ -157,6 +157,17 @@ test.describe("Gameplay Loop & Automated CSV Download Verification", () => {
 		// Return to home
 		await page.locator("#restart").click();
 		await expect(startBtn).toBeVisible();
+		await page.locator("#review").click();
+		await expect(page.locator("#result")).toBeVisible();
+		await expect(page.locator("#menu")).toHaveJSProperty("inert", true);
+		await page.locator("#restart").focus();
+		await page.keyboard.press("Tab");
+		const focusedMenuControl = await page.evaluate(() =>
+			document.querySelector("#menu")?.contains(document.activeElement),
+		);
+		expect(focusedMenuControl).toBe(false);
+		await page.locator("#restart").click();
+		await expect(page.locator("#start")).toBeVisible();
 	});
 
 	test("should return Home when result transitions are disabled", async ({

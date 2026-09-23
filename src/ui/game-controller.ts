@@ -208,9 +208,11 @@ export class GameController {
 		const result = document.querySelector("#result");
 		result?.classList.add("d-none");
 		result?.classList.remove("slide-in");
+		const menu = document.querySelector<HTMLElement>("#menu");
+		if (menu) menu.inert = false;
 
 		document.querySelector("#game")?.classList.remove("d-none");
-		document.querySelector("#menu")?.classList.add("slide-up");
+		menu?.classList.add("slide-up");
 
 		const answerEl = document.querySelector<HTMLInputElement>("#answer");
 		if (answerEl) {
@@ -564,6 +566,8 @@ export class GameController {
 
 		const result = document.querySelector("#result");
 		if (result) {
+			const menu = document.querySelector<HTMLElement>("#menu");
+			if (menu) menu.inert = true;
 			result.classList.remove("d-none");
 			void (result as HTMLElement).offsetHeight;
 			result.classList.add("slide-in");
@@ -698,6 +702,8 @@ export class GameController {
 			}
 			result.classList.add("d-none");
 			document.querySelector("#game")?.classList.add("d-none");
+			const menu = document.querySelector<HTMLElement>("#menu");
+			if (menu) menu.inert = false;
 			const timeEl = document.querySelector("#time");
 			if (timeEl) {
 				const clockIcon = document.createElement("i");

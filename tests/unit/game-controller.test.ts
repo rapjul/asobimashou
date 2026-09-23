@@ -91,6 +91,7 @@ describe("Game session controller", () => {
 		expect(document.activeElement).toBe(
 			document.querySelector("#result-heading"),
 		);
+		expect(document.querySelector<HTMLElement>("#menu")!.inert).toBe(true);
 		expect(
 			document.querySelector<HTMLButtonElement>("#review")!.disabled,
 		).toBe(false);
@@ -98,7 +99,9 @@ describe("Game session controller", () => {
 		const transition = new Event("transitionend");
 		Object.defineProperty(transition, "propertyName", { value: "top" });
 		document.querySelector("#result")!.dispatchEvent(transition);
+		expect(document.querySelector<HTMLElement>("#menu")!.inert).toBe(false);
 		game.reviewResults();
+		expect(document.querySelector<HTMLElement>("#menu")!.inert).toBe(true);
 		expect(
 			document.querySelector("#result")!.classList.contains("d-none"),
 		).toBe(false);

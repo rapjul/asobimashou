@@ -358,4 +358,21 @@ describe("Options and saved settings", () => {
 				.classList.contains("collapsed"),
 		).toBe(false);
 	});
+
+	it("returns focus to Options when the focused panel closes", () => {
+		options.initOptionsUI({ ...options.SETTINGS_DEFAULT });
+		const optionButton =
+			document.querySelector<HTMLButtonElement>("#option")!;
+		const optionWrapper =
+			document.querySelector<HTMLElement>("#option-wrapper")!;
+		optionWrapper.classList.add("collapsed");
+		const panelButton =
+			document.querySelector<HTMLButtonElement>("#game-kanji")!;
+		panelButton.focus();
+
+		options.closeOptions();
+
+		expect(document.activeElement).toBe(optionButton);
+		expect(optionWrapper.classList.contains("collapsed")).toBe(false);
+	});
 });

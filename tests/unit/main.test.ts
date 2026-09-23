@@ -220,6 +220,13 @@ describe("Application startup and browser event wiring", () => {
 		Object.defineProperty(outsideMove, "touches", { value: { length: 1 } });
 		document.body.dispatchEvent(outsideMove);
 		expect(outsideMove.defaultPrevented).toBe(true);
+		const gameMove = new Event("touchmove", {
+			bubbles: true,
+			cancelable: true,
+		});
+		Object.defineProperty(gameMove, "touches", { value: { length: 1 } });
+		document.querySelector("#game")!.dispatchEvent(gameMove);
+		expect(gameMove.defaultPrevented).toBe(false);
 		const pinchMove = new Event("touchmove", {
 			bubbles: true,
 			cancelable: true,

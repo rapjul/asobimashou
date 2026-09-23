@@ -44,7 +44,7 @@ function preventKeyboardBodyScroll(event: TouchEvent): void {
 	if (event.touches.length > 1) return;
 	if (
 		event.target instanceof Element &&
-		event.target.closest("#review-wrapper")
+		event.target.closest("#review-wrapper, #game")
 	) {
 		return;
 	}
