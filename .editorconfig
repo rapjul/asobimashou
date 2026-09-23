@@ -6,10 +6,14 @@ root = true
 indent_style = space
 indent_size = 2
 tab_width = 2
-end_of_line = lf # To allow compiling code on CI.
-charset = utf-8 # For Japanese characters.
-trim_trailing_whitespace = true # To remove trailing whitespace.
-insert_final_newline = true # To add a newline at the end of the file.
+end_of_line = lf
+# To allow compiling code on CI.
+charset = utf-8
+# For Japanese characters.
+trim_trailing_whitespace = true
+# To remove trailing whitespace.
+insert_final_newline = true
+# To add a newline at the end of the file.
 
 [*.{html,js,ts,sh}]
 indent_style = tab
@@ -19,8 +23,15 @@ tab_width = 4
 indent_style = space
 indent_size = 4
 
-# JSON and SVG files benefit from 2 spaces for better readability and do not require a final newline.
-[*.{json,svg}]
+# JSON files benefit from 2 spaces for readability and require a final newline.
+[*.json]
+indent_style = space
+indent_size = 2
+tab_width = 2
+insert_final_newline = true
+
+# SVG files benefit from 2 spaces for readability and do not require a final newline.
+[*.svg]
 indent_style = space
 indent_size = 2
 tab_width = 2
