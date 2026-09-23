@@ -375,4 +375,46 @@ describe("Game session controller", () => {
 		expect(revokeObjectURL).toHaveBeenCalledWith("blob:session");
 		expect(clipboardWrite).toHaveBeenCalledTimes(2);
 	});
+
+	it("falls back to a textarea and reports clipboard failure", async () => {
+		const game = new GameController(baseSettings);
+		useDeck(game, [sampleCards[0]!]);
+		await game.startGame();
+		game.skipQuestion();
+		game.stopGame();
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: {
+				writeText: vi.fn().mockRejectedValue(new Error("denied")),
+			},
+		});
+		Object.defineProperty(navigator, "share", {
+			configurable: true,
+			value: undefined,
+		});
+		const previousFocus =
+			document.querySelector<HTMLElement>("#result-heading")!;
+		previousFocus.focus();
+		const execCommand = vi.fn(() => true);
+		Object.defineProperty(document, "execCommand", {
+			configurable: true,
+			value: execCommand,
+		});
+
+		await game.copyTable();
+		expect(execCommand).toHaveBeenCalledWith("copy");
+		expect(
+			document.querySelector("textarea[aria-hidden='true']"),
+		).toBeNull();
+		expect(document.activeElement).toBe(previousFocus);
+		expect(document.querySelector(".toast-copy")!.textContent).toContain(
+			"Table copied to clipboard",
+		);
+
+		execCommand.mockReturnValue(false);
+		await game.shareResults();
+		expect(document.querySelector(".toast-share")!.textContent).toContain(
+			"Could not copy results",
+		);
+	});
 });

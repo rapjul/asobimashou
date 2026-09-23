@@ -15,6 +15,48 @@ import { showApostropheToast, showVowelLengthToast, showToast } from "./toasts";
 import * as wanakana from "wanakana";
 
 /**
+ * Copies text using the Clipboard API and falls back to a temporary textarea.
+ *
+ * @param {string} text - The text to copy.
+ * @returns {Promise<boolean>} True when either copy mechanism succeeds.
+ */
+async function copyTextToClipboard(text: string): Promise<boolean> {
+	try {
+		if (navigator.clipboard?.writeText) {
+			await navigator.clipboard.writeText(text);
+			return true;
+		}
+	} catch {
+		// Fall back to the textarea copy path when Clipboard API access fails.
+	}
+
+	const previousFocus =
+		document.activeElement instanceof HTMLElement
+			? document.activeElement
+			: null;
+	let textarea: HTMLTextAreaElement | null = null;
+	try {
+		textarea = document.createElement("textarea");
+		textarea.value = text;
+		textarea.setAttribute("aria-hidden", "true");
+		textarea.tabIndex = -1;
+		textarea.style.position = "fixed";
+		textarea.style.opacity = "0";
+		document.body.appendChild(textarea);
+		textarea.focus();
+		textarea.select();
+		return document.execCommand("copy");
+	} catch {
+		return false;
+	} finally {
+		textarea?.remove();
+		if (previousFocus?.isConnected) {
+			previousFocus.focus({ preventScroll: true });
+		}
+	}
+}
+
+/**
  * Controller managing the main gameplay lifecycle, monotonic timer, review results, and exports.
  */
 export class GameController {
@@ -563,15 +605,13 @@ export class GameController {
 			}
 		}
 
-		try {
-			await navigator.clipboard.writeText(shareText);
-			showToast(
-				'<i class="bi-check-circle text-success"></i> Copied to clipboard!',
-				"toast-share",
-			);
-		} catch {
-			// Clipboard write failed
-		}
+		const copied = await copyTextToClipboard(shareText);
+		showToast(
+			copied
+				? '<i class="bi-check-circle text-success"></i> Copied to clipboard!'
+				: '<i class="bi-exclamation-circle text-danger"></i> Could not copy results. Please copy them manually.',
+			"toast-share",
+		);
 	}
 
 	/**
@@ -581,15 +621,13 @@ export class GameController {
 	 */
 	public async copyTable(): Promise<void> {
 		const tsv = formatTableTSV(this.state.history);
-		try {
-			await navigator.clipboard.writeText(tsv);
-			showToast(
-				'<i class="bi-table text-success"></i> Table copied to clipboard!',
-				"toast-copy",
-			);
-		} catch {
-			// Fallback
-		}
+		const copied = await copyTextToClipboard(tsv);
+		showToast(
+			copied
+				? '<i class="bi-table text-success"></i> Table copied to clipboard!'
+				: '<i class="bi-exclamation-circle text-danger"></i> Could not copy table. Please copy it manually.',
+			"toast-copy",
+		);
 	}
 
 	/**
