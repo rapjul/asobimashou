@@ -361,6 +361,7 @@ export function closeOptions(): void {
 		btn?.classList.remove("active");
 		btn?.setAttribute("aria-expanded", "false");
 		wrapper.classList.remove("collapsed");
+		wrapper.inert = true;
 		menuGroup?.classList.remove("expanded");
 		const scrollContainer = document.querySelector(
 			"#options-scroll-container",
@@ -483,22 +484,20 @@ export function initOptionsUI(settings: GameSettings): void {
 	});
 
 	const optionBtn = document.querySelector<HTMLButtonElement>("#option");
-	const optionWrapper = document.querySelector("#option-wrapper");
+	const optionWrapper =
+		document.querySelector<HTMLElement>("#option-wrapper");
 	const menuGroup = document.querySelector("#main-menu-group");
 
 	if (optionBtn && optionWrapper) {
+		optionWrapper.inert = !optionWrapper.classList.contains("collapsed");
 		optionBtn.addEventListener("click", () => {
 			optionBtn.classList.toggle("active");
 			optionWrapper.classList.toggle("collapsed");
-			optionBtn.setAttribute(
-				"aria-expanded",
-				String(optionWrapper.classList.contains("collapsed")),
-			);
+			const isExpanded = optionWrapper.classList.contains("collapsed");
+			optionWrapper.inert = !isExpanded;
+			optionBtn.setAttribute("aria-expanded", String(isExpanded));
 			if (menuGroup) {
-				menuGroup.classList.toggle(
-					"expanded",
-					optionWrapper.classList.contains("collapsed"),
-				);
+				menuGroup.classList.toggle("expanded", isExpanded);
 			}
 			const scrollContainer = document.querySelector(
 				"#options-scroll-container",

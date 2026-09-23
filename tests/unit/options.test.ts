@@ -378,6 +378,9 @@ describe("Options and saved settings", () => {
 		expect(help.innerHTML).toContain("ruby text");
 		kanjiButton.dispatchEvent(new Event("blur"));
 		expect(help.textContent).toContain("Hover or focus an option");
+		const optionWrapper =
+			document.querySelector<HTMLElement>("#option-wrapper")!;
+		expect(optionWrapper.inert).toBe(true);
 
 		document
 			.querySelector("#option")!
@@ -385,6 +388,7 @@ describe("Options and saved settings", () => {
 		expect(
 			document.querySelector("#option")!.getAttribute("aria-expanded"),
 		).toBe("true");
+		expect(optionWrapper.inert).toBe(false);
 		document
 			.querySelector("#options-btn-more")!
 			.dispatchEvent(new Event("click", { bubbles: true }));
@@ -446,6 +450,7 @@ describe("Options and saved settings", () => {
 				.querySelector("#option-wrapper")!
 				.classList.contains("collapsed"),
 		).toBe(false);
+		expect(optionWrapper.inert).toBe(true);
 	});
 
 	it("returns focus to Options when the focused panel closes", () => {
@@ -454,7 +459,7 @@ describe("Options and saved settings", () => {
 			document.querySelector<HTMLButtonElement>("#option")!;
 		const optionWrapper =
 			document.querySelector<HTMLElement>("#option-wrapper")!;
-		optionWrapper.classList.add("collapsed");
+		optionButton.click();
 		const panelButton =
 			document.querySelector<HTMLButtonElement>("#game-kanji")!;
 		panelButton.focus();
@@ -464,5 +469,6 @@ describe("Options and saved settings", () => {
 		expect(document.activeElement).toBe(optionButton);
 		expect(optionButton.getAttribute("aria-expanded")).toBe("false");
 		expect(optionWrapper.classList.contains("collapsed")).toBe(false);
+		expect(optionWrapper.inert).toBe(true);
 	});
 });
