@@ -31,7 +31,7 @@ Chosen option: "Use `vite-plugin-pwa` with Workbox", because the build can gener
 
 ### Consequences
 
-- Good, because the production build precaches the HTML shell, compiled code, vocabulary chunks, and declared static images.
+- Good, because the production build precaches the HTML shell, compiled code, vocabulary chunks, declared static images, and Bootstrap icon font.
 - Good, because Workbox caches font requests and the app caches selected optional Japanese fonts for later offline use.
 - Good, because the app keeps a new worker waiting and prompts for reload at home or after an active round finishes.
 - Neutral, because the app's update prompt and offline-font behavior are managed through `virtual:pwa-register` and Cache Storage in addition to the generated worker.
@@ -44,5 +44,6 @@ The generated manifest assets, offline font caching, and deferred service worker
 ## More Information
 
 - Workbox precaches built application assets and serves the precached `index.html` for offline navigation.
+- Workbox also precaches the Bootstrap icon font so interface icons remain available immediately offline.
 - The `fonts-cache` Cache Storage entry is populated when an optional font is selected online. Uncached optional fonts are disabled offline; system fonts remain selectable.
 - `registerType: "prompt"` prevents a waiting worker from activating until the player chooses Reload after reaching home or the result screen.

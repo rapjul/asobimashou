@@ -114,6 +114,21 @@ test.describe("PWA Offline Support & Network State Transitions", () => {
 		}
 	});
 
+	test("precaches the Bootstrap icon font without precaching optional fonts", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		const workerResponse = await page.request.get("/sw.js");
+		expect(workerResponse.ok()).toBe(true);
+		const workerSource = await workerResponse.text();
+		expect(workerSource).toMatch(
+			/url:"assets\/bootstrap-icons-[^"]+\.woff2"/,
+		);
+		expect(workerSource).not.toMatch(
+			/url:"assets\/(?:klee-one|noto-(?:sans|serif)-jp|yuji-syuku)-/,
+		);
+	});
+
 	test("should display offline badge and offline toast notification on network disconnection", async ({
 		page,
 		context,

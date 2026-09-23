@@ -140,11 +140,12 @@ Chromium/Edge but died after one tick on Safari.
 
 **Strategies in use**:
 
-| Request type                | Strategy                                                        |
-| --------------------------- | --------------------------------------------------------------- |
-| HTML (`navigate`)           | Serve the precached `index.html` application shell              |
-| Built JS / CSS / JSON / img | Precache during service worker installation                     |
-| Font files                  | Workbox `CacheFirst`; selected optional fonts are cached on use |
+| Request type                | Strategy                                           |
+| --------------------------- | -------------------------------------------------- |
+| HTML (`navigate`)           | Serve the precached `index.html` application shell |
+| Built JS / CSS / JSON / img | Precache during service worker installation        |
+| Bootstrap icon font         | Precache during service worker installation        |
+| Optional Japanese fonts     | Workbox `CacheFirst`; cached when selected online  |
 
 Vite PWA generates a Workbox precache manifest from the production build. The
 new worker installs the build assets before it can activate, and Workbox serves
