@@ -45,5 +45,6 @@ The generated manifest assets, offline font caching, and deferred service worker
 
 - Workbox precaches built application assets and serves the precached `index.html` for offline navigation.
 - Workbox also precaches the Bootstrap icon font so interface icons remain available immediately offline.
+- A small activation migration deletes the known `offline-v7` cache left by the former hand-written worker.
 - The `fonts-cache` Cache Storage entry is populated when an optional font is selected online. Uncached optional fonts are disabled offline; system fonts remain selectable.
 - `registerType: "prompt"` prevents a waiting worker from activating until the player chooses Reload after reaching home or the result screen.

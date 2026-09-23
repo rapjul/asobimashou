@@ -147,11 +147,7 @@ Chromium/Edge but died after one tick on Safari.
 | Bootstrap icon font         | Precache during service worker installation        |
 | Optional Japanese fonts     | Workbox `CacheFirst`; cached when selected online  |
 
-Vite PWA generates a Workbox precache manifest from the production build. The
-new worker installs the build assets before it can activate, and Workbox serves
-the precached application shell for offline navigation. Workbox removes
-outdated precache entries when the new worker activates; do not maintain a
-separate manual cache version.
+Vite PWA generates a Workbox precache manifest from the production build. The new worker installs the build assets before it can activate, and Workbox serves the precached application shell for offline navigation. Workbox removes outdated precache entries when the new worker activates; do not maintain a separate manual cache version. On activation, a migration script also deletes only the known `offline-v7` cache left by the former hand-written worker.
 
 Bundled optional Japanese fonts are cached in `fonts-cache` when selected while online. Offline, cached optional fonts remain available, uncached optional fonts are disabled, and system fonts stay available. A saved uncached font falls back to `system-ui` with a notice; reconnecting restores the saved font choice.
 
@@ -246,11 +242,7 @@ state timing.** Use `requestAnimationFrame` + `performance.now()` instead.
 
 ### Service worker updates during gameplay
 
-The app leaves an updated worker waiting while a round is active. It displays a
-persistent Reload notice at home or after the result screen; do not switch the
-registration to automatic activation, because that can interrupt an active
-round. To reset PWA state during development, clear site data for the local
-origin in the browser's developer tools. Local apps served with the same scheme, hostname, and port share an origin; registrations with overlapping service worker scopes can update one another. Use a different port for another local app (for example, `npm run dev -- --port 5174`) or unregister the stale worker in DevTools → Application → Service Workers before reusing a port.
+The app leaves an updated worker waiting while a round is active. It displays a persistent Reload notice at home or after the result screen; do not switch the registration to automatic activation, because that can interrupt an active round. To reset PWA state during development, clear site data for the local origin in the browser's developer tools. Local apps served with the same scheme, hostname, and port share an origin; registrations with overlapping service worker scopes can update one another. Use a different port for another local app (for example, `npm run dev -- --port 5174`) or unregister the stale worker in DevTools → Application → Service Workers before reusing a port.
 
 ### Answer input and WanaKana conversion
 

@@ -61,6 +61,7 @@ export default defineConfig({
 				],
 			},
 			workbox: {
+				importScripts: ["cleanup-legacy-cache.js"],
 				globPatterns: [
 					"**/*.{js,css,html,ico,png,svg,webp,json}",
 					"**/bootstrap-icons-*.woff2",

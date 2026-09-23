@@ -124,6 +124,12 @@ test.describe("PWA Offline Support & Network State Transitions", () => {
 		expect(workerSource).toMatch(
 			/url:"assets\/bootstrap-icons-[^"]+\.woff2"/,
 		);
+		expect(workerSource).toContain("cleanup-legacy-cache.js");
+		const legacyCleanupResponse = await page.request.get(
+			"/cleanup-legacy-cache.js",
+		);
+		expect(legacyCleanupResponse.ok()).toBe(true);
+		expect(await legacyCleanupResponse.text()).toContain('"offline-v7"');
 		expect(workerSource).not.toMatch(
 			/url:"assets\/(?:klee-one|noto-(?:sans|serif)-jp|yuji-syuku)-/,
 		);
