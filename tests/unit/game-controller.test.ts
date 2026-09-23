@@ -120,6 +120,36 @@ describe("Game session controller", () => {
 		).toBe(false);
 	});
 
+	it("shows the accepted dzu spelling in review and exported CSV", async () => {
+		const game = new GameController({ ...baseSettings, roundLength: null });
+		useDeck(game, [
+			{ kanji: "続く", hiragana: "つづく", meaning: "continue" },
+		]);
+		await game.startGame();
+		game.handleInput("tsudzuku");
+		game.stopGame();
+
+		expect(document.querySelector("#review-table")!.textContent).toContain(
+			"tsudzuku",
+		);
+		let exportedCSV: Blob | undefined;
+		Object.defineProperty(URL, "createObjectURL", {
+			configurable: true,
+			value: vi.fn((blob: Blob) => {
+				exportedCSV = blob;
+				return "blob:romaji";
+			}),
+		});
+		Object.defineProperty(URL, "revokeObjectURL", {
+			configurable: true,
+			value: vi.fn(),
+		});
+		game.exportCSV();
+		expect(await exportedCSV?.text()).toContain(
+			"Correct,続く,つづく,tsudzuku,tsudzuku,continue",
+		);
+	});
+
 	it("keeps an unlimited round active until the player stops it", async () => {
 		const game = new GameController({ ...baseSettings, roundLength: null });
 		useDeck(game, [sampleCards[0]!]);

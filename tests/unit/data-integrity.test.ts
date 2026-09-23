@@ -2,6 +2,11 @@ import { describe, it, expect } from "vitest";
 import { createHash } from "node:crypto";
 import jlptData from "../../src/data/jlpt.json";
 import randomData from "../../src/data/random.json";
+import * as wanakana from "wanakana";
+import {
+	CUSTOM_ROMAJI_MAPPING,
+	isInputValidAnswer,
+} from "../../src/logic/validation";
 
 describe("Vocabulary Data Parity & Schema Integrity", () => {
 	it("should contain the exact count of JLPT (607) and Random (13803) items totaling 14410", () => {
@@ -46,5 +51,30 @@ describe("Vocabulary Data Parity & Schema Integrity", () => {
 		expect(digest(randomData)).toBe(
 			"9208c695245e7afcc70dbba761d7632aa4eb4113307a2b45669515199a6e1738",
 		);
+	});
+
+	it("should accept the canonical Romaji displayed for every deck reading", () => {
+		const mismatches: string[] = [];
+		for (const [deckName, deck] of [
+			["JLPT", jlptData],
+			["Random", randomData],
+		] as const) {
+			for (const card of deck) {
+				const readings = Array.isArray(card.hiragana)
+					? card.hiragana
+					: [card.hiragana];
+				for (const reading of readings) {
+					const canonical = wanakana.toRomaji(reading, {
+						customRomajiMapping: CUSTOM_ROMAJI_MAPPING,
+					});
+					if (!isInputValidAnswer(canonical, reading)) {
+						mismatches.push(
+							`${deckName}: ${reading} → ${canonical}`,
+						);
+					}
+				}
+			}
+		}
+		expect(mismatches).toEqual([]);
 	});
 });

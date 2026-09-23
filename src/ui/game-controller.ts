@@ -190,7 +190,11 @@ export class GameController {
 			this.settings,
 		);
 		this.state.currentKana = questionKana;
-		this.state.currentRomaji = [wanakana.toRomaji(selectedReading)];
+		this.state.currentRomaji = [
+			wanakana.toRomaji(selectedReading, {
+				customRomajiMapping: CUSTOM_ROMAJI_MAPPING,
+			}),
+		];
 
 		const questionEl = document.querySelector("#question");
 		if (questionEl) {
