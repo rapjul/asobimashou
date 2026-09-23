@@ -53,6 +53,39 @@ async function expectFullyReachable(
 }
 
 test.describe("Options Panel & Theme Configuration", () => {
+	test("announces option state and preserves keyboard focus", async ({
+		page,
+	}) => {
+		await page.goto("/");
+
+		const optionButton = page.locator("#option");
+		await expect(optionButton).toHaveAttribute("aria-expanded", "false");
+		await optionButton.focus();
+		await page.keyboard.press("Enter");
+		await expect(optionButton).toHaveAttribute("aria-expanded", "true");
+
+		const kanjiButton = page.locator("#game-kanji");
+		await kanjiButton.focus();
+		await page.keyboard.press("Space");
+		await expect(kanjiButton).toBeFocused();
+		await expect(kanjiButton).toHaveAttribute("aria-pressed", "true");
+
+		const katakanaButton = page.locator("#game-katakana");
+		await katakanaButton.click();
+		await expect(katakanaButton).toHaveAttribute("aria-pressed", "true");
+		await expect(page.locator("#game-hiragana")).toHaveAttribute(
+			"aria-pressed",
+			"false",
+		);
+
+		const darkButton = page.locator('.game-theme[value="dark"]');
+		await darkButton.click();
+		await expect(darkButton).toHaveAttribute("aria-pressed", "true");
+		await expect(
+			page.locator('.game-theme[value="system"]'),
+		).toHaveAttribute("aria-pressed", "false");
+	});
+
 	test("should toggle options panel and paginate between settings screens", async ({
 		page,
 	}) => {

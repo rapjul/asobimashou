@@ -373,6 +373,7 @@ describe("Options and saved settings", () => {
 		const help = document.querySelector("#option-help")!;
 		const kanjiButton =
 			document.querySelector<HTMLButtonElement>("#game-kanji")!;
+		expect(kanjiButton.getAttribute("aria-pressed")).toBe("false");
 		kanjiButton.dispatchEvent(new Event("focus"));
 		expect(help.innerHTML).toContain("ruby text");
 		kanjiButton.dispatchEvent(new Event("blur"));
@@ -381,6 +382,9 @@ describe("Options and saved settings", () => {
 		document
 			.querySelector("#option")!
 			.dispatchEvent(new Event("click", { bubbles: true }));
+		expect(
+			document.querySelector("#option")!.getAttribute("aria-expanded"),
+		).toBe("true");
 		document
 			.querySelector("#options-btn-more")!
 			.dispatchEvent(new Event("click", { bubbles: true }));
@@ -406,6 +410,27 @@ describe("Options and saved settings", () => {
 		});
 		expect(
 			document
+				.querySelector('.game-theme[value="dark"]')!
+				.getAttribute("aria-pressed"),
+		).toBe("true");
+		expect(
+			document
+				.querySelector('.game-card[value="Random"]')!
+				.getAttribute("aria-pressed"),
+		).toBe("true");
+		expect(
+			document
+				.querySelector("#game-katakana")!
+				.getAttribute("aria-pressed"),
+		).toBe("true");
+		expect(kanjiButton.getAttribute("aria-pressed")).toBe("true");
+		expect(
+			document
+				.querySelector("#game-dakuten")!
+				.getAttribute("aria-pressed"),
+		).toBe("false");
+		expect(
+			document
 				.querySelector("#game-smallvowel")!
 				.classList.contains("d-none"),
 		).toBe(false);
@@ -415,6 +440,7 @@ describe("Options and saved settings", () => {
 
 		const optionButton = document.querySelector("#option")!;
 		optionButton.dispatchEvent(new Event("click", { bubbles: true }));
+		expect(optionButton.getAttribute("aria-expanded")).toBe("false");
 		expect(
 			document
 				.querySelector("#option-wrapper")!
@@ -436,6 +462,7 @@ describe("Options and saved settings", () => {
 		options.closeOptions();
 
 		expect(document.activeElement).toBe(optionButton);
+		expect(optionButton.getAttribute("aria-expanded")).toBe("false");
 		expect(optionWrapper.classList.contains("collapsed")).toBe(false);
 	});
 });

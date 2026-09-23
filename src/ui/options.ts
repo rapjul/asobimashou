@@ -359,6 +359,7 @@ export function closeOptions(): void {
 	if (wrapper?.classList.contains("collapsed")) {
 		const shouldRestoreFocus = wrapper.contains(document.activeElement);
 		btn?.classList.remove("active");
+		btn?.setAttribute("aria-expanded", "false");
 		wrapper.classList.remove("collapsed");
 		menuGroup?.classList.remove("expanded");
 		const scrollContainer = document.querySelector(
@@ -417,24 +418,31 @@ export function initOptionsUI(settings: GameSettings): void {
 		void updateFontAvailability(settings);
 	});
 	applyTheme(resolveIsDark(settings.theme));
-	document
-		.querySelectorAll<HTMLButtonElement>(".game-theme")
-		.forEach((btn) =>
-			btn.classList.toggle("active", btn.value === settings.theme),
-		);
-	document
-		.querySelectorAll<HTMLButtonElement>(".game-card")
-		.forEach((btn) =>
-			btn.classList.toggle("active", btn.value === settings.card),
-		);
-	document
-		.querySelectorAll<HTMLButtonElement>(".game-type")
-		.forEach((btn) =>
-			btn.classList.toggle(
-				"active",
-				normalizeKana(btn.id) === settings.kana,
-			),
-		);
+	/**
+	 * Syncs a mutually exclusive option group with its saved selection.
+	 *
+	 * @param {string} selector - CSS selector for buttons in the group.
+	 * @param {(button: HTMLButtonElement) => boolean} isSelected - Selection predicate.
+	 * @returns {void}
+	 */
+	const syncChoiceButtons = (
+		selector: string,
+		isSelected: (button: HTMLButtonElement) => boolean,
+	): void => {
+		document
+			.querySelectorAll<HTMLButtonElement>(selector)
+			.forEach((btn) => {
+				const selected = isSelected(btn);
+				btn.classList.toggle("active", selected);
+				btn.setAttribute("aria-pressed", String(selected));
+			});
+	};
+	syncChoiceButtons(".game-theme", (btn) => btn.value === settings.theme);
+	syncChoiceButtons(".game-card", (btn) => btn.value === settings.card);
+	syncChoiceButtons(
+		".game-type",
+		(btn) => normalizeKana(btn.id) === settings.kana,
+	);
 
 	/**
 	 * Syncs a toggle button's visual state with its saved setting.
@@ -447,6 +455,7 @@ export function initOptionsUI(settings: GameSettings): void {
 		const btn = document.getElementById(id);
 		if (!btn) return;
 		btn.classList.toggle("active", enabled);
+		btn.setAttribute("aria-pressed", String(enabled));
 		btn.classList.toggle("text-decoration-line-through", !enabled);
 		btn.querySelector("span")?.classList.toggle(
 			"text-decoration-line-through",
@@ -473,7 +482,7 @@ export function initOptionsUI(settings: GameSettings): void {
 		if (settings.theme === "system") applyTheme(event.matches);
 	});
 
-	const optionBtn = document.querySelector("#option");
+	const optionBtn = document.querySelector<HTMLButtonElement>("#option");
 	const optionWrapper = document.querySelector("#option-wrapper");
 	const menuGroup = document.querySelector("#main-menu-group");
 
@@ -481,6 +490,10 @@ export function initOptionsUI(settings: GameSettings): void {
 		optionBtn.addEventListener("click", () => {
 			optionBtn.classList.toggle("active");
 			optionWrapper.classList.toggle("collapsed");
+			optionBtn.setAttribute(
+				"aria-expanded",
+				String(optionWrapper.classList.contains("collapsed")),
+			);
 			if (menuGroup) {
 				menuGroup.classList.toggle(
 					"expanded",
@@ -564,12 +577,12 @@ export function initOptionsUI(settings: GameSettings): void {
 		.querySelectorAll<HTMLButtonElement>(".game-theme")
 		.forEach((btn) => {
 			btn.addEventListener("click", () => {
-				document
-					.querySelectorAll(".game-theme")
-					.forEach((b) => b.classList.remove("active"));
-				btn.classList.add("active");
 				const val = btn.value as "system" | "light" | "dark";
 				settings.theme = val;
+				syncChoiceButtons(
+					".game-theme",
+					(choice) => choice.value === settings.theme,
+				);
 				applyTheme(resolveIsDark(val));
 				saveSettings(settings);
 			});
@@ -580,11 +593,11 @@ export function initOptionsUI(settings: GameSettings): void {
 		.querySelectorAll<HTMLButtonElement>(".game-card")
 		.forEach((btn) => {
 			btn.addEventListener("click", () => {
-				document
-					.querySelectorAll(".game-card")
-					.forEach((b) => b.classList.remove("active"));
-				btn.classList.add("active");
 				settings.card = btn.value as "JLPT" | "Random";
+				syncChoiceButtons(
+					".game-card",
+					(choice) => choice.value === settings.card,
+				);
 				saveSettings(settings);
 			});
 		});
@@ -595,19 +608,19 @@ export function initOptionsUI(settings: GameSettings): void {
 		.forEach((btn) => {
 			btn.addEventListener("click", () => {
 				settings.kana = normalizeKana(btn.id);
-				document.querySelectorAll(".game-type").forEach((item) => {
-					item.classList.toggle("active", item === btn);
-				});
+				syncChoiceButtons(
+					".game-type",
+					(choice) => normalizeKana(choice.id) === settings.kana,
+				);
 				updateConditionalTogglesVisibility(settings.kana);
 				saveSettings(settings);
 			});
 		});
 
 	// Kanji visibility button.
-	document.querySelector("#game-kanji")?.addEventListener("click", (evt) => {
+	document.querySelector("#game-kanji")?.addEventListener("click", () => {
 		settings.showKanji = !settings.showKanji;
 		syncToggle("game-kanji", settings.showKanji);
-		(evt.currentTarget as HTMLElement).blur();
 		saveSettings(settings);
 	});
 
