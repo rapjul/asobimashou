@@ -4,8 +4,8 @@ import {
 	generateSessionCSV,
 	formatShareSummary,
 	formatTableTSV,
-} from "../../src/logic/export";
-import type { GameState, ReviewItem } from "../../src/types";
+} from "@/logic/export";
+import type { GameState, ReviewItem } from "@/types";
 
 describe("CSV Export & Share Text Formatting", () => {
 	it("should escape commas and quotes properly per RFC 4180", () => {

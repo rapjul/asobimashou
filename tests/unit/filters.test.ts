@@ -3,8 +3,8 @@ import {
 	isCardAllowed,
 	getFilteredCardIndices,
 	formatQuestion,
-} from "../../src/logic/filters";
-import type { Card, GameSettings } from "../../src/types";
+} from "@/logic/filters";
+import type { Card, GameSettings } from "@/types";
 
 describe("Card Filtering & Question Preparation", () => {
 	const baseSettings: GameSettings = {

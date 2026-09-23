@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mountAppDom, unmountAppDom } from "./helpers/app-dom";
 
 describe("Theme application", () => {
-	let theme: typeof import("../../src/ui/theme");
+	let theme: typeof import("@/ui/theme");
 
 	beforeEach(async () => {
 		mountAppDom();
 		vi.resetModules();
-		theme = await import("../../src/ui/theme");
+		theme = await import("@/ui/theme");
 	});
 
 	afterEach(async () => {

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ROUND_LENGTHS } from "../../src/constants/game-options";
+import { ROUND_LENGTHS } from "@/constants/game-options";
 import { mountAppDom, unmountAppDom } from "./helpers/app-dom";
 
-type OptionsModule = typeof import("../../src/ui/options");
+type OptionsModule = typeof import("@/ui/options");
 
 describe("Options and saved settings", () => {
 	let options: OptionsModule;
@@ -10,7 +10,7 @@ describe("Options and saved settings", () => {
 	beforeEach(async () => {
 		mountAppDom();
 		vi.resetModules();
-		options = await import("../../src/ui/options");
+		options = await import("@/ui/options");
 	});
 
 	afterEach(async () => {

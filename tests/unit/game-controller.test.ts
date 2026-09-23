@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GameController } from "../../src/ui/game-controller";
-import type { Card, GameSettings } from "../../src/types";
+import { GameController } from "@/ui/game-controller";
+import type { Card, GameSettings } from "@/types";
 import { mountAppDom, unmountAppDom } from "./helpers/app-dom";
 
 const baseSettings: GameSettings = {

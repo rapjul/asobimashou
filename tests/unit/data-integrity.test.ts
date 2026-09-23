@@ -1,12 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { createHash } from "node:crypto";
-import jlptData from "../../src/data/jlpt.json";
-import randomData from "../../src/data/random.json";
+import jlptData from "@/data/jlpt.json";
+import randomData from "@/data/random.json";
 import * as wanakana from "wanakana";
-import {
-	CUSTOM_ROMAJI_MAPPING,
-	isInputValidAnswer,
-} from "../../src/logic/validation";
+import { CUSTOM_ROMAJI_MAPPING, isInputValidAnswer } from "@/logic/validation";
 
 describe("Vocabulary Data Parity & Schema Integrity", () => {
 	it("should contain the exact count of JLPT (607) and Random (13803) items totaling 14410", () => {

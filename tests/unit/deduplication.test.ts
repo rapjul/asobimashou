@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CardQueue } from "../../src/logic/deduplication";
+import { CardQueue } from "@/logic/deduplication";
 
 describe("CardQueue Sliding Window Deduplication", () => {
 	it("should not return immediately repeated indices when alternative candidates exist", () => {

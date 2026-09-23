@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mountAppDom, unmountAppDom } from "./helpers/app-dom";
 
 describe("Toast and connectivity notices", () => {
-	let toasts: typeof import("../../src/ui/toasts");
+	let toasts: typeof import("@/ui/toasts");
 
 	beforeEach(async () => {
 		mountAppDom();
 		vi.resetModules();
-		toasts = await import("../../src/ui/toasts");
+		toasts = await import("@/ui/toasts");
 	});
 
 	afterEach(async () => {

@@ -3,7 +3,7 @@ import {
 	generateRomajiSpellings,
 	isInputValidAnswer,
 	isInputValidPrefix,
-} from "../../src/logic/validation";
+} from "@/logic/validation";
 
 describe("Romaji Validation & Spelling Generation", () => {
 	it("should generate standard and alternative spellings for combination sounds", () => {

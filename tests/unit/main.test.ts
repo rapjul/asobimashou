@@ -88,19 +88,19 @@ async function bootMain(): Promise<MainMocks> {
 		return activateWaitingUpdate;
 	});
 
-	vi.doMock("../../src/ui/game-controller", () => ({ GameController }));
-	vi.doMock("../../src/ui/options", () => ({
+	vi.doMock("@/ui/game-controller", () => ({ GameController }));
+	vi.doMock("@/ui/options", () => ({
 		loadSettings: () => settings,
 		initOptionsUI,
 	}));
-	vi.doMock("../../src/ui/toasts", () => ({
+	vi.doMock("@/ui/toasts", () => ({
 		showToast,
 		showOfflineToast,
 		showOnlineToast,
 		toggleOfflineBadge,
 	}));
 	vi.doMock("virtual:pwa-register", () => ({ registerSW }));
-	await import("../../src/main");
+	await import("@/main");
 
 	return {
 		callbacks,
@@ -122,9 +122,9 @@ describe("Application startup and browser event wiring", () => {
 	});
 
 	afterEach(async () => {
-		vi.doUnmock("../../src/ui/game-controller");
-		vi.doUnmock("../../src/ui/options");
-		vi.doUnmock("../../src/ui/toasts");
+		vi.doUnmock("@/ui/game-controller");
+		vi.doUnmock("@/ui/options");
+		vi.doUnmock("@/ui/toasts");
 		vi.doUnmock("virtual:pwa-register");
 		vi.resetModules();
 		vi.restoreAllMocks();
