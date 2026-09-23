@@ -507,10 +507,12 @@ export class GameController {
 	private showResults(): void {
 		const total = this.state.answered + this.state.skipped;
 		const average = total > 0 ? this.state.timer / total : 0;
+
 		const statsAnswered = document.querySelector("#stats-answered");
 		const statsSkipped = document.querySelector("#stats-skipped");
 		const statsTimer = document.querySelector("#stats-timer");
 		const statsAverage = document.querySelector("#stats-average");
+
 		if (statsAnswered)
 			statsAnswered.textContent = this.state.answered.toString();
 		if (statsSkipped)
@@ -520,6 +522,7 @@ export class GameController {
 			statsAverage.textContent =
 				total > 0 ? `${average.toFixed(2)} s/card` : "N/A";
 		}
+
 		this.populateReviewTable();
 
 		const result = document.querySelector("#result");
