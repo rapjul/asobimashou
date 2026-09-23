@@ -50,8 +50,8 @@ export class CardQueue {
 		} else {
 			// All candidates have been used recently; pick the one seen longest ago
 			chosen = candidateIndices.reduce((oldest, current) => {
-				const oldestPos = this.recentIndices.indexOf(oldest);
-				const currentPos = this.recentIndices.indexOf(current);
+				const oldestPos = this.recentIndices.lastIndexOf(oldest);
+				const currentPos = this.recentIndices.lastIndexOf(current);
 				return currentPos < oldestPos ? current : oldest;
 			}, candidateIndices[0]!);
 		}

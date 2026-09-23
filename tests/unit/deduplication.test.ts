@@ -36,6 +36,16 @@ describe("CardQueue Sliding Window Deduplication", () => {
 		expect(smallPool).toContain(pick3);
 	});
 
+	it("should fall back to the least recently seen candidate when history has repeats", () => {
+		const queue = new CardQueue(5);
+		queue.record(1);
+		queue.record(2);
+		queue.record(1);
+
+		expect(queue.selectNext([1, 2])).toBe(2);
+		expect(queue.selectNext([1, 2])).toBe(1);
+	});
+
 	it("should clear history when requested", () => {
 		const queue = new CardQueue(5);
 		queue.record(1);
