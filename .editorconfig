@@ -6,14 +6,14 @@ root = true
 indent_style = space
 indent_size = 2
 tab_width = 2
-end_of_line = lf
 # To allow compiling code on CI.
-charset = utf-8
+end_of_line = lf
 # For Japanese characters.
-trim_trailing_whitespace = true
+charset = utf-8
 # To remove trailing whitespace.
-insert_final_newline = true
+trim_trailing_whitespace = true
 # To add a newline at the end of the file.
+insert_final_newline = true
 
 [*.{html,js,ts,sh}]
 indent_style = tab
