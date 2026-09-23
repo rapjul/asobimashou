@@ -161,6 +161,77 @@ describe("Options and saved settings", () => {
 		).toContain("Yuji Syuku");
 	});
 
+	it("discards an offline font check that finishes after reconnection", async () => {
+		const cacheMatchResolver: {
+			current?: (response: Response | undefined) => void;
+		} = {};
+		let isFirstMatch = true;
+		const cache = {
+			match: vi.fn(() => {
+				if (isFirstMatch) {
+					isFirstMatch = false;
+					return new Promise<Response | undefined>((resolve) => {
+						cacheMatchResolver.current = resolve;
+					});
+				}
+				return Promise.resolve(undefined);
+			}),
+		};
+		const cacheStorage = {
+			open: vi.fn(async () => cache),
+		} as unknown as CacheStorage;
+		Object.defineProperty(window, "caches", {
+			configurable: true,
+			value: cacheStorage,
+		});
+		vi.stubGlobal("caches", cacheStorage);
+		Object.defineProperty(navigator, "onLine", {
+			configurable: true,
+			value: true,
+		});
+		const settings = {
+			...options.SETTINGS_DEFAULT,
+			font: "system-ui" as const,
+		};
+		options.initOptionsUI(settings);
+		const font = document.querySelector<HTMLSelectElement>("#game-font")!;
+		const optionalFontOptions = Array.from(font.options).filter((option) =>
+			[
+				"Klee One",
+				"Noto Sans JP",
+				"Noto Serif JP",
+				"Yuji Syuku",
+			].includes(option.value),
+		);
+
+		Object.defineProperty(navigator, "onLine", {
+			configurable: true,
+			value: false,
+		});
+		window.dispatchEvent(new Event("offline"));
+		await vi.waitFor(() => expect(cache.match).toHaveBeenCalledOnce());
+
+		optionalFontOptions.forEach((option) => {
+			option.disabled = true;
+		});
+		Object.defineProperty(navigator, "onLine", {
+			configurable: true,
+			value: true,
+		});
+		window.dispatchEvent(new Event("online"));
+		await vi.waitFor(() =>
+			expect(
+				optionalFontOptions.every((option) => !option.disabled),
+			).toBe(true),
+		);
+
+		cacheMatchResolver.current?.(undefined);
+		await new Promise((resolve) => window.setTimeout(resolve, 0));
+		expect(optionalFontOptions.every((option) => !option.disabled)).toBe(
+			true,
+		);
+	});
+
 	it("syncs visible controls, saves changes, and navigates the options panel", () => {
 		const settings = { ...options.SETTINGS_DEFAULT };
 		options.initOptionsUI(settings);

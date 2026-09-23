@@ -4,6 +4,7 @@ import { applyTheme, resolveIsDark, systemDarkMQ } from "./theme";
 import { showFontOfflineToast } from "./toasts";
 const FONT_CACHE_NAME = "fonts-cache";
 const pendingFontCaches = new Map<string, Promise<void>>();
+let fontAvailabilityGeneration = 0;
 let optionsPageObserver: ResizeObserver | null = null;
 
 const OPTIONAL_FONT_URLS: Partial<Record<GameSettings["font"], string>> = {
@@ -316,13 +317,19 @@ async function cacheSelectedFont(fontUrl: string): Promise<void> {
 async function updateFontAvailability(settings: GameSettings): Promise<void> {
 	const select = document.querySelector<HTMLSelectElement>("#game-font");
 	if (!select) return;
+	const generation = ++fontAvailabilityGeneration;
 	for (const option of Array.from(select.options)) {
 		const fontUrl =
 			OPTIONAL_FONT_URLS[option.value as GameSettings["font"]];
+		const wasCachedWhileOffline = Boolean(
+			fontUrl && !navigator.onLine && (await isFontCached(fontUrl)),
+		);
+		if (generation !== fontAvailabilityGeneration) return;
 		option.disabled = Boolean(
-			fontUrl && !navigator.onLine && !(await isFontCached(fontUrl)),
+			fontUrl && !navigator.onLine && !wasCachedWhileOffline,
 		);
 	}
+	if (generation !== fontAvailabilityGeneration) return;
 	changeFont(settings.font);
 }
 
