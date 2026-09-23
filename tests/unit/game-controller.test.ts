@@ -213,6 +213,51 @@ describe("Game session controller", () => {
 		game.stopGame();
 	});
 
+	it("uses the settings selected when a round starts while its deck loads", async () => {
+		const settings: GameSettings = {
+			...baseSettings,
+			roundLength: 10,
+		};
+		const game = new GameController(settings);
+		const internals = game as unknown as { deck: Card[] };
+		const randomCard: Card = {
+			kanji: "猫",
+			hiragana: "ねこ",
+			meaning: "cat",
+		};
+		let finishLoading: (() => void) | undefined;
+		const loadPromise = new Promise<void>((resolve) => {
+			finishLoading = resolve;
+		});
+		const loadDeck = vi
+			.spyOn(game, "loadDeck")
+			.mockImplementation(async (card) => {
+				await loadPromise;
+				internals.deck =
+					card === "JLPT" ? [sampleCards[0]!] : [randomCard];
+			});
+
+		const start = game.startGame();
+		settings.card = "Random";
+		settings.roundLength = null;
+		settings.showKanji = true;
+		finishLoading?.();
+		await start;
+
+		expect(loadDeck).toHaveBeenCalledWith("JLPT");
+		expect(document.querySelector("#question")!.textContent).toContain(
+			"あめ",
+		);
+		expect(document.querySelector("#question rt")!.textContent).toBe("");
+		for (let skipped = 0; skipped < 10; skipped++) game.skipQuestion();
+		expect(
+			document.querySelector("#result")!.classList.contains("d-none"),
+		).toBe(false);
+		expect(document.querySelector("#stats-skipped")!.textContent).toBe(
+			"10",
+		);
+	});
+
 	it("renders hostile vocabulary as text in questions and review rows", async () => {
 		const hostileCard: Card = {
 			kanji: '<img src=x onerror="alert(1)">',

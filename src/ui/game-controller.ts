@@ -61,6 +61,7 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
  */
 export class GameController {
 	private settings: GameSettings;
+	private sessionSettings: GameSettings | null = null;
 	private state: GameState;
 	private deck: Card[] = [];
 	private cardQueue = new CardQueue(15);
@@ -108,10 +109,13 @@ export class GameController {
 	/**
 	 * Loads vocabulary cards for the selected deck on demand.
 	 *
+	 * @param {GameSettings["card"]} card - Deck selected for this session.
 	 * @returns {Promise<void>} Resolves when deck is loaded.
 	 */
-	public async loadDeck(): Promise<void> {
-		if (this.settings.card === "JLPT") {
+	public async loadDeck(
+		card: GameSettings["card"] = this.settings.card,
+	): Promise<void> {
+		if (card === "JLPT") {
 			const mod = await import("../data/jlpt.json");
 			this.deck = mod.default as Card[];
 		} else {
@@ -127,6 +131,7 @@ export class GameController {
 	 */
 	public async startGame(): Promise<void> {
 		if (this.isStarting || this.state.isRunning) return;
+		const roundSettings = { ...this.settings };
 		const reviewButton =
 			document.querySelector<HTMLButtonElement>("#review");
 		const hadCompletedSession = this.hasCompletedSession;
@@ -136,7 +141,7 @@ export class GameController {
 		if (startBtn) startBtn.disabled = true;
 		this.deck = [];
 		try {
-			await this.loadDeck();
+			await this.loadDeck(roundSettings.card);
 			if (this.deck.length === 0) {
 				throw new Error("The selected vocabulary deck is empty.");
 			}
@@ -151,6 +156,7 @@ export class GameController {
 			return;
 		}
 		this.isStarting = false;
+		this.sessionSettings = roundSettings;
 		this.hasCompletedSession = false;
 		this.cardQueue.clear();
 
@@ -223,8 +229,9 @@ export class GameController {
 	 */
 	public nextQuestion(): void {
 		if (this.deck.length === 0) return;
+		const settings = this.sessionSettings ?? this.settings;
 
-		const allowedIndices = getFilteredCardIndices(this.deck, this.settings);
+		const allowedIndices = getFilteredCardIndices(this.deck, settings);
 		const candidateIndices =
 			allowedIndices.length > 0
 				? allowedIndices
@@ -236,7 +243,7 @@ export class GameController {
 
 		const { questionKana, kanji, selectedReading } = formatQuestion(
 			card,
-			this.settings,
+			settings,
 		);
 		this.state.currentKana = questionKana;
 		this.state.currentRomaji = [
@@ -248,7 +255,7 @@ export class GameController {
 		const questionEl = document.querySelector("#question");
 		if (questionEl) {
 			const rubyText = document.createElement("rt");
-			rubyText.textContent = this.settings.showKanji ? kanji : "";
+			rubyText.textContent = settings.showKanji ? kanji : "";
 			questionEl.replaceChildren(
 				document.createTextNode(questionKana),
 				rubyText,
@@ -478,10 +485,8 @@ export class GameController {
 	 */
 	private advanceOrFinish(): void {
 		const total = this.state.answered + this.state.skipped;
-		if (
-			this.settings.roundLength !== null &&
-			total >= this.settings.roundLength
-		) {
+		const settings = this.sessionSettings ?? this.settings;
+		if (settings.roundLength !== null && total >= settings.roundLength) {
 			this.stopGame();
 			return;
 		}
@@ -498,6 +503,7 @@ export class GameController {
 		if (!wasRunning) return;
 		this.updateElapsedTime();
 		this.state.isRunning = false;
+		this.sessionSettings = null;
 		this.questionStartActiveMs = null;
 		if (this.visibilityListener) {
 			document.removeEventListener(
