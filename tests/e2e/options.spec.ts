@@ -4,32 +4,71 @@ test.describe("Options Panel & Theme Configuration", () => {
 	test("should toggle options panel and paginate between settings screens", async ({
 		page,
 	}) => {
-		await page.goto("/");
+		for (const viewport of [
+			{ width: 1280, height: 800 },
+			{ width: 320, height: 568 },
+		]) {
+			await page.setViewportSize(viewport);
+			await page.goto("/");
 
-		const optionBtn = page.locator("#option");
-		await expect(optionBtn).toBeVisible();
-		await expect(page.locator('.game-card[value="JLPT"]')).toHaveClass(
-			/active/,
-		);
-		await expect(page.locator("#game-round-length")).toHaveValue("20");
-		await optionBtn.click();
+			const optionBtn = page.locator("#option");
+			await expect(optionBtn).toBeVisible();
+			await expect(page.locator('.game-card[value="JLPT"]')).toHaveClass(
+				/active/,
+			);
+			await expect(page.locator("#game-round-length")).toHaveValue("20");
+			await optionBtn.click();
 
-		const optionWrapper = page.locator("#option-wrapper");
-		await expect(optionWrapper).toHaveClass(/collapsed/);
+			const optionWrapper = page.locator("#option-wrapper");
+			await expect(optionWrapper).toHaveClass(/collapsed/);
 
-		const primaryPage = page.locator("#options-page-primary");
-		const extraPage = page.locator("#options-page-extra");
-		await expect(primaryPage).toBeVisible();
-		await expect(extraPage).toBeVisible();
+			const primaryPage = page.locator("#options-page-primary");
+			const extraPage = page.locator("#options-page-extra");
+			await expect(primaryPage).toBeVisible();
+			await expect(extraPage).toBeVisible();
 
-		// Paginate to extra options (scroll container)
-		const moreBtn = page.locator("#options-btn-more");
-		await moreBtn.click();
+			const optionsViewport = page.locator("#options-scroll-container");
+			const moreBtn = page.locator("#options-btn-more");
+			await expect
+				.poll(() =>
+					moreBtn.evaluate((button) => {
+						const viewport = document.querySelector(
+							"#options-scroll-container",
+						);
+						if (!viewport) return false;
+						const buttonRect = button.getBoundingClientRect();
+						const viewportRect = viewport.getBoundingClientRect();
+						return (
+							buttonRect.top >= viewportRect.top &&
+							buttonRect.bottom <= viewportRect.bottom
+						);
+					}),
+				)
+				.toBe(true);
 
-		// Verify back button is visible and click back
-		const backBtn = page.locator("#options-btn-back");
-		await expect(backBtn).toBeVisible();
-		await backBtn.click();
+			// Paginate to extra options and verify the Back control is fully visible.
+			await moreBtn.click();
+			const backBtn = page.locator("#options-btn-back");
+			await expect(backBtn).toBeVisible();
+			await expect
+				.poll(() =>
+					backBtn.evaluate((button) => {
+						const viewport = document.querySelector(
+							"#options-scroll-container",
+						);
+						if (!viewport) return false;
+						const buttonRect = button.getBoundingClientRect();
+						const viewportRect = viewport.getBoundingClientRect();
+						return (
+							buttonRect.top >= viewportRect.top &&
+							buttonRect.bottom <= viewportRect.bottom
+						);
+					}),
+				)
+				.toBe(true);
+			await backBtn.click();
+			await expect(optionsViewport).toHaveJSProperty("scrollTop", 0);
+		}
 	});
 
 	test("should toggle dark and light themes and update DOM classes", async ({
@@ -174,6 +213,29 @@ test.describe("Options Panel & Theme Configuration", () => {
 		await page.locator("#option").click();
 		await page.locator("#game-round-length").scrollIntoViewIfNeeded();
 		await expect(page.locator("#game-round-length")).toBeVisible();
+		const moreBtn = page.locator("#options-btn-more");
+		await moreBtn.scrollIntoViewIfNeeded();
+		await expect
+			.poll(() =>
+				moreBtn.evaluate((button) => {
+					const viewport = document.querySelector(
+						"#options-scroll-container",
+					);
+					if (!viewport) return false;
+					const buttonRect = button.getBoundingClientRect();
+					const viewportRect = viewport.getBoundingClientRect();
+					return (
+						buttonRect.top >= viewportRect.top &&
+						buttonRect.bottom <= viewportRect.bottom
+					);
+				}),
+			)
+			.toBe(true);
+		await moreBtn.click();
+		const backBtn = page.locator("#options-btn-back");
+		await backBtn.scrollIntoViewIfNeeded();
+		await expect(backBtn).toBeVisible();
+		await backBtn.click();
 		await page.locator("#start").scrollIntoViewIfNeeded();
 		await page.locator("#start").click();
 		const answerFontSize = await page

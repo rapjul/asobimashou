@@ -248,8 +248,8 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
 #option-wrapper.collapsed {
   border-color: inherit;
   opacity: 1;
-  max-height: min(334px, 55dvh);
-  height: min(334px, 55dvh);
+  max-height: 85dvh;
+  height: auto;
   overflow-y: auto;
 }
 
@@ -323,7 +323,7 @@ body.bg-dark #option-wrapper {
 
 /* Options scroll container for paginated settings */
 #options-scroll-container {
-  height: min(280px, 45dvh);
+  height: min(var(--options-page-content-height, 280px), 75dvh);
   overflow-x: hidden;
   overflow-y: auto;
   scroll-behavior: smooth;
@@ -331,13 +331,17 @@ body.bg-dark #option-wrapper {
 }
 
 .options-page {
-  min-height: 280px;
+  min-height: min(var(--options-page-content-height, 280px), 75dvh);
   height: auto;
   box-sizing: border-box;
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+#options-page-primary {
+  min-height: 0;
 }
 
 #game-dakuten,

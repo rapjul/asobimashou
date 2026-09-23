@@ -4,6 +4,7 @@ import { applyTheme, resolveIsDark, systemDarkMQ } from "./theme";
 import { showFontOfflineToast } from "./toasts";
 const FONT_CACHE_NAME = "fonts-cache";
 const pendingFontCaches = new Map<string, Promise<void>>();
+let optionsPageObserver: ResizeObserver | null = null;
 
 const OPTIONAL_FONT_URLS: Partial<Record<GameSettings["font"], string>> = {
 	// prettier-ignore
@@ -346,13 +347,44 @@ export function closeOptions(): void {
 }
 
 /**
+ * Fits the options viewport to the primary page's content and caps it to the viewport.
+ *
+ * @returns {void}
+ */
+function updateOptionsPageHeight(): void {
+	const wrapper = document.querySelector<HTMLElement>("#option-wrapper");
+	const primaryPage = document.querySelector<HTMLElement>(
+		"#options-page-primary",
+	);
+	if (!wrapper || !primaryPage) return;
+
+	const contentHeight = Math.ceil(primaryPage.scrollHeight);
+	if (contentHeight > 0) {
+		wrapper.style.setProperty(
+			"--options-page-content-height",
+			`${contentHeight}px`,
+		);
+	}
+}
+
+/**
  * Initializes the Options panel UI, pagination, theme buttons, and event listeners.
  *
  * @param {GameSettings} settings - The active game settings reference.
  * @returns {void}
  */
 export function initOptionsUI(settings: GameSettings): void {
+	optionsPageObserver?.disconnect();
+	optionsPageObserver = null;
 	populateSettingsSelects();
+	updateOptionsPageHeight();
+	const primaryPage = document.querySelector<HTMLElement>(
+		"#options-page-primary",
+	);
+	if (primaryPage && typeof ResizeObserver !== "undefined") {
+		optionsPageObserver = new ResizeObserver(updateOptionsPageHeight);
+		optionsPageObserver.observe(primaryPage);
+	}
 	// Sync UI state from settings
 	void updateFontAvailability(settings);
 	window.addEventListener("online", () => {
