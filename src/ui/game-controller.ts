@@ -644,8 +644,11 @@ export class GameController {
 					text: shareText,
 				});
 				return;
-			} catch {
-				// User cancelled share, fallback to clipboard
+			} catch (error: unknown) {
+				if (error instanceof Error && error.name === "AbortError") {
+					return;
+				}
+				// Platform share failure, fallback to clipboard
 			}
 		}
 

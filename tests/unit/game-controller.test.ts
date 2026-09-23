@@ -531,4 +531,52 @@ describe("Game session controller", () => {
 			"Could not copy results",
 		);
 	});
+
+	it("handles native share lifecycle including user cancellation and errors", async () => {
+		const game = new GameController(baseSettings);
+		useDeck(game, [sampleCards[0]!]);
+		await game.startGame();
+		game.skipQuestion();
+		game.stopGame();
+
+		const clipboardWrite = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: { writeText: clipboardWrite },
+		});
+
+		// 1. Share succeeds
+		const shareMock = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, "share", {
+			configurable: true,
+			value: shareMock,
+		});
+
+		await game.shareResults();
+		expect(shareMock).toHaveBeenCalledOnce();
+		expect(clipboardWrite).not.toHaveBeenCalled();
+		expect(document.querySelector(".toast-share")).toBeNull();
+
+		// 2. Share cancelled by user (AbortError)
+		shareMock.mockReset();
+		shareMock.mockRejectedValue(
+			new DOMException("Share cancelled", "AbortError"),
+		);
+
+		await game.shareResults();
+		expect(shareMock).toHaveBeenCalledOnce();
+		expect(clipboardWrite).not.toHaveBeenCalled();
+		expect(document.querySelector(".toast-share")).toBeNull();
+
+		// 3. Share fails with general error -> falls back to clipboard
+		shareMock.mockReset();
+		shareMock.mockRejectedValue(new Error("Platform failure"));
+
+		await game.shareResults();
+		expect(shareMock).toHaveBeenCalledOnce();
+		expect(clipboardWrite).toHaveBeenCalledOnce();
+		expect(document.querySelector(".toast-share")!.textContent).toContain(
+			"Copied to clipboard",
+		);
+	});
 });
