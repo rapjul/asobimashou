@@ -340,6 +340,26 @@ body.bg-dark #option-wrapper {
   justify-content: space-between;
 }
 
+@media (max-width: 400px) {
+  #options-page-primary > .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #options-page-primary
+    > .d-flex.justify-content-between
+    > .btn-group-vertical {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  #options-page-primary #game-font {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 #options-page-primary {
   min-height: 0;
 }
@@ -386,7 +406,9 @@ body.bg-dark #option-wrapper {
 }
 
 #option-help {
-  height: 46px;
+  height: auto;
+  min-height: 46px;
+  text-wrap: balance;
   display: flex;
   align-items: center;
   justify-content: center;
