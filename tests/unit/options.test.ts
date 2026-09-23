@@ -232,6 +232,59 @@ describe("Options and saved settings", () => {
 		);
 	});
 
+	it("ignores a cached-font lookup after a newer font is selected", async () => {
+		const cacheMatchResolver: {
+			current?: (response: Response | undefined) => void;
+		} = {};
+		const cache = {
+			match: vi.fn(
+				() =>
+					new Promise<Response | undefined>((resolve) => {
+						cacheMatchResolver.current = resolve;
+					}),
+			),
+		};
+		const cacheStorage = {
+			open: vi.fn(async () => cache),
+		} as unknown as CacheStorage;
+		Object.defineProperty(window, "caches", {
+			configurable: true,
+			value: cacheStorage,
+		});
+		vi.stubGlobal("caches", cacheStorage);
+		Object.defineProperty(navigator, "onLine", {
+			configurable: true,
+			value: true,
+		});
+		const settings = {
+			...options.SETTINGS_DEFAULT,
+			font: "system-ui" as const,
+		};
+		options.initOptionsUI(settings);
+		const font = document.querySelector<HTMLSelectElement>("#game-font")!;
+
+		Object.defineProperty(navigator, "onLine", {
+			configurable: true,
+			value: false,
+		});
+		font.value = "Klee One";
+		font.dispatchEvent(new Event("change"));
+		await vi.waitFor(() => expect(cache.match).toHaveBeenCalledOnce());
+
+		font.value = "system-ui";
+		font.dispatchEvent(new Event("change"));
+		cacheMatchResolver.current?.(new Response("cached font"));
+		await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+		expect(settings.font).toBe("system-ui");
+		expect(font.value).toBe("system-ui");
+		expect(
+			document.querySelector<HTMLElement>(".game-font-change")!.style
+				.fontFamily,
+		).toBe("system-ui");
+		expect(document.querySelector(".toast-font-fallback")).toBeNull();
+	});
+
 	it("syncs visible controls, saves changes, and navigates the options panel", () => {
 		const settings = { ...options.SETTINGS_DEFAULT };
 		options.initOptionsUI(settings);

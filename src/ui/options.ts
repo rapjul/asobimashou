@@ -5,6 +5,7 @@ import { showFontOfflineToast } from "./toasts";
 const FONT_CACHE_NAME = "fonts-cache";
 const pendingFontCaches = new Map<string, Promise<void>>();
 let fontAvailabilityGeneration = 0;
+let fontSelectionGeneration = 0;
 let optionsPageObserver: ResizeObserver | null = null;
 
 const OPTIONAL_FONT_URLS: Partial<Record<GameSettings["font"], string>> = {
@@ -208,6 +209,7 @@ export function saveSettings(settings: GameSettings): void {
  * @returns {void}
  */
 export function changeFont(font: GameSettings["font"]): void {
+	const generation = ++fontSelectionGeneration;
 	const select = document.querySelector<HTMLSelectElement>("#game-font");
 	if (select) {
 		select.value = font;
@@ -222,7 +224,7 @@ export function changeFont(font: GameSettings["font"]): void {
 		void cacheSelectedFont(fontUrl);
 		return;
 	}
-	void applyCachedFontOrFallback(font, fontUrl);
+	void applyCachedFontOrFallback(font, fontUrl, generation);
 }
 
 /**
@@ -230,13 +232,19 @@ export function changeFont(font: GameSettings["font"]): void {
  *
  * @param {GameSettings["font"]} font - The selected font family.
  * @param {string} fontUrl - The emitted asset URL for the font.
+ * @param {number} generation - The current font-selection request generation.
  * @returns {Promise<void>}
  */
 async function applyCachedFontOrFallback(
 	font: GameSettings["font"],
 	fontUrl: string,
+	generation: number,
 ): Promise<void> {
-	if (await isFontCached(fontUrl)) {
+	const isCached = await isFontCached(fontUrl);
+	const select = document.querySelector<HTMLSelectElement>("#game-font");
+	if (generation !== fontSelectionGeneration || select?.value !== font)
+		return;
+	if (isCached) {
 		applyFontFamily(font);
 		return;
 	}
