@@ -249,7 +249,7 @@ The app leaves an updated worker waiting while a round is active. It displays a
 persistent Reload notice at home or after the result screen; do not switch the
 registration to automatic activation, because that can interrupt an active
 round. To reset PWA state during development, clear site data for the local
-origin in the browser's developer tools.
+origin in the browser's developer tools. Local apps served with the same scheme, hostname, and port share an origin; registrations with overlapping service worker scopes can update one another. Use a different port for another local app (for example, `npm run dev -- --port 5174`) or unregister the stale worker in DevTools → Application → Service Workers before reusing a port.
 
 ### Answer input and WanaKana conversion
 

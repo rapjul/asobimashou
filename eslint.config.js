@@ -63,6 +63,7 @@ export default [
 	{
 		ignores: [
 			"dist/**",
+			"dev-dist/**",
 			"coverage/**",
 			"node_modules/**",
 			"assets/js/bootstrap.bundle.min.js",

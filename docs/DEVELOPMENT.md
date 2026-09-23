@@ -36,6 +36,8 @@ npm run dev
 
 Open your browser to `http://localhost:5173`.
 
+The development service worker is enabled for offline testing. Apps using the same scheme, hostname, and port share an origin; if they also register service workers for the same scope, a registration can be updated by another app served there. When running another local app at the same time, use a different port, for example `npm run dev -- --port 5174`. If a stale worker is controlling the app on a reused port, unregister it in DevTools under Application → Service Workers, then reload. “Update on reload” checks the selected registration; it does not distinguish projects by their folders.
+
 ---
 
 ## Production Build and Preview
