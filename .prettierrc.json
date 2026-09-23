@@ -19,6 +19,12 @@
         "useTabs": false,
         "tabWidth": 4
       }
+    },
+    {
+      "files": ".vscode/settings.json",
+      "options": {
+        "parser": "jsonc"
+      }
     }
   ]
 }
