@@ -456,6 +456,32 @@ describe("Game session controller", () => {
 		expect(document.activeElement).toBe(document.querySelector("#start"));
 	});
 
+	it("ignores repeated restart calls while a transition is pending", async () => {
+		const game = new GameController(baseSettings);
+		useDeck(game, [sampleCards[0]!]);
+		await game.startGame();
+		game.skipQuestion();
+		game.stopGame();
+
+		const result = document.querySelector("#result")!;
+		expect(result.classList.contains("d-none")).toBe(false);
+
+		// First call triggers slide-out and schedules timeout
+		game.restart();
+		// Rapid second call should be ignored
+		game.restart();
+
+		const transition = new Event("transitionend");
+		Object.defineProperty(transition, "propertyName", { value: "top" });
+		result.dispatchEvent(transition);
+
+		expect(result.classList.contains("d-none")).toBe(true);
+
+		// Calling restart again while already hidden should also do nothing
+		game.restart();
+		expect(result.classList.contains("d-none")).toBe(true);
+	});
+
 	it("exports CSV and uses clipboard fallbacks for sharing and copying", async () => {
 		const game = new GameController(baseSettings);
 		useDeck(game, [sampleCards[0]!]);

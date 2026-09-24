@@ -683,9 +683,15 @@ export class GameController {
 	 * @returns {void}
 	 */
 	public restart(): void {
-		document.querySelector("#menu")?.classList.remove("slide-up");
 		const result = document.querySelector("#result");
-		if (!result) return;
+		if (
+			!result ||
+			this.restartTimeout !== null ||
+			result.classList.contains("d-none")
+		) {
+			return;
+		}
+		document.querySelector("#menu")?.classList.remove("slide-up");
 		result.classList.remove("slide-in");
 		let isReset = false;
 		let transitionEndHandler: EventListener | null = null;
