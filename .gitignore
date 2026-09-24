@@ -143,6 +143,7 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
+dev-dist/
 
 # Gatsby files
 .cache/
@@ -239,7 +240,19 @@ $RECYCLE.BIN/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
-CHANGES_*.md
-.specstory/
+
+#------------------------------------------------#
+# AI planning conversations and artifacts
+#------------------------------------------------#
+_artifacts/
 _agents/
 .chatledger/
+.specstory/
+
+#------------------------------------------------#
+# Playwright test outputs
+#------------------------------------------------#
+playwright-report
+playwright-report/
+test-results
+test-results/

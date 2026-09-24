@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.git/
+playwright-report/
+test-results/
+assets/images/icons/icon-previewer.html
+*.svg
+assets/css/bootstrap.min.css
+assets/js/bootstrap.bundle.min.js
+assets/fonts/
+*.min.js
+*.min.css
+.github/workflows/pullfrog.yml

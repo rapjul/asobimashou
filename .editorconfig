@@ -1,18 +1,52 @@
 # editorconfig.org
 root = true
 
-# Default for HTML, JS, CSS, SVG and JSON files.
+# Defaults
 [*]
 indent_style = space
 indent_size = 2
 tab_width = 2
-end_of_line = lf # To allow compiling code on CI.
-charset = utf-8 # For Japanese characters.
-trim_trailing_whitespace = true # To remove trailing whitespace.
-insert_final_newline = true # To add a newline at the end of the file.
+# To allow compiling code on CI.
+end_of_line = lf
+# For Japanese characters.
+charset = utf-8
+# To remove trailing whitespace.
+trim_trailing_whitespace = true
+# To add a newline at the end of the file.
+insert_final_newline = true
+
+[*.{html,js,ts,sh}]
+indent_style = tab
+tab_width = 4
 
 [*.md]
-indent_size = 4 # Use 4 spaces for Markdown files.
+indent_style = space
+indent_size = 4
+# Markdown files do not need a line length limit.
+max_line_length = off
 
+# JSON files benefit from 2 spaces for readability and require a final newline.
+[*.json]
+indent_style = space
+indent_size = 2
+tab_width = 2
+insert_final_newline = true
+
+# SVG files benefit from 2 spaces for readability and do not require a final newline.
 [*.svg]
+indent_style = space
+indent_size = 2
+tab_width = 2
 insert_final_newline = false
+
+# YAML files
+[*.{yaml,yml}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+insert_final_newline = true
+
+# Minified JavaScript files shouldn't be changed and often have no newlines, so we ignore indentation and final newline rules.
+[**.min.js]
+indent_style = ignore
+insert_final_newline = ignore

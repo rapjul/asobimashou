@@ -8,21 +8,22 @@ important gotchas discovered during development.
 
 ## Project Overview
 
-A vanilla HTML/CSS/JS PWA for practising Japanese Hiragana and Katakana reading.
-No build step. No framework. Served directly via `npx serve .` (or `npm run dev`).
+A modern TypeScript PWA for practising Japanese Hiragana and Katakana reading.
+Built with Vite, tested with Vitest and Playwright.
 
 **Tech stack**
 
-| Layer         | Technology                            |
-|---------------|---------------------------------------|
-| Structure     | HTML5 (`index.html`, `offline.html`)  |
-| Style         | Vanilla CSS (`assets/css/style.css`)  |
-| Logic         | Vanilla JS (`assets/js/script.js`)    |
-| IME           | WanaKana (`assets/js/wanakana.min.js`)|
-| UI components | Bootstrap 5 (local copy)              |
-| PWA           | Service Worker (`serviceWorker.js`)   |
-| SW register   | `assets/js/sw-register.js`            |
-| Vocab data    | `assets/js/cards.js`                  |
+| Layer         | Technology                                          |
+| ------------- | --------------------------------------------------- |
+| Build & Dev   | Vite (`vite.config.ts`)                             |
+| Structure     | HTML5 (`index.html`)                                |
+| Style         | Vanilla CSS (`assets/css/style.css`)                |
+| Logic         | TypeScript (`src/main.ts`, `src/ui/`, `src/logic/`) |
+| IME           | WanaKana (`wanakana` npm package)                   |
+| UI components | Bootstrap 5 (`bootstrap` npm package)               |
+| PWA & SW      | Vite PWA & Workbox (`virtual:pwa-register`)         |
+| Vocab data    | JSON (`src/data/jlpt.json`, `src/data/random.json`) |
+| Testing       | Vitest (Unit) & Playwright (E2E)                    |
 
 ---
 
@@ -30,25 +31,24 @@ No build step. No framework. Served directly via `npx serve .` (or `npm run dev`
 
 ### Code style
 
-- **Indentation**: 2 spaces for all file types (HTML, CSS, JS, JSON, YAML).
-  Markdown uses 4 spaces. Enforced by `.editorconfig`.
+- **Indentation**: Tabs (width 4) for HTML, JS, TS, and Shell scripts.
+  4 spaces for Markdown. 2 spaces for CSS, JSON, and YAML.
+  Enforced by `.editorconfig` and Prettier.
 - **Line endings**: LF (Unix). Enforced by `.editorconfig`.
 - **Comments**: Every function, method, parameter, and type must have a JSDoc
   comment. This is a hard project rule — do not omit them.
-- **CSS variables**: All theme colors must be defined as CSS custom properties
-  in `:root` (light mode) and `body.bg-dark` (dark mode). Never hard-code hex
-  values directly in selectors.
+- **CSS variables**: All theme colors must be defined as CSS custom properties in `:root` (light mode) and `body.bg-dark` (dark mode). Never hard-code hex values directly in selectors.
 
 ### Commit style
 
 Follow **Conventional Commits**. Scopes in use:
 
-| Scope    | Usage example                                |
-|----------|----------------------------------------------|
-| `game`   | Timer, scoring, question flow                |
-| `style`  | CSS / visual changes                         |
-| `sw`     | Service worker / PWA caching                 |
-| `config` | `.editorconfig`, `.hintrc`, `.vscode/`       |
+| Scope    | Usage example                          |
+| -------- | -------------------------------------- |
+| `game`   | Timer, scoring, question flow          |
+| `style`  | CSS / visual changes                   |
+| `sw`     | Service worker / PWA caching           |
+| `config` | `.editorconfig`, `.hintrc`, `.vscode/` |
 
 ---
 
@@ -99,22 +99,25 @@ Chromium/Edge but died after one tick on Safari.
 
 **Variable catalogue** (light → dark):
 
-| Variable                | Light            | Dark              | Purpose                          |
-|-------------------------|------------------|-------------------|----------------------------------|
-| `--app-bg`              | `#f2f2f2`        | `#212529`         | Main application background      |
-| `--result-bg`           | `#e5e5e5`        | `#181a1b`         | Review screen (slightly darker)  |
-| `--table-hover-bg`      | `#d6d6d6`        | `#3a3a3a`         | Table row hover                  |
-| `--scrollbar-track-bg`  | rgba(228…, 0.25) | rgba(228…, 0.15)  | Custom scrollbar track           |
-| `--scrollbar-thumb-bg`  | rgba(161…, 0.25) | rgba(161…, 0.15)  | Custom scrollbar thumb           |
-| `--input-focus-shadow`  | `gray`           | rgba(255…, 0.2)   | Answer input focus glow          |
-| `--input-focus-border`  | `#ced4da`        | `#495057`         | Select element focus border      |
-| `--kbd-shadow`          | rgba(0…, 0.1)    | rgba(255…, 0.1)   | `<kbd>` box-shadow               |
-| `--btn-dark-hover-bg`   | `#343a40`        | (same)            | Dark button hover state          |
-| `--btn-light-hover-bg`  | `#e2e6ea`        | (same)            | Light button hover state         |
-| `--toast-bg`            | rgba(255…, 0.9)  | rgba(33…, 0.9)    | Toast notification background    |
-| `--toast-border`        | rgba(0…, 0.1)    | rgba(255…, 0.15)  | Toast notification border        |
-| `--toast-color`         | `#212529`        | `#f8f9fa`         | Toast notification text          |
-| `--toast-shadow`        | rgba(0…, 0.15)   | rgba(0…, 0.4)     | Toast notification drop shadow   |
+| Variable               | Light            | Dark             | Purpose                         |
+| ---------------------- | ---------------- | ---------------- | ------------------------------- |
+| `--app-bg`             | `#f2f2f2`        | `#212529`        | Main application background     |
+| `--result-bg`          | `#e5e5e5`        | `#181a1b`        | Review screen (slightly darker) |
+| `--table-hover-bg`     | `#d6d6d6`        | `#3a3a3a`        | Table row hover                 |
+| `--scrollbar-track-bg` | rgba(228…, 0.25) | rgba(228…, 0.15) | Custom scrollbar track          |
+| `--scrollbar-thumb-bg` | rgba(161…, 0.25) | rgba(161…, 0.15) | Custom scrollbar thumb          |
+| `--input-focus-shadow` | `gray`           | rgba(255…, 0.2)  | Answer input focus glow         |
+| `--input-focus-border` | `#ced4da`        | `#495057`        | Select element focus border     |
+| `--kbd-shadow`         | rgba(0…, 0.1)    | rgba(255…, 0.1)  | `<kbd>` box-shadow              |
+| `--btn-dark-hover-bg`  | `#343a40`        | (same)           | Dark button hover state         |
+| `--btn-light-hover-bg` | `#e2e6ea`        | (same)           | Light button hover state        |
+| `--toast-bg`           | rgba(255…, 0.9)  | rgba(33…, 0.9)   | Toast notification background   |
+| `--toast-border`       | rgba(0…, 0.1)    | rgba(255…, 0.15) | Toast notification border       |
+| `--toast-color`        | `#212529`        | `#f8f9fa`        | Toast notification text         |
+| `--toast-shadow`       | rgba(0…, 0.15)   | rgba(0…, 0.4)    | Toast notification drop shadow  |
+| `--opt-border-1`       | `#6c757d`        | `#adb5bd`        | Option group 1 border           |
+| `--opt-border-2`       | `#adb5bd`        | `#6c757d`        | Option group 2 border           |
+| `--opt-border-3`       | `#495057`        | `#dee2e6`        | Option group 3 border           |
 
 **Rule**: When adding new styled elements, define variables in `:root` and
 `body.bg-dark` first, then reference them in the selector.
@@ -123,90 +126,37 @@ Chromium/Edge but died after one tick on Safari.
 
 ### 3. Toast notifications for Romaji input hints
 
-**Decision**: 
+**Decision**:
+
 - **Apostrophe Hints**: When a user types a Romaji answer that is missing a required apostrophe (e.g. `tenin` instead of `ten'in` for `てんいん`), accept the answer as correct but immediately display a transient toast notification showing the correct spelling with the apostrophe.
 - **Vowel Lengthening Hints**: When a user types a hyphen `-` or `ー`, or gets an answer incorrect on a card containing the vowel lengthening character `ー`, display a transient toast notification reminding them to duplicate the preceding vowel (e.g., write `ii` for `iー`).
 
-**Why**: 
+**Why**:
+
 - The apostrophe and vowel lengthening rules are genuine Romaji constraints, but enforcing them strictly as errors blocks the flow of learning Kana. Toasts keep the focus on practice while providing passive instruction.
 
-**Implementation files**: `assets/js/script.js` (`showApostropheToast`, `showVowelLengthToast`), `assets/css/style.css` (`.custom-toast`, `#toast-container`), `index.html` (`#toast-container`).
+**Implementation files**: `src/ui/game-controller.ts`, `src/ui/toasts.ts`, `assets/css/style.css` (`.custom-toast`, `#toast-container`), and `index.html` (`#toast-container`).
 
 ---
 
-### 4. Service worker fetch strategy: network-first + stale-while-revalidate
+### 4. Service worker caching and update lifecycle
 
 **Strategies in use**:
 
-| Request type              | Strategy               |
-|---------------------------|------------------------|
-| HTML (`navigate`)         | Network-first          |
-| JS / CSS / fonts / images | Stale-while-revalidate |
+| Request type                | Strategy                                           |
+| --------------------------- | -------------------------------------------------- |
+| HTML (`navigate`)           | Serve the precached `index.html` application shell |
+| Built JS / CSS / JSON / img | Precache during service worker installation        |
+| Bootstrap icon font         | Precache during service worker installation        |
+| Optional Japanese fonts     | Workbox `CacheFirst`; cached when selected online  |
 
-**Network-first for HTML**: Every navigation hits the network first. On
-success the cache is refreshed; on failure the cached shell or `./offline.html`
-is served. Guarantees Safari never indefinitely serves a stale page.
+Vite PWA generates a Workbox precache manifest from the production build. The new worker installs the build assets before it can activate, and Workbox serves the precached application shell for offline navigation. Workbox removes outdated precache entries when the new worker activates; do not maintain a separate manual cache version. On activation, a migration script also deletes only the known `offline-v7` cache left by the former hand-written worker.
 
-**Stale-while-revalidate for static assets**: The cache is served immediately
-(fast load), then a background fetch updates the cache entry for the next visit.
-Users always get a responsive load and always get fresh assets on the following
-visit — no manual version bump required for routine edits.
+Bundled optional Japanese fonts are cached in `fonts-cache` when selected while online. Offline, cached optional fonts remain available, uncached optional fonts are disabled, and system fonts stay available. A saved uncached font falls back to `system-ui` with a notice; reconnecting restores the saved font choice.
 
-**How updates are loaded**:
-Because static assets use stale-while-revalidate, when an update is deployed:
+With `registerType: "prompt"`, a new worker waits for an explicit reload. The app shows a persistent Reload notice at home or after the current round reaches its result screen. Starting a round hides the notice; an update does not interrupt active play.
 
-1. On the **first load/visit**, the browser immediately renders the page using the *stale* (old) cached JS/CSS files.
-2. Simultaneously, the Service Worker triggers a background fetch to get the *new* JS/CSS files and updates the cache.
-3. The user must **reload the page** (typically after a brief moment for the background fetch to finish) to load and execute the new version.
-
-**Flow for a cached static asset**:
-
-```
-Request arrives
-  ↓
-Cache hit? → respond immediately from cache
-           → background: fetch network → update cache (silent, non-blocking)
-           → if network fails AND cache existed: console.warn in SW scope
-Cache miss? → fetch network → cache → serve (same as before)
-```
-
-**Offline warning**: When the background revalidation fetch fails and a cached
-copy was already served, the SW emits:
-
-```
-[asobimashou SW] Offline — serving stale cache for: <url>
-```
-
-This is visible in the browser's **DevTools → Console** (with "All contexts"
-or "Service Worker" selected). It does not interrupt the user experience.
-
-**When to still bump `CACHE_NAME`**: Stale-while-revalidate keeps cache
-entries fresh automatically for files that already exist in the cache. You must
-still bump `CACHE_NAME` (e.g. `offline-v6`) when:
-
-- A file is **deleted or renamed** — the old cache entry would otherwise linger.
-- A **hard reset** of all caches is needed (e.g. emergency rollback).
-
-The `activate` event purges any cache whose name does not match `CACHE_NAME`,
-so bumping it is sufficient.
-
-**Offline fallback order** (navigation, no network):
-
-1. Try to match the exact URL in cache
-2. Fall back to `./offline.html`
-
-**PWA guarantee**: All assets listed in `toCache` are pre-fetched during the
-SW `install` event, so the app is fully playable offline from the first visit.
-
-**Practical effects**:
-
-| Scenario | What happens |
-|----------|--------------|
-| You update `script.js` or `style.css` | First visit serves the stale cached version while fetching the update in the background; a subsequent page reload executes the updated version |
-| User is fully offline | Cached assets are served instantly; SW logs a `console.warn` per asset in the browser's DevTools |
-| First ever visit (nothing cached yet) | Every asset is fetched from the network and cached; subsequent visits are fast |
-| You delete or rename a cached file | Old cache entry lingers until `CACHE_NAME` is bumped, and the SW reactivates |
-| You need a forced hard reset | Bump `CACHE_NAME` — the `activate` event purges all older caches on next visit |
+After a successful service worker install, the app shell, compiled code, vocabulary chunks, and declared static images are available offline. Optional Japanese fonts become available offline after the player selects them while online.
 
 ---
 
@@ -226,7 +176,7 @@ does not execute.
 
 ### 6. Tab key as End Game shortcut (for Desktop only)
 
-**Decision**: Keep the `Tab` keydown on `#answer` → `#stop.click()` shortcut.
+**Decision**: Keep the `Tab` keydown on `#answer` as an End Game shortcut.
 
 **Context**: The shortcut is intentional for desktop use; iOS users should use the on-screen
 End button.
@@ -244,18 +194,16 @@ than the default behaviour.
 
 ---
 
-### 8. Indentation: 2-space spaces throughout
+### 8. Indentation: Tabs for HTML/JS/TS/Shell, 4 spaces for Markdown, 2 spaces for CSS/JSON/YAML
 
-**Decision**: 2-space indentation with LF endings for all source files (HTML,
-CSS, JS, JSON, YAML). Markdown uses 4 spaces for list indentation.
+**Decision**: Literal tab indentation (`\t` at 4-column display width) for HTML, JS, TS,
+and Shell scripts. 4 spaces for Markdown files. 2 spaces for CSS, JSON, and YAML files.
+All enforced by `.editorconfig` and Prettier.
 
-**Why spaces over tabs**: The entire codebase predated this decision and was
-already written with spaces. Switching to tabs would produce a noisy, semantically
-empty diff. Web tooling (Prettier, ESLint defaults) also prefers spaces.
-
-**Why 2 over 4 spaces in JS**: Reduces horizontal pressure given Bootstrap's
-deeply nested HTML structure and the long selector chains in CSS. Consistent
-with the HTML and CSS files.
+**Rationale**: Hard tabs allow individual developers to display indentation at their preferred
+width in their editor without modifying file bytes, while 4 spaces in Markdown conforms to
+standard CommonMark/GFM list syntax, and 2 spaces in JSON and CSS keeps data structures
+and selectors compact.
 
 ---
 
@@ -263,11 +211,13 @@ with the HTML and CSS files.
 
 **Decision**: The static asset generation script (`scripts/generate-icons.sh`) must ensure that the specific fonts referenced in the source SVG are installed on the local system/runner before conversion.
 
-**Why**: 
+**Why**:
+
 - Browsers render SVG fonts dynamically by fetching external links (e.g., Google Fonts `<link>` tag in `icon-previewer.html`).
 - Local command-line rendering tools (like `rsvg-convert`, `imagemagick`, and `inkscape`) run offline and do not resolve remote font URLs. If a font like `Outfit` is not installed on the system, the rendering tool will silently fall back to `sans-serif` (e.g., Arial or Helvetica), resulting in layout shifts or incorrect styling in the generated PNG icons.
 
-**Implementation**: 
+**Implementation**:
+
 - The `scripts/generate-icons.sh` script scans the target SVG file for specific fonts (`Outfit`, `Klee One`, `Noto Serif JP`, `Yuji Syuku`).
 - If missing, it downloads the corresponding `.ttf` from the Google Fonts upstream repository and installs it locally:
     - **macOS**: `~/Library/Fonts/` (native CoreText registers files written here immediately).
@@ -293,54 +243,61 @@ Safari aggressively throttles `setInterval` — it can fire once and then die
 silently without throwing an error. **Never rely on `setInterval` for game
 state timing.** Use `requestAnimationFrame` + `performance.now()` instead.
 
-### Service worker cache persistence in Safari
+### Service worker updates during gameplay
 
-Safari does not automatically clear the SW cache when `CACHE_NAME` changes.
-The old SW keeps serving the old cache until **all tabs** for the origin are
-closed and reopened. There is no JS API to force this faster.
+The app leaves an updated worker waiting while a round is active. It displays a persistent Reload notice at home or after the result screen; do not switch the registration to automatic activation, because that can interrupt an active round. To reset PWA state during development, clear site data for the local origin in the browser's developer tools. Local apps served with the same scheme, hostname, and port share an origin; registrations with overlapping service worker scopes can update one another. Use a different port for another local app (for example, `npm run dev -- --port 5174`) or unregister the stale worker in DevTools → Application → Service Workers before reusing a port.
 
-To manually clear during development:
-> Safari → Settings → Privacy → Manage Website Data → Remove
+### Answer input and WanaKana conversion
 
-### WanaKana `bind` on `#answer`
-
-WanaKana is bound to the answer input. `agent-browser fill` sets `.value`
-directly, bypassing the IME layer. To test the answer comparison in automation,
-manually dispatch a `keyup` event after setting `.value` to trigger the handler:
+The answer handler converts typed Romaji with WanaKana on `keyup`.
+`agent-browser fill` sets `.value` directly and does not fire that handler. To
+test answer comparison in automation, dispatch `keyup` after setting `.value`:
 
 ```js
-answerInput.value = 'tenin';
-answerInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'n' }));
+answerInput.value = "tenin";
+answerInput.dispatchEvent(new KeyboardEvent("keyup", { key: "n" }));
 ```
 
-### `cards.js` structure
+### Vocabulary JSON structure
 
-`cards.js` exports a global `cards` object. The first two lines enable the
-Start button:
-
-```js
-const startBtn = document.getElementById('start');
-startBtn.disabled = false;
-```
-
-The deck key used at runtime is `SETTINGS.card` (e.g. `"Random"`, `"JLPT"`).
-Card objects have at minimum `hiragana` and `romaji` properties.
+The selected deck is loaded dynamically from `src/data/jlpt.json` or
+`src/data/random.json` according to `SETTINGS.card`. Cards contain `kanji`,
+`hiragana` (a string or an array of alternate readings), and `meaning` fields.
+Romaji is derived from the selected Hiragana reading at runtime.
 
 ---
 
 ## Development Workflow
 
 ```bash
-# Start local server
-npx serve .
+# Start local dev server
+npm run dev
 
-# Verify timer (agent-browser)
-agent-browser open http://localhost:<port>
-agent-browser click @<start-button-ref>
-agent-browser wait 3000
-agent-browser eval "document.getElementById('time').innerText"
-# Expect: "3" (or higher)
+# Run unit tests and coverage
+npm run test:coverage
+
+# Run Playwright E2E tests
+npm run test:e2e
+
+# Build and preview production PWA
+npm run build
+npm run preview
 ```
 
-Bump `CACHE_NAME` in `serviceWorker.js` after any change to cached assets to
-invalidate Safari's SW cache on next visit.
+Vitest V8 coverage includes runtime TypeScript under `src/`, including application startup and UI modules. Type-only declarations and the logic re-export barrel are excluded; Playwright separately verifies browser behavior across engines.
+
+### Architectural Decision Records (ADRs)
+
+Detailed architectural decision records are documented in `./docs/adrs/`:
+
+- `0001-use-typescript-for-application-logic.md`
+- `0002-adopt-vite-build-and-dev-tool.md`
+- `0003-extract-vocabulary-into-json-with-integrity-tests.md`
+- `0004-migrate-service-worker-to-vite-pwa.md`
+- `0005-use-vitest-and-playwright-for-testing.md`
+- `0006-requestanimationframe-performance-now-timer.md`
+- `0007-semantic-css-custom-properties-for-theming.md`
+- `0008-transient-toast-notifications-for-romaji-hints.md`
+- `0009-client-side-session-csv-export.md`
+- `0010-preserve-player-choices-and-finish-rounds-safely.md`
+- `0011-manage-collapsed-surfaces-with-inert-and-honor-share-cancellation.md`

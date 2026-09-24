@@ -9,10 +9,11 @@
 
 ### Game Options
 
-- Four different fonts
+- Four bundled Japanese fonts plus system font choices; bundled fonts are cached for offline use after selection
 - Light and dark theme, auto-detected from system settings
 - Quiz Type: Hiragana, Katakana, or both
-- Word Bank: Random or JLPT N5-N4 words
+- Word Bank: JLPT N5-N4 by default, or the larger Random deck
+- Round length: 20 cards by default, with shorter, longer, and Unlimited options
 - Toggle: Dakuten (`ﾞ`) and Handakuten (`ﾟ`)
 - Toggle: Doubled consonants (`っ`)
 - Toggle: Combo Kana (`ゃ`, `ゅ`, `ょ`)
@@ -29,6 +30,7 @@
 - Touch-friendly
 - Clean and simple interface
 - Play offline (PWA)
+- Updates wait until the current round ends
 
 ### Results
 
@@ -37,6 +39,7 @@
 - Total time counter
 - Average time to answer
 - Table with Romaji, English meaning, and link to [Jisho](https://jisho.org/)
+- `Export CSV` button to download session results conforming to RFC 4180
 - `Copy Table` button complete with Kanji, Kana, Romaji and English meaning
 - `Share` button to copy your latest game statistics
 
@@ -44,32 +47,9 @@
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
-## Running Locally
+## Running Locally & Development
 
-### 1. Clone the repository
-
-```sh
-git clone https://github.com/rapjul/asobimashou.git
-cd asobimashou
-```
-
-### 2. Start a web server
-
-Use `npx serve .` or `python3 -m http.server 3000` for a quick local server.
-
-```sh
-npx serve .
-```
-
-or
-
-```sh
-python3 -m http.server 3000
-```
-
-### 3. Open the App in your Browser
-
-Access the app at `http://localhost:3000`.
+Please refer to the comprehensive [Development Guide](./docs/DEVELOPMENT.md) for local installation, development server instructions, production builds, and test commands.
 
 ## Credits
 

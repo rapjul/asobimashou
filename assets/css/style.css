@@ -37,6 +37,11 @@
   --offline-badge-bg: rgba(253, 126, 20, 0.1);
   --offline-badge-border: rgba(253, 126, 20, 0.3);
   --offline-badge-color: #d9480f;
+
+  /* Option wrapper border colors (light mode) */
+  --opt-border-1: #6c757d;
+  --opt-border-2: #adb5bd;
+  --opt-border-3: #495057;
 }
 
 html {
@@ -97,6 +102,11 @@ body.bg-dark {
   --offline-badge-bg: rgba(255, 159, 67, 0.15);
   --offline-badge-border: rgba(255, 159, 67, 0.4);
   --offline-badge-color: #ff9f43;
+
+  /* Option wrapper border colors (dark mode) */
+  --opt-border-1: #adb5bd;
+  --opt-border-2: #6c757d;
+  --opt-border-3: #dee2e6;
 }
 
 body {
@@ -162,19 +172,6 @@ body {
 @media (max-width: 768px), (max-height: 600px) {
   .centering-wrapper {
     padding-bottom: 6vh;
-  }
-
-  #game {
-    overflow-y: hidden;
-  }
-}
-
-/* On desktop, keep everything locked and perfectly centered */
-@media (min-width: 769px) and (min-height: 601px) {
-  #menu,
-  #game,
-  #result {
-    overflow-y: hidden;
   }
 }
 
@@ -253,49 +250,22 @@ body.bg-dark .btn-light:hover:not(:disabled):not(.active) {
   max-height: 0;
   margin-top: -2px;
   border-color: #00000000;
-  transition:
-    opacity,
-    border,
-    padding,
-    max-height;
-  transition-duration:
-    0.3s,
-    0.5s;
+  transition: opacity, border, padding, max-height;
+  transition-duration: 0.3s, 0.5s;
   transition-timing-function: ease;
 }
 
 #option-wrapper.collapsed {
   border-color: inherit;
   opacity: 1;
-  max-height: 284px;
-  height: 284px;
+  max-height: 85dvh;
+  height: auto;
+  overflow-y: auto;
 }
 
 .form-select:focus {
   border-color: var(--input-focus-border) !important;
   box-shadow: none !important;
-}
-
-/*
- * Option Wrapper Border System
- * Uses variables to ensure consistent border colors across all groups.
- */
-#option-wrapper {
-  /* Group 1 */
-  --opt-border-1: #6c757d;
-  /* Group 2 */
-  --opt-border-2: #adb5bd;
-  /* Group 3 */
-  --opt-border-3: #495057;
-}
-
-body.bg-dark #option-wrapper {
-  /* Group 1 */
-  --opt-border-1: #adb5bd;
-  /* Group 2 */
-  --opt-border-2: #6c757d;
-  /* Group 3 */
-  --opt-border-3: #dee2e6;
 }
 
 /* Apply group borders */
@@ -341,19 +311,45 @@ body.bg-dark #option-wrapper {
 
 /* Options scroll container for paginated settings */
 #options-scroll-container {
-  height: 230px;
-  overflow: hidden;
+  height: min(var(--options-page-content-height, 280px), 75dvh);
+  overflow-x: hidden;
+  overflow-y: auto;
   scroll-behavior: smooth;
   width: 100%;
 }
 
 .options-page {
-  height: 230px;
+  min-height: min(var(--options-page-content-height, 280px), 75dvh);
+  height: auto;
   box-sizing: border-box;
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+@media (max-width: 400px) {
+  #options-page-primary > .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #options-page-primary
+    > .d-flex.justify-content-between
+    > .btn-group-vertical {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  #options-page-primary #game-font {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+#options-page-primary {
+  min-height: 0;
 }
 
 #game-dakuten,
@@ -398,7 +394,9 @@ body.bg-dark #option-wrapper {
 }
 
 #option-help {
-  height: 46px;
+  height: auto;
+  min-height: 46px;
+  text-wrap: balance;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -723,13 +721,16 @@ kbd {
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  20%, 60% {
+  20%,
+  60% {
     transform: translateX(-6px);
   }
-  40%, 80% {
+  40%,
+  80% {
     transform: translateX(6px);
   }
 }
