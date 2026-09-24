@@ -617,7 +617,7 @@ export class GameController {
 	 */
 	public exportCSV(): void {
 		const csvContent = generateSessionCSV(this.state);
-		const blob = new Blob([csvContent], {
+		const blob = new Blob(["\uFEFF", csvContent], {
 			type: "text/csv;charset=utf-8;",
 		});
 		const url = URL.createObjectURL(blob);

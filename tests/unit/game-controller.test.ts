@@ -158,7 +158,12 @@ describe("Game session controller", () => {
 			value: vi.fn(),
 		});
 		game.exportCSV();
-		expect(await exportedCSV?.text()).toContain(
+		expect(exportedCSV).toBeDefined();
+		const exportedBytes = new Uint8Array(await exportedCSV!.arrayBuffer());
+		expect(Array.from(exportedBytes.slice(0, 3))).toEqual([
+			0xef, 0xbb, 0xbf,
+		]);
+		expect(await exportedCSV!.text()).toContain(
 			"Correct,続く,つづく,tsudzuku,tsudzuku,continue",
 		);
 	});

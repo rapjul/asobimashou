@@ -38,11 +38,12 @@ Chosen option: "Header-first card rows with RFC 4180 escaping and a client-side 
 - Good, because response times use the active-time clock, display numeric seconds to two decimal places, and leave per-mora pace blank for skipped cards.
 - Neutral, because moving from summary-prefixed six-column CSV to header-first eight-column card rows changes the export schema; existing CSV consumers must adapt.
 - Neutral, because formula-protection prefixes and TSV separator cleanup can affect programmatic imports or differ between spreadsheet applications; there is no universal sanitization strategy.
+- Good, because the downloaded CSV Blob is prefixed with a UTF-8 Byte Order Mark (`\uFEFF`), ensuring desktop spreadsheet applications like Microsoft Excel decode Japanese characters correctly without mojibake while preserving clean raw text in `generateSessionCSV` for programmatic use.
 - Good, because CSV downloads are verified by automated Playwright E2E tests.
 
 ### Confirmation
 
-Confirmed in `src/logic/export.ts`, `src/ui/game-controller.ts`, `tests/unit/export.test.ts`, `tests/unit/game-controller.test.ts`, and `tests/e2e/gameplay.spec.ts`. The current CSV prefix follows OWASP's Excel-resistant guidance; the TSV apostrophe prefix is a best-effort guard, and spreadsheet applications may handle either differently or remove prefixes when saving and reopening files.
+Confirmed in `./src/logic/export.ts`, `./src/ui/game-controller.ts`, `./tests/unit/export.test.ts`, `./tests/unit/game-controller.test.ts`, and `./tests/e2e/gameplay.spec.ts`. The current CSV prefix follows OWASP's Excel-resistant guidance; the TSV apostrophe prefix is a best-effort guard, and spreadsheet applications may handle either differently or remove prefixes when saving and reopening files.
 
 ## Mora Pace Definition
 
