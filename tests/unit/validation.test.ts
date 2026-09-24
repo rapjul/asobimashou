@@ -33,6 +33,11 @@ describe("Romaji Validation & Spelling Generation", () => {
 	});
 
 	it("requires a clear ん spelling before n-row Kana", () => {
+		const spellings = generateRomajiSpellings("おんな");
+		expect(spellings).not.toContain("ona");
+		expect(spellings).toContain("onna");
+		expect(spellings).toContain("on'na");
+
 		expect(isInputValidAnswer("ona", "おんな")).toBe(false);
 		expect(isInputValidAnswer("onna", "おんな")).toBe(true);
 		expect(isInputValidAnswer("on'na", "おんな")).toBe(true);
